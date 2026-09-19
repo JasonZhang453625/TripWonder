@@ -1,0 +1,62 @@
+/* Device mode applies at any width, including landscape and tablet browsers. */
+html.mobile-device {
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+  height: 100%;
+  overflow: hidden;
+}
+.mobile-device body {height:100%;overflow:hidden;background:#fff;overscroll-behavior:none}
+.mobile-device .workspace {display:block;width:100%;height:100%;min-height:0;padding:0}
+.mobile-device .presentation,.mobile-device .margin-note,
+.mobile-device .statusbar,.mobile-device .home-indicator {display:none}
+.mobile-device .phone {
+  width:100%;max-width:none;height:var(--device-height,100vh);height:100dvh;
+  min-height:0;max-height:none;margin:0;border:0;border-radius:0;box-shadow:none;
+}
+.mobile-device #app {
+  height:100%;padding:var(--safe-top) var(--safe-right) 0 var(--safe-left);
+  overflow-x:hidden;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;
+}
+.mobile-device #app>.page {padding-bottom:calc(24px + var(--safe-bottom))}
+.mobile-device .phone.immersive #app {padding:0;overflow:hidden}
+.mobile-device .phone.immersive #app>.page {padding:0}
+.mobile-device .immersive-top {
+  padding:calc(14px + var(--safe-top)) calc(18px + var(--safe-right)) 22px calc(18px + var(--safe-left));
+}
+.mobile-device .cover-page .cover-footer {
+  padding:62px calc(24px + var(--safe-right)) calc(18px + var(--safe-bottom)) calc(24px + var(--safe-left));
+}
+.mobile-device .explore-page .explore-bottom {
+  padding:35px calc(20px + var(--safe-right)) calc(18px + var(--safe-bottom)) calc(20px + var(--safe-left));
+}
+.mobile-device .zoom-controls {right:calc(18px + var(--safe-right));bottom:calc(159px + var(--safe-bottom))}
+.mobile-device .glass,.mobile-device .glass.round,.mobile-device .zoom-controls button,
+.mobile-device .icon-btn,.mobile-device .cover-links button,.mobile-device .clue-footer button,
+.mobile-device .clue-footer a {min-height:44px;min-width:44px}
+.mobile-device .photo-plane .hotspot {min-height:44px}
+.mobile-device .bottom-nav {
+  height:calc(64px + var(--safe-bottom));
+  padding:10px var(--safe-right) calc(10px + var(--safe-bottom)) var(--safe-left);
+}
+.mobile-device .home-body {padding-bottom:calc(76px + var(--safe-bottom))}
+.mobile-device .sheet {
+  max-height:calc(100% - var(--safe-top) - 14px);
+  padding:9px calc(23px + var(--safe-right)) calc(18px + var(--safe-bottom)) calc(23px + var(--safe-left));
+  overscroll-behavior:contain;
+}
+.mobile-device #toast {left:calc(20px + var(--safe-left));right:calc(20px + var(--safe-right));bottom:calc(20px + var(--safe-bottom))}
+@media (orientation:landscape) and (max-height:600px) {
+  .mobile-device .explore-page .explore-bottom {
+    display:flex;align-items:center;justify-content:space-between;gap:18px;
+    padding-top:25px;padding-bottom:calc(12px + var(--safe-bottom));
+  }
+  .mobile-device .viewer-tools {gap:8px;margin:0}
+  .mobile-device .explore-bottom>.primary {width:180px;flex-shrink:0}
+  .mobile-device .zoom-controls {bottom:calc(87px + var(--safe-bottom))}
+  .mobile-device .cover-page .cover-footer {display:flex;align-items:center;gap:25px;padding-top:30px}
+  .mobile-device .cover-footer>.primary {width:220px}
+  .mobile-device .cover-links {margin:0;gap:22px}
+  .mobile-device .sheet {max-width:600px;margin:0 auto}
+}

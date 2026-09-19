@@ -1,0 +1,30 @@
+const {chromium}=require('C:/Users/Administrator/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
+const assert=require('node:assert/strict');
+(async()=>{
+ const browser=await chromium.launch({executablePath:'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe',headless:true});
+ const page=await browser.newPage({viewport:{width:390,height:844},hasTouch:true});const errors=[];page.on('pageerror',e=>errors.push(e.message));
+ await page.goto('http://127.0.0.1:8765/');await page.locator('.entry').click();
+ assert.equal(await page.locator('.cover-heading,.hero-bottom,.cover-meta').count(),0);
+ await page.locator('[data-action="start"]').click();const viewport=page.locator('.photo-viewport');
+ await page.locator('.photo-plane img').evaluate(e=>e.decode());
+ const zoom=()=>viewport.getAttribute('data-zoom').then(Number);
+ assert.equal(await zoom(),1.15);
+ const bounds=await viewport.boundingBox();assert.equal(bounds.width,390);assert.equal(bounds.height,844);
+ await page.locator('[data-clue="1"]').click();assert.match(await page.locator('#clue-text').textContent(),/460/);
+ assert.equal(await page.locator('.clue-tag,.clue-quote,.sheet-actions').count(),0);
+ await page.screenshot({path:'preview-clue.png',animations:'disabled'});
+ await page.locator('.sheet-close').click();
+ assert.deepEqual(await viewport.evaluate(e=>[e.scrollLeft,e.scrollTop]),[0,0]);
+ await page.mouse.move(195,350);await page.mouse.wheel(0,-500);await page.waitForTimeout(150);assert.ok(await zoom()>1.5);
+ await page.mouse.move(195,330);await page.mouse.down();await page.mouse.move(260,390,{steps:8});await page.mouse.up();assert.notEqual(await viewport.getAttribute('data-pan'),'0.0,0.0');
+ await page.locator('[data-action="zoom-reset"]').click();assert.equal(await zoom(),1.15);
+ const cdp=await page.context().newCDPSession(page);
+ await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x:145,y:330,id:1},{x:245,y:330,id:2}]});
+ await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:100,y:330,id:1},{x:290,y:330,id:2}]});
+ await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});assert.ok(await zoom()>1.8,'pinch should enlarge');
+ await page.locator('[data-action="zoom-reset"]').click();await page.locator('[data-action="language"]').click();await page.locator('[data-clue="1"]').click();assert.match(await page.locator('#clue-text').textContent(),/Northern Wei/);await page.locator('.sheet-close').click();
+ for(let i=0;i<2;i++){await page.locator('[data-action="next-scene"]').click();await page.locator('.photo-plane img').evaluate(e=>e.decode());assert.equal(await zoom(),1.15);await page.locator('[data-clue="1"]').click();await page.locator('.sheet-close').click();assert.deepEqual(await viewport.evaluate(e=>[e.scrollLeft,e.scrollTop]),[0,0]);await page.screenshot({path:`preview-scene-${i+2}.png`,animations:'disabled'})}
+ assert.equal(errors.length,0,errors.join('\n'));
+ await page.locator('[data-action="next-scene"]').click();assert.ok(await page.locator('.quiz-top').count());
+ await browser.close();console.log('PASS: full-bleed bounds; default zoom; wheel; drag; native touch pinch; reset; stable clue focus; bilingual sources; 3 scenes');
+})().catch(e=>{console.error(e);process.exit(1)});
