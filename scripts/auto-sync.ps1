@@ -17,8 +17,12 @@ function Write-SyncLog {
 
 function Invoke-Git {
     param([Parameter(ValueFromRemainingArguments = $true)][string[]]$Arguments)
+    $previousPreference = $ErrorActionPreference
+    $ErrorActionPreference = 'Continue'
     $output = & git -C $ProjectPath @Arguments 2>&1
-    if ($LASTEXITCODE -ne 0) {
+    $gitExitCode = $LASTEXITCODE
+    $ErrorActionPreference = $previousPreference
+    if ($gitExitCode -ne 0) {
         throw "git $($Arguments -join ' ') failed: $($output -join [Environment]::NewLine)"
     }
     return $output
