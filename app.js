@@ -6,10 +6,24 @@ const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'
 const app=document.querySelector('#app'),modalRoot=document.querySelector('#modal-root');
 const key='tripguessr-datong-v1';let storageOK=true,saved={};try{saved=JSON.parse(localStorage.getItem(key)||'{}')}catch{storageOK=false}
 const s={view:'home',scene:0,deadline:0,clues:new Set(),visited:new Set([0]),lang:'zh',questions:[],answers:[],q:0,selected:null,revealed:false,result:saved.result||null,bookmarked:!!saved.bookmarked,itinerary:saved.itinerary||null,claimed:!!saved.claimed,days:2,rank:'日榜'};
-let timer,toastTimer,viewer;
+let timer,toastTimer,viewer,sceneVideo,prefetchTimer,transition=0,pendingCleanup;
 function persist(){try{localStorage.setItem(key,JSON.stringify({result:s.result,bookmarked:s.bookmarked,itinerary:s.itinerary,claimed:s.claimed}))}catch{storageOK=false;toast('浏览器未允许保存，当前页面仍可继续体验')}}
 function photo(id){return PHOTOS.find(p=>p.id===id)}
-function img(id,alt='',extra=''){return `<img src="${photo(id).src}" alt="${esc(alt)}" ${extra}>`}
+function img(id,alt='',extra=''){const p=photo(id),asset=SceneMedia.source(p,extra.includes('draggable')||(s.view==='cover'&&id==='yungang'));return `<img src="${asset.src}" width="${asset.width}" height="${asset.height}" decoding="async" alt="${esc(alt)}" ${extra}>`}
+
+function cancelPending(){transition++;pendingCleanup?.();pendingCleanup=null;clearTimeout(prefetchTimer)}
+async function loadView(view,index,commit){
+ cancelPending();const ticket=transition,p=photo(SCENES[index].id);
+ const current=app.querySelector('.photo-plane>img,.cover-hero>img');
+ SceneMedia.retain([SceneMedia.source(p,true).src,...(current?[current.getAttribute('src')]:[])]);
+ const buttons=[...document.querySelectorAll('[data-action="start"],[data-action="restart"],[data-action="next-scene"]')];
+ const previous=buttons.map(b=>[b,b.textContent,b.disabled]);
+ buttons.forEach(b=>{b.disabled=true;b.setAttribute('aria-busy','true');b.textContent='载入中…'});
+ pendingCleanup=()=>previous.forEach(([b,text,disabled])=>{if(b.isConnected){b.textContent=text;b.disabled=disabled;b.removeAttribute('aria-busy')}});
+ try{const image=await SceneMedia.prepare(p);if(ticket!==transition)return;commit?.();s.view=view;render(image)}
+ catch(error){if(ticket===transition&&error.name!=='AbortError')toast('照片暂未载入，请重试。当前画面已保留。')}
+ finally{if(ticket===transition){pendingCleanup?.();pendingCleanup=null}}
+}
 function toast(t){const el=document.querySelector('#toast');el.textContent=t;el.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('show'),3200)}
 function head(title,back='cover',right=''){return `<header class="page-head"><button class="icon-btn" data-go="${back}" aria-label="返回">${icon('back')}</button><strong>${title}</strong>${right||'<span style="width:36px"></span>'}</header>`}
 function nav(active='home'){return `<nav class="bottom-nav" aria-label="携程导航">${[['home','首页','home'],['message','消息','notice'],['people','社区','community'],['bag','行程','itinerary'],['user','我的','profile']].map(([i,t,v])=>`<button class="${active===v?'active':''}" data-go="${v}">${icon(i)}${t}</button>`).join('')}</nav>`}
