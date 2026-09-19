@@ -18,7 +18,8 @@ window.PhotoViewer = class {
   reset(){this.zoom=1.15;this.x=0;this.y=0;this.paint()}
   baseline(){const ps=[...this.pointers.values()];this.gesture={x:this.x,y:this.y,zoom:this.zoom};if(ps.length===1)this.gesture.point=ps[0];if(ps.length>=2){this.gesture.mid={x:(ps[0].x+ps[1].x)/2,y:(ps[0].y+ps[1].y)/2};this.gesture.distance=Math.hypot(ps[0].x-ps[1].x,ps[0].y-ps[1].y)}}
   down(e){if(e.target.closest('button')||e.button>0)return;e.preventDefault();this.root.setPointerCapture(e.pointerId);this.pointers.set(e.pointerId,this.local(e));this.baseline();this.root.classList.add('dragging')}
-  move(e){if(!this.pointers.has(e.pointerId))return;this.pointers.set(e.pointerId,this.local(e));const ps=[...this.pointers.values()],g=this.gesture;if(ps.length===1){this.x=g.x+ps[0].x-g.point.x;this.y=g.y+ps[0].y-g.point.y}else{const mid={x:(ps[0].x+ps[1].x)/2,y:(ps[0].y+ps[1].y)/2},dist=Math.hypot(ps[0].x-ps[1].x,ps[0].y-ps[1].y);this.zoom=Math.max(1,Math.min(3.5,g.zoom*dist/Math.max(g.distance,1)));const ratio=this.zoom/g.zoom;this.x=mid.x-(g.mid.x-g.x)*ratio;this.y=mid.y-(g.mid.y-g.y)*ratio}this.paint()}
-  up(e){this.pointers.delete(e.pointerId);this.baseline();if(!this.pointers.size)this.root.classList.remove('dragging')}
-  destroy(){this.abort.abort();this.observer.disconnect()}
+  move(e){if(!this.pointers.has(e.pointerId))return;this.pointers.set(e.pointerId,this.local(e));const ps=[...this.pointers.values()],g=this.gesture;if(ps.length===1){this.x=g.x+ps[0].x-g.point.x;this.y=g.y+ps[0].y-g.point.y}else{const mid={x:(ps[0].x+ps[1].x)/2,y:(ps[0].y+ps[1].y)/2},dist=Math.hypot(ps[0].x-ps[1].x,ps[0].y-ps[1].y);this.zoom=Math.max(1,Math.min(3.5,g.zoom*dist/Math.max(g.distance,1)));const ratio=this.zoom/g.zoom;this.x=mid.x-(g.mid.x-g.x)*ratio;this.y=mid.y-(g.mid.y-g.y)*ratio}this.schedulePaint()}
+  up(e){if(this.frame){cancelAnimationFrame(this.frame);this.frame=0;this.paint()}this.pointers.delete(e.pointerId);this.baseline();if(!this.pointers.size)this.root.classList.remove('dragging')}
+  schedulePaint(){if(!this.frame)this.frame=requestAnimationFrame(()=>{this.frame=0;this.paint()})}
+  destroy(){this.abort.abort();this.observer.disconnect();cancelAnimationFrame(this.frame)}
 };
