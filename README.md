@@ -1,6 +1,6 @@
 # TripGuessr · 携程拾景漫游
 
-本项目已配置 Windows 后台自动同步：项目文件停止变化 15 秒后，自动提交并推送到 GitHub 的 `main` 分支。运行日志位于 `.git/auto-sync.log`，任务计划名称为 `TripGuessr Auto Sync`。
+本项目已配置 Windows 后台自动同步：项目文件停止变化 15 秒后，自动提交并推送到 GitHub 的 `main` 分支。监听器通过当前用户的 `TripGuessrAutoSync` 登录启动项运行，日志位于 `.git/auto-sync.log`。
 
 双击 `index.html` 即可打开，无需安装依赖、构建或联网。保持整个文件夹在一起。`photos.html` 是独立的景点照片库浏览页。
 
