@@ -1,0 +1,5 @@
+{
+  "video": "real WebM decode; poster retained; visibility cleanup/resume; scene exit releases decoder",
+  "videoFallback": true,
+  "errors": []
+}

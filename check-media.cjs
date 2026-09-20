@@ -63,11 +63,11 @@ const begin = async page => {await page.goto(url);await page.locator('.entry').c
  // Generate a tiny video in the browser: exercise real decode, not a mocked playing event.
  const video=await make();await video.goto(url);
  await video.evaluate(async()=>{
-  const canvas=document.createElement('canvas');canvas.width=108;canvas.height=144;const ctx=canvas.getContext('2d'),stream=canvas.captureStream(12);
+  const canvas=document.createElement('canvas');canvas.width=108;canvas.height=144;document.body.append(canvas);canvas.style.cssText='position:fixed;top:0;left:0;width:108px;height:144px';const ctx=canvas.getContext('2d'),stream=canvas.captureStream(0);ctx.fillStyle='#2855f7';ctx.fillRect(0,0,108,144);
   const recorder=new MediaRecorder(stream,{mimeType:'video/webm'}),chunks=[];recorder.ondataavailable=e=>chunks.push(e.data);
   const done=new Promise(resolve=>recorder.onstop=resolve);recorder.start();let n=0;
-  const frame=setInterval(()=>{ctx.fillStyle=++n%2?'#2855f7':'#4475fc';ctx.fillRect(0,0,108,144)},60);
-  await new Promise(r=>setTimeout(r,450));recorder.stop();await done;clearInterval(frame);stream.getTracks().forEach(t=>t.stop());
+  const frame=setInterval(()=>{ctx.fillStyle=++n%2?'#2855f7':'#4475fc';ctx.fillRect(0,0,108,144);stream.getVideoTracks()[0].requestFrame()},100);
+  await new Promise(r=>setTimeout(r,1200));recorder.stop();await done;clearInterval(frame);stream.getTracks().forEach(t=>t.stop());canvas.remove();
   window.fixtureURL=URL.createObjectURL(new Blob(chunks,{type:'video/webm'}));SCENES[0].video={sources:[{src:fixtureURL,type:'video/webm'}]};
  });
  await video.locator('.entry').click();await video.locator('[data-action="rules-start"]').click();await video.locator('.scene-video.ready').waitFor();
