@@ -15,7 +15,7 @@ const begin = async page => {await page.goto(url);await page.locator('.entry').c
   const oldPlay=HTMLMediaElement.prototype.play;
   HTMLMediaElement.prototype.play=function(){
     for(const name of ['error','loadedmetadata','loadeddata','canplay','playing','pause','waiting'])this.addEventListener(name,()=>console.log('MEDIA',name,this.readyState,this.error?.message,this.currentTime));
-    return oldPlay.call(this).catch(e=>{console.log('PLAY ERROR',e.name,e.message);throw e});
+    return oldPlay.call(this).catch(e=>{console.log('PLAY ERROR',e.name,e.message,this.currentSrc,this.error?.code,this.error?.message);throw e});
   };
  });video.on('console',m=>console.log(m.text()));
 
@@ -25,7 +25,7 @@ const begin = async page => {await page.goto(url);await page.locator('.entry').c
   const done=new Promise(resolve=>recorder.onstop=resolve);recorder.start();let n=0;
   const frame=setInterval(()=>{ctx.fillStyle=++n%2?'#2855f7':'#4475fc';ctx.fillRect(0,0,108,144)},60);
   await new Promise(r=>setTimeout(r,450));recorder.stop();await done;clearInterval(frame);stream.getTracks().forEach(t=>t.stop());
-  console.log('FIXTURE',chunks.map(b=>[b.size,b.type]),recorder.mimeType,MediaRecorder.isTypeSupported('video/webm;codecs=vp8'));window.fixtureURL=URL.createObjectURL(new Blob(chunks,{type:'video/webm'}));SCENES[0].video={sources:[{src:fixtureURL,type:'video/webm'}]};
+  console.log('FIXTURE',JSON.stringify(chunks.map(b=>[b.size,b.type])),recorder.mimeType,MediaRecorder.isTypeSupported('video/webm;codecs=vp8'));window.fixtureURL=URL.createObjectURL(new Blob(chunks,{type:'video/webm'}));SCENES[0].video={sources:[{src:fixtureURL,type:'video/webm'}]};
  });
  await video.locator('.entry').click();await video.locator('[data-action="rules-start"]').click();await video.waitForTimeout(3000);console.log(await video.evaluate(()=>({hidden:document.hidden,motion:matchMedia('(prefers-reduced-motion: reduce)').matches,video:document.querySelector('video')?.outerHTML,ready:document.querySelector('video')?.readyState,paused:document.querySelector('video')?.paused})));await video.locator('.scene-video.ready').waitFor();
  assert.equal(await video.locator('.photo-plane>img').evaluate(e=>e.complete&&e.naturalWidth>0),true);
