@@ -13,13 +13,13 @@
   const lock = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10.5" width="14" height="10" rx="2.5"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5"/></svg>';
   // The medal comes with the result-page reward, which can only be claimed at 80+ points.
   const MEDAL_SCORE = 80;
-  function atlas({cities, daily, benefits = {}, img, head, esc, back='today'}) {
+  function atlas({cities, daily, badges = {}, img, head, esc, back='today'}) {
     const unlocked = cities.filter(city => daily[city.id]?.result);
     const total = cities.length, count = unlocked.length, remaining = total - count;
     const sum = unlocked.reduce((n, city) => n + finiteScore(daily[city.id].result.score), 0);
     const ratio = total ? count / total : 0, ring = 2 * Math.PI * 30;
     const medal = city => window.RewardMedal?.medal ? window.RewardMedal.medal(city) : '';
-    const earned = city => !!daily[city.id]?.result && !!benefits[city.id];
+    const earned = city => !!daily[city.id]?.result && !!badges[city.id];
     const medals = unlocked.filter(earned).length;
     const slots = cities.map(city => {
       const done = !!daily[city.id]?.result;
@@ -53,7 +53,7 @@
       ? `<section class="atlas-more">
           <span class="atlas-more-icon">${lock}</span>
           <strong>还有 ${remaining} 座目的地待解锁</strong>
-          <p>完成挑战即可解锁城市<br>得分达到 ${MEDAL_SCORE} 分可领取徽章与优惠权益</p>
+          <p>完成挑战即可解锁城市<br>得分达到 ${MEDAL_SCORE} 分可领取纪念徽章</p>
           <button data-go="today">去探索 ${arrow}</button>
         </section>`
       : `<section class="atlas-more is-complete"><strong>全部 ${total} 座目的地已解锁</strong><p>徽章已集齐，旅行灵感满格</p></section>`;

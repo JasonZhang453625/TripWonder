@@ -17,9 +17,9 @@ window.ResultReveal = (() => {
   function mount(app) {
     const page=app.querySelector('.result-page');
     if(!page)return;
-    const hero=page.querySelector('.result-hero'),phone=app.closest('.phone'),topbar=page.querySelector('.result-topbar');
-    let frame=0,snapFrame=0,height=0,width=0,compact=0,toolbarBottom=0;
-    let settleTimer=0,wheelTimer=0,touch=null,wheel=null,wheelLockedUntil=0,snapTarget=0,detailFloor=false,destroyed=false;
+    const hero=page.querySelector('.result-hero'),intro=page.querySelector('.result-intro'),phone=app.closest('.phone'),topbar=page.querySelector('.result-topbar');
+    let frame=0,snapFrame=0,height=0,width=0,compact=0,toolbarBottom=0,reveal=0,paintedReveal=-1;
+    let wheelTimer=0,nativeWheelTimer=0,touch=null,wheel=null,nativeWheel=false,wheelLockedUntil=0,snapTarget=0,destroyed=false;
     const reduced=matchMedia('(prefers-reduced-motion: reduce)');
     const mix=(from,to,p)=>from+(to-from)*p;
     const range=()=>Math.max(1,height-compact);
@@ -27,11 +27,16 @@ window.ResultReveal = (() => {
     const interactive=target=>target.closest('button,a,input,textarea,select,[contenteditable="true"]');
     function paint() {
       if(destroyed)return;
-      const distance=Math.max(1,height-compact),offset=Math.max(0,app.scrollTop);
-      const p=Math.min(1,offset/distance),short=height<480;
+      const distance=range(),p=Math.min(1,reveal/distance),short=height<480;
+      phone.classList.toggle('result-on-photo',height-reveal-Math.max(0,app.scrollTop)-24*p>toolbarBottom);
+      // Native scrolling only moves the details. It never changes the reveal stage.
+      if(paintedReveal===reveal)return;
+      paintedReveal=reveal;
+      intro.style.height=`${height-reveal}px`;
+      app.classList.toggle('result-revealing',reveal<distance);
       const copyStart=short?100:Math.max(125,height-423),copyEnd=Math.max(toolbarBottom+12,compact-181);
       const values={
-        '--reveal-height':`${height-Math.min(offset,distance)}px`,
+        '--reveal-height':`${height-reveal}px`,
         '--copy-top':`${mix(copyStart,copyEnd,p)}px`,
         '--copy-left':`${mix(28,24,p)}px`,
         '--copy-scale':mix(1,.59,p),
@@ -47,102 +52,94 @@ window.ResultReveal = (() => {
       for(const [key,value] of Object.entries(values))hero.style.setProperty(key,value);
       page.style.setProperty('--panel-overlap',`${24*p}px`);
       cue.style.visibility=p>=.2?'hidden':'visible';
-      phone.classList.toggle('result-on-photo',height-offset-24*p>toolbarBottom);
     }
-    function stopSnap() {cancelAnimationFrame(snapFrame);snapFrame=0;clearTimeout(settleTimer);}
+    function stopSnap() {cancelAnimationFrame(snapFrame);snapFrame=0;}
     function snapTo(target,fromWheel=false) {
       stopSnap();wheel=null;clearTimeout(wheelTimer);
-      snapTarget=target;detailFloor=false;
-      const start=app.scrollTop;
-      if(reduced.matches||Math.abs(start-target)<1){app.scrollTop=target;paint();if(fromWheel)wheelLockedUntil=performance.now()+160;return;}
+      snapTarget=target;
+      const start=reveal;
+      if(reduced.matches||Math.abs(start-target)<1){reveal=target;paint();if(fromWheel)wheelLockedUntil=performance.now()+180;return;}
       const started=performance.now(),duration=520;
       // Critically damped spring: approach the endpoint without bouncing past it.
       function step(now) {
         const t=Math.min(1,(now-started)/duration),u=8*t;
         const eased=(1-(1+u)*Math.exp(-u))/(1-9*Math.exp(-8));
-        app.scrollTop=mix(start,target,eased);paint();
+        reveal=mix(start,target,eased);paint();
         if(t<1)snapFrame=requestAnimationFrame(step);
-        else {snapFrame=0;app.scrollTop=target;paint();if(fromWheel)wheelLockedUntil=performance.now()+160;}
+        else {snapFrame=0;reveal=target;paint();if(fromWheel)wheelLockedUntil=performance.now()+180;}
       }
       snapFrame=requestAnimationFrame(step);
     }
-    function settle() {
-      if(snapFrame||touch||wheel||blocked())return;
-      const y=app.scrollTop,d=range();
-      if(y>1&&y<d-1)snapTo(y>=d/2?d:0);
-    }
-    function onScroll() {
-      if(detailFloor&&!snapFrame&&app.scrollTop<range())app.scrollTop=range();
-      queue();clearTimeout(settleTimer);
-      if(!snapFrame&&!touch&&!wheel)settleTimer=setTimeout(settle,160);
-    }
+    // The details stage has a real scroll boundary at zero. Do not clamp scrollTop
+    // or start a spring from scroll events: that fights mobile compositor momentum.
+    function onScroll() {queue();}
     function measure() {
       if(height===app.clientHeight&&width===app.clientWidth)return;
-      const oldRange=range(),oldY=app.scrollTop,hadSize=height>0;
-      stopSnap();touch=null;wheel=null;detailFloor=false;clearTimeout(wheelTimer);
+      const wasCompact=(snapFrame?snapTarget:reveal)>=range()/2;
+      stopSnap();touch=null;wheel=null;nativeWheel=false;clearTimeout(wheelTimer);clearTimeout(nativeWheelTimer);
       height=app.clientHeight;width=app.clientWidth;
       compact=Math.min(296,Math.round(height*.68));
       page.style.setProperty('--intro-height',`${height}px`);
       page.style.setProperty('--result-width',`${width}px`);
       page.classList.toggle('result-short',height<480);
       toolbarBottom=topbar.getBoundingClientRect().bottom-app.getBoundingClientRect().top;
-      if(hadSize)app.scrollTop=oldY>=oldRange-1?range()+Math.max(0,oldY-oldRange):oldY>oldRange/2?range():0;
+      reveal=wasCompact?range():0;paintedReveal=-1;
       paint();
     }
     function queue() {if(!frame)frame=requestAnimationFrame(()=>{frame=0;paint();});}
     function onWheel(event) {
       if(event.ctrlKey||Math.abs(event.deltaX)>Math.abs(event.deltaY))return;
       if(blocked()){event.preventDefault();return;}
-      const now=performance.now(),d=range(),y=app.scrollTop;
+      const now=performance.now(),d=range();
       const delta=event.deltaY*(event.deltaMode===1?16:event.deltaMode===2?height:1);
       if(!delta)return;
       // One trackpad fling opens one stage; its inertial tail cannot skip the panel.
-      if(snapFrame||now<wheelLockedUntil){event.preventDefault();wheelLockedUntil=now+160;return;}
-      detailFloor=false;
-      if(y>d+1){
-        if(delta<0&&y+delta<d){event.preventDefault();snapTo(d,true);}
+      if(snapFrame||now<wheelLockedUntil){event.preventDefault();wheelLockedUntil=now+180;return;}
+      if(nativeWheel||app.scrollTop>1||(reveal>=d-1&&delta>0)){
+        // Keep a fling and its remaining wheel events in the same native stage.
+        nativeWheel=true;clearTimeout(nativeWheelTimer);
+        nativeWheelTimer=setTimeout(()=>{nativeWheel=false;},180);
         return;
       }
       if(!wheel){
-        if(y>=d-1&&delta>0)return;
-        if(y<=1&&delta<0)return;
-        wheel={origin:y>=d/2?d:0,amount:0};
+        if(reveal<=1&&delta<0)return;
+        wheel={origin:reveal>=d/2?d:0,amount:0};
       }
-      event.preventDefault();clearTimeout(settleTimer);clearTimeout(wheelTimer);
+      event.preventDefault();clearTimeout(wheelTimer);
       wheel.amount+=delta;
-      app.scrollTop=Math.max(0,Math.min(d,wheel.origin+wheel.amount*.38));paint();
+      reveal=Math.max(0,Math.min(d,wheel.origin+wheel.amount*.38));paint();
       const inward=wheel.origin===0?wheel.amount:-wheel.amount;
       if(inward>=42)snapTo(wheel.origin===0?d:0,true);
       else wheelTimer=setTimeout(()=>{const origin=wheel.origin;wheel=null;snapTo(origin,true);},130);
     }
     function onTouchStart(event) {
-      if(event.touches.length!==1||blocked()||interactive(event.target))return;
+      if(event.touches.length!==1){if(touch)finishTransition();return;}
+      if(blocked()||interactive(event.target))return;
       stopSnap();wheel=null;clearTimeout(wheelTimer);
-      const y=event.touches[0].clientY,now=performance.now();
-      detailFloor=app.scrollTop>range()+1;
-      touch={startY:y,lastY:y,startScroll:app.scrollTop,lastAt:now,velocity:0,dragging:false,native:detailFloor,origin:app.scrollTop>=range()/2?range():0};
+      const {clientY:y,clientX:x}=event.touches[0],now=performance.now();
+      touch={startX:x,startY:y,lastY:y,lastAt:now,velocity:0,dragging:false,native:app.scrollTop>1,origin:reveal>=range()/2?range():0};
     }
     function onTouchMove(event) {
       if(!touch||event.touches.length!==1)return;
-      if(blocked()){event.preventDefault();return;}
+      if(blocked()){if(event.cancelable)event.preventDefault();return;}
       const y=event.touches[0].clientY,now=performance.now(),dy=touch.startY-y,d=range();
       touch.velocity=(touch.lastY-y)/Math.max(1,now-touch.lastAt);touch.lastY=y;touch.lastAt=now;
-      if(touch.startScroll>=d-1&&dy>6&&!touch.dragging){touch.native=true;detailFloor=true;}
-      if(touch.native){
-        if(app.scrollTop<=d&&dy<0){if(event.cancelable)event.preventDefault();app.scrollTop=d;paint();}
-        return;
-      }
+      if(touch.native)return;
       if(!touch.dragging){
-        const atOpen=touch.startScroll<=1&&dy>0,atCard=touch.startScroll>=d-1&&touch.startScroll<=d+1&&dy<0;
-        if(atOpen||atCard||(touch.startScroll>1&&touch.startScroll<d-1))touch.dragging=true;
+        if(Math.abs(dy)<6)return;
+        if(Math.abs(event.touches[0].clientX-touch.startX)>Math.abs(dy)){touch.native=true;return;}
+        if(reveal>=d-1&&dy>0){touch.native=true;return;}
+        if(reveal<=1&&dy<0)return;
+        if(!event.cancelable){touch.native=true;return;}
+        touch.dragging=true;
       }
-      if(!touch.dragging)return;
-      event.preventDefault();app.scrollTop=Math.max(0,Math.min(d,touch.origin+dy*.38));paint();
+      if(event.cancelable)event.preventDefault();
+      reveal=Math.max(0,Math.min(d,touch.origin+dy*.38));paint();
     }
     function onTouchEnd(event) {
       if(!touch)return;
       const gesture=touch;touch=null;
-      if(!gesture.dragging){settleTimer=setTimeout(settle,160);return;}
+      if(!gesture.dragging){if(reveal>0&&reveal<range())snapTo(gesture.origin);return;}
       const sign=gesture.origin===0?1:-1;
       const travel=(gesture.startY-gesture.lastY)*sign;
       const velocity=performance.now()-gesture.lastAt<100?gesture.velocity*sign:0;
@@ -151,16 +148,16 @@ window.ResultReveal = (() => {
     }
     function onKeyDown(event) {
       if(blocked()||interactive(event.target)||event.ctrlKey||event.metaKey||event.altKey)return;
-      detailFloor=false;
       const direction=['ArrowDown','PageDown'].includes(event.key)||(event.key===' '&&!event.shiftKey)?1:['ArrowUp','PageUp'].includes(event.key)||(event.key===' '&&event.shiftKey)?-1:0;
-      if(direction&&app.scrollTop<=range()+1&&(app.scrollTop<range()-1||direction<0)){event.preventDefault();snapTo(direction>0?range():0);}
+      if(direction&&app.scrollTop<=1&&(reveal<range()-1||direction<0)){event.preventDefault();snapTo(direction>0?range():0);}
     }
     function revealDetails() {snapTo(range());}
     function finishTransition() {
-      const y=app.scrollTop,d=range(),target=snapFrame?snapTarget:y>=d/2?d:0;
+      const d=range(),target=snapFrame?snapTarget:reveal>=d/2?d:0;
       stopSnap();wheel=null;touch=null;clearTimeout(wheelTimer);
-      if(y>0&&y<d){app.scrollTop=target;paint();}
+      reveal=target;paint();
     }
+    function onReducedChange(){paintedReveal=-1;finishTransition();}
     const cue=page.querySelector('.result-scroll-cue');
     cue.addEventListener('click',revealDetails);
     app.addEventListener('scroll',onScroll,{passive:true});
@@ -170,15 +167,23 @@ window.ResultReveal = (() => {
     app.addEventListener('touchend',onTouchEnd);
     app.addEventListener('touchcancel',onTouchEnd);
     app.addEventListener('keydown',onKeyDown);
-    reduced.addEventListener('change',queue);
+    reduced.addEventListener('change',onReducedChange);
     const observer=new ResizeObserver(measure);observer.observe(app);
     measure();
-    return {refresh:paint,finishTransition,destroy(){
+    return {refresh:paint,finishTransition,
+      snapshot(){finishTransition();return {details:reveal===range(),scrollTop:app.scrollTop};},
+      restore(state){
+        if(!state)return;
+        stopSnap();reveal=state.details?range():0;paint();
+        app.scrollTop=state.details?Math.max(0,state.scrollTop):0;paint();
+      },
+      destroy(){
       destroyed=true;
-      stopSnap();clearTimeout(wheelTimer);cancelAnimationFrame(frame);observer.disconnect();app.removeEventListener('scroll',onScroll);
+      stopSnap();clearTimeout(wheelTimer);clearTimeout(nativeWheelTimer);cancelAnimationFrame(frame);observer.disconnect();app.removeEventListener('scroll',onScroll);
       app.removeEventListener('wheel',onWheel);app.removeEventListener('touchstart',onTouchStart);app.removeEventListener('touchmove',onTouchMove);
       app.removeEventListener('touchend',onTouchEnd);app.removeEventListener('touchcancel',onTouchEnd);app.removeEventListener('keydown',onKeyDown);
-      reduced.removeEventListener('change',queue);cue.removeEventListener('click',revealDetails);
+      reduced.removeEventListener('change',onReducedChange);cue.removeEventListener('click',revealDetails);
+      app.classList.remove('result-revealing');
       phone.classList.remove('result-on-photo');
     }};
   }

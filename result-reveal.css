@@ -1,6 +1,7 @@
-@font-face{font-family:'TripWonder Brush';src:url('assets/fonts/ma-shan-zheng-result.woff2') format('woff2');font-weight:400;font-style:normal;font-display:swap}
+@font-face{font-family:'TripWonder Brush';src:url('assets/fonts/ma-shan-zheng-result.woff2?v=20260927-zjj1') format('woff2');font-weight:400;font-style:normal;font-display:swap}
 
-.phone.result-mode #app{padding:0;overflow-y:auto;overflow-x:hidden;scroll-behavior:auto;overflow-anchor:none}
+.phone.result-mode #app{padding:0;overflow-y:auto;overflow-x:hidden;scroll-behavior:auto;overflow-anchor:none;overscroll-behavior-y:none}
+.phone.result-mode #app.result-revealing{overflow-y:hidden}
 .phone.result-on-photo .statusbar{background:none;color:white;backdrop-filter:none;-webkit-backdrop-filter:none;filter:drop-shadow(0 1px 3px #0005)}
 .phone.result-mode:not(.result-on-photo) .statusbar{background:#fff;color:#171e2b;backdrop-filter:none;-webkit-backdrop-filter:none;filter:none}
 .phone.result-on-photo .home-indicator{background:white}
@@ -14,6 +15,7 @@
 .result-topbar>.result-tool{justify-self:start}
 .result-top-actions{display:flex;justify-self:end;gap:8px}
 .result-topbar::before{content:'';position:absolute;inset:-8px -22px;z-index:-1;background:#fff;border-bottom:1px solid #e5e7eb;opacity:0;pointer-events:none}
+[data-slide-layer="outgoing"] .result-topbar::before{opacity:var(--slide-bar-opacity,0)!important}
 .mobile-device .result-topbar{top:calc(14px + var(--safe-top,0px));margin-left:calc(22px + var(--safe-left,0px));margin-right:calc(22px + var(--safe-right,0px))}
 .phone:not(.result-on-photo) .result-topbar{color:#233451}
 .phone:not(.result-on-photo) .result-topbar::before{opacity:1}

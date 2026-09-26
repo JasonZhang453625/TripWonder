@@ -58,13 +58,13 @@ window.ChallengeMotion=(()=>{
   }
   // Prepare media while the current page stays visible, then commit synchronously.
   // Both page nodes remain under #app so their existing scoped styles keep working.
-  async function slide(commit,{back=false,force=false,prepare}={}){
+  async function slide(commit,{back=false,force=false,prepare,restoreScroll=back}={}){
     if(busy&&!force)return false;
     cancel();const ticket=serial;setBusy(true);
     const app=document.querySelector('#app');
-    const key=page=>['trip-home','atlas-page','ranking-page','cover-page'].find(name=>page?.classList.contains(name));
+    const key=page=>page?.dataset.view||['trip-home','atlas-page','ranking-page','cover-page'].find(name=>page?.classList.contains(name));
     const padding=element=>{const css=getComputedStyle(element);return {padding:css.padding,'box-sizing':css.boxSizing};};
-    const capture=page=>({page,rect:page.getBoundingClientRect(),padding:padding(page),floats:[...page.querySelectorAll('.th-ai,.th-nav,:scope > .immersive-top,:scope > .cover-footer,:scope > .cover-hero')].map(element=>({element,rect:element.getBoundingClientRect(),padding:padding(element)}))});
+    const capture=page=>({page,rect:page.getBoundingClientRect(),padding:padding(page),floats:[...page.querySelectorAll('.th-ai,.th-nav,:scope > .immersive-top,:scope > .cover-footer,:scope > .cover-hero,:scope > .result-topbar,.result-hero')].map(element=>({element,rect:element.getBoundingClientRect(),padding:padding(element)})),resultTools:[...page.querySelectorAll('.result-topbar,.result-tool')].map(element=>({element,color:getComputedStyle(element).color,background:getComputedStyle(element).background,barOpacity:getComputedStyle(element,'::before').opacity}))});
     let cleanup;
     try{
       const ready=prepare?await prepare():undefined;
@@ -79,7 +79,7 @@ window.ChallengeMotion=(()=>{
       if(ticket!==serial)return false;
       const incoming=app.querySelector(':scope > .page'),toKey=key(incoming);
       if(!incoming||incoming===outgoing||!fromKey||!toKey)return true;
-      const saved=back&&scrollPositions.get(toKey);
+      const saved=restoreScroll&&scrollPositions.get(toKey);
       if(saved){app.scrollTop=saved.top;app.scrollLeft=saved.left;}
       if(reduce())return true;
       const after=capture(incoming),viewport=app.getBoundingClientRect();
@@ -112,6 +112,9 @@ window.ChallengeMotion=(()=>{
       // Transform/position create a containing block. Freeze the phone-anchored
       // home controls before that happens, including scrolled and safe-area views.
       freezeFloats(before);freezeFloats(after);
+      // Page modes change during commit; keep the departing result controls in
+      // their original light/dark appearance until their slide has finished.
+      for(const {element,color,background,barOpacity} of before.resultTools)style(element,{color,background,'--slide-bar-opacity':barOpacity});
       style(app,{position:'relative',overflow:'hidden','overflow-anchor':'none'});
       style(incoming,{position:'relative','z-index':back?'1':'2',animation:'none',transition:'none','will-change':'transform, filter',isolation:'isolate'});
       style(outgoing,{

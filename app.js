@@ -48,9 +48,9 @@
     view:invitation?'cover':'home', cityId: invitation?.cityId || order.find(id => !daily[id]?.result && !daily[id]?.skipped) || order[0],
     scene:0, exploring:false, deadline:0, quizRemaining:QUIZ_DURATION, clues:new Set(), visited:new Set([0]), questions:[], answers:[], q:0, selected:null,
     result:null, days:2, pace:'舒适', theme:'自动', date:'', route:null, rank:'今日', collectionBack:'today',
-    daily, benefits, invitation, itineraries:{}, bookmarks:{}, rulesSeen:false
+    daily, benefits, badges:{}, invitation, itineraries:{}, bookmarks:{}, rulesSeen:false
   };
-  let timer, viewer, mapView, resultReveal, coverCarousel, toastTimer, transition=0, pendingCleanup, rulesCleanup, previousFocus, activeShare;
+  let timer, viewer, mapView, resultReveal, coverCarousel, toastTimer, transition=0, pendingCleanup, rulesCleanup, previousFocus, activeShare, resultRouteReturn;
   const cityProgress = new Map();
   const city = () => C.cities.find(c => c.id === s.cityId) || C.cities[0];
   const current = () => s.daily[s.cityId] || {};
@@ -184,10 +184,32 @@
     sheet(`第 ${index+1} 处实景`,`<div class="recall-photo">${img(scene.id,`第 ${index+1} 处景点`)}</div><p class="recall-note">${read.length?'你在这里点开过的线索：':'这一处还没有点开线索。'}</p>${read.length?`<div class="tag-row recall-tags">${read.map(h=>`<span class="pill">${esc(h.title)}</span>`).join('')}</div>`:''}`);
   }
   const REWARD_TERMS='领取后 30 日内有效。优惠券具体可用范围请查看活动规则。';
-  const benefitFor = () => ({name:`奇境挑战徽章 · ${city().name}`,detail:'景点门票 20 元优惠券',threshold:'满 100 元可用',amount:20,minimumSpend:100,validDays:30,terms:REWARD_TERMS});
+  const benefitFor = () => ({name:`优惠权益 · ${city().name}`,detail:'景点门票 20 元优惠券',threshold:'满 100 元可用',amount:20,minimumSpend:100,validDays:30,terms:REWARD_TERMS});
   // Prototype-only score mapping until a real participant score distribution is available.
   function estimateRewardPercentile(score) {const points=Math.max(0,Math.min(100,Number(score)||0));return Math.min(99.9,Math.round((1-Math.pow(1-points/100,1.6))*1000)/10);}
   const benefitStatus = id => !s.benefits[id]?'none':s.benefits[id].expires>=today()?'active':'expired';
+  function benefitDialog(benefit,earned) {
+    return `<div class="benefit-pack">
+      <header class="benefit-pack-hero">
+        <span class="benefit-pack-brand" aria-label="Trip.com">Trip<span>.</span>com</span>
+        <span class="benefit-pack-eyebrow">目的地专属礼遇</span>
+        <h3>${esc(benefit.name)}</h3><p>让下一程多一份惊喜</p>
+        <img class="benefit-pack-gift" src="assets/home/hat.png" alt="" aria-hidden="true">
+      </header>
+      <div class="benefit-pack-body">
+        <div class="benefit-pack-ticket">
+          <div class="benefit-pack-ticket-top">${icon('ticket')}<span>景点门票优惠券</span></div>
+          <div class="benefit-pack-amount"><span>¥</span><strong>${earned.amount}</strong></div>
+          <p class="benefit-pack-threshold">${esc(earned.threshold)}</p>
+          <div class="benefit-pack-ticket-rule" aria-hidden="true"></div>
+          <div class="benefit-pack-meta"><span>适用目的地</span><strong>${esc(city().name)}</strong></div>
+          <div class="benefit-pack-meta"><span>有效至</span><strong>${esc(earned.expires)}</strong></div>
+          <button class="benefit-pack-accept" data-action="close">收下权益 ${icon('next')}</button>
+        </div>
+        <p class="benefit-pack-terms">${REWARD_TERMS}</p>
+      </div>
+    </div>`;
+  }
   const datePlusDays = count => {const d=new Date();d.setDate(d.getDate()+count);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;};
   function resultOpening(c,r) {
     const story=ResultReveal.destination(c);
@@ -202,7 +224,7 @@
       </div>
     </section>`;
   }
-  function result() { const r=s.result || current().result; if(!r)return empty('目的地尚未揭晓','完成探索和三道题，再来查看结果。'); const c=city(), benefit=benefitFor(r), status=benefitStatus(c.id), next=nextDestination(s.cityId,true), prev=previousDestination(s.cityId); return `<div class="page result-page">${resultOpening(c,r)}<div class="result-details">${r.guess?`<section class="content-card guess-summary"><div class="row"><h3>地图定位</h3><span class="pill">${esc(guessVerdict(r.guess.km))}</span></div><div class="guess-mini">${GuessMap.snapshot(r.guess,c)}<div class="guess-legend"><span class="you">你的落点</span><span class="target">${esc(c.name)}</span></div></div><div class="guess-stats"><div><b>${r.guess.km} km</b><small>直线距离</small></div><div><b>+${r.guess.points}</b><small>定位得分 / ${GUESS.max}</small></div><div><b>${esc(r.guess.city||r.guess.province||'—')}</b><small>你的落点</small></div></div></section>`:''}<section class="content-card"><h3>三题一起揭晓</h3>${r.answers.map((a,i)=>`<button class="answer-line" data-review="${i}" style="width:100%;text-align:left">${icon(a.correct?'check':'book')}<span>第 ${i+1} 题 · ${a.correct?'答对':'查看解析'}</span><b>${a.correct?'+'+a.points:'0'} 分</b>${icon('next')}</button>`).join('')}</section><section class="content-card benefit"><div class="row"><div><strong>${benefit.name}</strong><p>${benefit.detail}</p></div><button data-action="claim">${status==='active'?'查看权益':status==='expired'?'重新领取':'领取'}</button></div><div class="tiny muted">${REWARD_TERMS}</div></section><div class="result-actions"><button class="primary" data-go="route">为我规划${esc(c.name)}之旅 ${icon('next')}</button><div class="stop-nav"><button class="glass-light prev-city" data-action="prev-city"${prev?'':' disabled'}>${icon('back')} 上一个目的地</button>${next?`<button class="secondary next-city" data-action="next-city">下一个目的地 ${icon('next')}</button>`:'<button class="secondary next-city" data-go="home">返回首页</button>'}</div></div></div></div>`; }
+  function result() { const r=s.result || current().result; if(!r)return empty('目的地尚未揭晓','完成探索和三道题，再来查看结果。'); const c=city(), benefit=benefitFor(r), status=benefitStatus(c.id), next=nextDestination(s.cityId,true), prev=previousDestination(s.cityId); return `<div class="page result-page">${resultOpening(c,r)}<div class="result-details">${r.guess?`<section class="content-card guess-summary"><div class="row"><h3>地图定位</h3><span class="pill">${esc(guessVerdict(r.guess.km))}</span></div><div class="guess-mini">${GuessMap.snapshot(r.guess,c)}<div class="guess-legend"><span class="you">你的落点</span><span class="target">${esc(c.name)}</span></div></div><div class="guess-stats"><div><b>${r.guess.km} km</b><small>直线距离</small></div><div><b>+${r.guess.points}</b><small>定位得分 / ${GUESS.max}</small></div><div><b>${esc(r.guess.city||r.guess.province||'—')}</b><small>你的落点</small></div></div></section>`:''}<section class="content-card"><h3>三题一起揭晓</h3>${r.answers.map((a,i)=>`<button class="answer-line" data-review="${i}" style="width:100%;text-align:left">${icon(a.correct?'check':'book')}<span>第 ${i+1} 题 · ${a.correct?'答对':'查看解析'}</span><b>${a.correct?'+'+a.points:'0'} 分</b>${icon('next')}</button>`).join('')}</section><section class="content-card benefit badge-benefit" aria-label="纪念徽章"><div class="row"><div><strong>奇境挑战徽章 · ${esc(c.name)}</strong><p>珍藏这一站的发现</p></div><button data-action="claim">${s.badges[c.id]?'查看徽章':'领取徽章'}</button></div></section><section class="content-card benefit coupon-benefit" aria-label="优惠权益"><div class="row"><div><strong>${esc(benefit.name)}</strong><p>${benefit.amount} 元优惠券 · ${esc(benefit.threshold)}</p></div><button data-action="claim-coupon">${status==='active'?'查看权益':status==='expired'?'重新领取':'领取权益'}</button></div><div class="tiny muted">${REWARD_TERMS}</div></section><div class="result-actions"><button class="primary" data-go="route">为我规划${esc(c.name)}之旅 ${icon('next')}</button><div class="stop-nav"><button class="glass-light prev-city" data-action="prev-city"${prev?'':' disabled'}>${icon('back')} 上一个目的地</button>${next?`<button class="secondary next-city" data-action="next-city">下一个目的地 ${icon('next')}</button>`:'<button class="secondary next-city" data-go="home">返回首页</button>'}</div></div></div></div>`; }
   function distance(a,b) { const rad=Math.PI/180, dLat=(b.lat-a.lat)*rad, dLng=(b.lng-a.lng)*rad; const h=Math.sin(dLat/2)**2+Math.cos(a.lat*rad)*Math.cos(b.lat*rad)*Math.sin(dLng/2)**2; return 12742*Math.asin(Math.sqrt(h)); }
   function travelMinutes(a,b) { const km=distance(a,b); return Math.max(15,Math.ceil((km/32*60+12)/5)*5); }
   function makeRoute() {
@@ -267,7 +289,7 @@
     app.querySelector('.result-actions')?.before(card);
   }
   function route() { if(!current().result&&!s.route)return empty('先发现，再出发','完成目的地挑战后，就能规划这座城市的行程。'); if(!s.route)makeRoute(); const c=city(); return `<div class="page">${head('我的路线',current().result?'result':'itinerary',`<button class="head-action" data-go="itinerary">行程单</button>`)}<div class="route-hero">${img(c.scenes.at(-1).id,c.name)}<div><span class="pill">可调整的路线示例</span><h2>${esc(c.name)} ${s.days} 日</h2><p>从刚才的景点出发，按兴趣安排停留。</p></div></div><div class="route-tabs">${[1,2,3].map(d=>`<button class="${s.days===d?'active':''}" data-days="${d}">${d} 日</button>`).join('')}</div><div class="route-controls"><label>节奏<select id="route-pace">${['慢游','舒适','紧凑'].map(v=>`<option ${s.pace===v?'selected':''}>${v}</option>`).join('')}</select></label><label>兴趣<select id="route-theme">${['自动','文化','建筑','自然','摄影','美食'].map(v=>`<option ${s.theme===v?'selected':''}>${v}</option>`).join('')}</select></label><label>出发日期<input id="route-date" type="date" value="${esc(s.date)}"></label></div>${s.route.map((day,di)=>{let clock=9*60,prior=null;return `<section class="day-card"><div class="day-label">第 ${di+1} 天</div>${day.map((name,si)=>{const stop=stopByName(name); const transfer=prior?travelMinutes(prior,stop):0; clock+=transfer;const at=time(clock);clock+=stop.visitMinutes;prior=stop;return `<div class="route-stop"><div class="row"><strong>${esc(name)}</strong><span class="time">${at}</span></div><p>${prior&&si>0?`建议预留约 ${transfer} 分钟交通 · `:''}停留约 ${stop.visitMinutes} 分钟。${esc(stop.note)}</p><div class="stop-actions"><button data-swap="${di}-${si}">替换</button><button data-move="${di}-${si}-up" ${si===0?'disabled':''}>上移</button><button data-move="${di}-${si}-down" ${si===day.length-1?'disabled':''}>下移</button></div></div>`;}).join('')}</section>`;}).join('')}<section class="content-card"><h3>接着安排出行</h3><div class="travel-products">${[['bed','附近酒店'],['ticket','景点门票'],['train','往返交通']].map(([i,t])=>`<button data-product="${t}">${icon(i)}${t}</button>`).join('')}</div>${benefitStatus(c.id)==='active'?'<p class="tiny muted">已领取的示例权益可在门票承接弹窗中查看使用范围。</p>':''}</section><div class="route-bottom"><button class="primary" data-action="save-trip">保存到我的行程</button><p class="demo-note">基于本地景点资料生成；交通为直线距离粗估，时间与开放情况请出发前核实。</p></div></div>`; }
-  function atlas() { return CollectionPages.atlas({order,cities:C.cities,daily:s.daily,benefits:s.benefits,img,head,esc,back:s.collectionBack}); }
+  function atlas() { return CollectionPages.atlas({order,cities:C.cities,daily:s.daily,badges:s.badges,img,head,esc,back:s.collectionBack}); }
   function ranking() { return CollectionPages.ranking({order,cities:C.cities,daily:s.daily,rank:s.rank,head,esc,icon,back:s.collectionBack}); }
   function itinerary() { const items=Object.entries(s.itineraries); return `<div class="page">${head('我的行程','home')}<div class="pad"><h2>${items.length?`${items.length} 份已保存路线`:'还没有行程'}</h2></div>${items.length?items.map(([id,it])=>`<section class="content-card itinerary-card"><strong>${esc(it.city)} ${it.days} 日</strong><p>${esc(it.date || '日期待定')} · ${it.route.flat().length} 处停留 · ${esc(it.pace)}节奏</p><button class="secondary" data-itinerary="${id}">查看并调整</button></section>`).join(''):`<div class="pad"><button class="primary" data-go="today">去发现目的地</button></div>`}</div>`; }
   function profile() { const tags={}; for(const item of Object.values(s.daily))for(const tag of item.result?.tags||[])tags[tag]=(tags[tag]||0)+1; return `<div class="page">${head('我的旅行','home')}<div class="pad"><h2>我的发现</h2><p class="muted tiny">今日完成 ${order.filter(id=>s.daily[id]?.result).length} / ${order.length} 座城</p><div class="tag-row">${Object.entries(tags).sort((a,b)=>b[1]-a[1]).map(([tag,n])=>`<span class="pill">${esc(tag)} · ${n}</span>`).join('')}</div></div><div class="content-card"><button class="answer-line" data-go="atlas" style="width:100%">${icon('book')}<span>目的地图鉴</span>${icon('next')}</button><button class="answer-line" data-go="ranking" style="width:100%">${icon('spark')}<span>今日成绩</span>${icon('next')}</button><button class="answer-line" data-go="itinerary" style="width:100%">${icon('bag')}<span>我的行程</span>${icon('next')}</button></div></div>`; }
@@ -331,7 +353,8 @@
     const frame=document.createElement('div');
     if(prepared){prepared.page.classList.remove('scene-staging');prepared.page.inert=false;prepared.page.removeAttribute('aria-hidden');frame.append(prepared.page);}
     else frame.innerHTML=(views[s.view]||home)();
-    if(ready){const placeholder=frame.querySelector('.photo-plane>img,.cover-hero>img'); if(placeholder){ready.alt=placeholder.alt;placeholder.replaceWith(ready);}}
+    frame.firstElementChild.dataset.view=s.view;
+    if(ready){const placeholder=frame.querySelector('.photo-plane>img,.cover-hero>img,.result-visual>img,.route-hero>img'); if(placeholder){ready.alt=placeholder.alt;placeholder.replaceWith(ready);}}
     app.replaceChildren(...frame.childNodes);app.scrollTop=0;showOpeningWarnings();showFriendComparison();
     document.querySelectorAll('.flow button').forEach(b=>b.classList.toggle('active',b.dataset.go===s.view || (b.dataset.go==='today'&&['cover','explore','quiz','guess','result','route','atlas','ranking'].includes(s.view))));
     app.querySelectorAll('img').forEach(el=>el.addEventListener('error',()=>{el.insertAdjacentHTML('afterend','<span class="error-image">照片未能载入</span>');},{once:true}));
@@ -351,7 +374,17 @@
     }
     s.cityId=id;s.result=s.daily[id]?.result||null;s.route=null;s.days=2;s.pace='舒适';s.theme='自动';s.date='';
   }
-  function selectCity(id) { if(!C.cities.some(c=>c.id===id))return;activateCity(id);go(s.result?'result':'cover'); }
+  function selectCity(id,{back=false}={}) {
+    const destination=C.cities.find(c=>c.id===id);if(!destination)return;
+    if(s.view==='result'){
+      const view=s.daily[id]?.result?'result':'cover';
+      const targetPhoto=view==='result'?ResultReveal.destination(destination).scene.photo:destination.scenes[0].photo;
+      return ChallengeMotion.slide(ready=>{activateCity(id);s.view=view;render(ready.cloneNode());},{back,restoreScroll:false,prepare:()=>{
+        resultReveal?.finishTransition();cancelPending();return SceneMedia.prepare(targetPhoto);
+      }}).catch(error=>{if(error.name!=='AbortError')toast('目的地暂未载入，请重试');});
+    }
+    activateCity(id);return go(s.result?'result':'cover',{back});
+  }
   function mountCover() {
     const index=order.indexOf(s.cityId),adjacent=step=>C.cities.find(c=>c.id===order[(index+step+order.length)%order.length]);
     const neighbors=[adjacent(-1),adjacent(1)].filter(c=>c&&c.id!==s.cityId);
@@ -373,6 +406,15 @@
     if(['atlas','ranking'].includes(view)&&view!==s.view)s.collectionBack=s.view==='home'?'home':s.view==='cover'?'cover':'today';
     if(view!=='quiz')pauseQuizTimer();if(view==='result')s.result=current().result||s.result;
     const previous=s.view,commit=()=>{if(view==='cover'||view==='explore')return loadView(view,view==='cover'?0:s.scene);s.view=view;render();};
+    if((previous==='result'&&view==='route')||(previous==='route'&&view==='result')){
+      if(previous==='result')resultRouteReturn={cityId:s.cityId,state:resultReveal?.snapshot()};
+      const targetPhoto=view==='result'?ResultReveal.destination(city()).scene.photo:city().scenes.at(-1).photo;
+      return ChallengeMotion.slide(ready=>{
+        s.view=view;render(ready.cloneNode());
+        if(view==='result'&&resultRouteReturn?.cityId===s.cityId)resultReveal?.restore(resultRouteReturn.state);
+      },{force,back:previous==='route',restoreScroll:false,prepare:()=>{cancelPending();return SceneMedia.prepare(targetPhoto);}})
+        .catch(error=>{if(error.name!=='AbortError')toast('页面暂未载入，请重试');});
+    }
     if(previous==='home'&&view==='cover'){
       const destinationPhoto=city().scenes[0].photo;
       return ChallengeMotion.slide(ready=>{s.view='cover';render(ready,undefined,{deferRules:true});},{force,prepare:()=>{
@@ -380,7 +422,7 @@
         return SceneMedia.prepare(destinationPhoto);
       }}).then(shown=>{if(shown&&s.view==='cover'&&!s.rulesSeen){s.rulesSeen=true;showRules();}}).catch(error=>{if(error.name!=='AbortError')toast('场景暂未载入，请重试');});
     }
-    if((previous==='home'&&['atlas','ranking'].includes(view))||(view==='home'&&['atlas','ranking','cover'].includes(previous)))return ChallengeMotion.slide(commit,{force,back:view==='home'});
+    if((previous==='home'&&['atlas','ranking'].includes(view))||(view==='home'&&['atlas','ranking','cover','result'].includes(previous)))return ChallengeMotion.slide(commit,{force,back:view==='home'});
     if(['quiz','guess'].includes(previous)||['quiz','guess'].includes(view)||(view==='result'&&previous!==view))return ChallengeMotion.run(commit,{force,back:back||view==='cover'});
     ChallengeMotion.cancel();return commit();
   }
@@ -394,7 +436,15 @@
     const position=()=>{const a=anchor.getBoundingClientRect(),p=phone.getBoundingClientRect(),top=a.bottom-p.top-phone.clientTop+12,right=Math.max(12,phone.clientWidth-(a.right-p.left-phone.clientLeft));panel.style.top=top+'px';panel.style.right=right+'px';panel.style.maxHeight=Math.max(80,phone.clientHeight-top-16)+'px';};
     position();const observer=new ResizeObserver(position);observer.observe(phone);rulesCleanup=()=>observer.disconnect();app.inert=true;panel.focus({preventScroll:true});
   }
-  function dismissModal(after) { const overlay=modalRoot.querySelector('.rules-overlay');if(!overlay){const dialog=modalRoot.querySelector('.flow-dialog');if(dialog){ChallengeMotion.dialogOut(dialog,()=>{closeModal();after?.();});return;}closeModal();after?.();return;}if(overlay.classList.contains('closing'))return;overlay.classList.add('closing');const panel=overlay.querySelector('.rules-popover'),reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;panel.animate([{opacity:1,transform:'translateY(0) scale(1)'},{opacity:0,transform:'translateY(-8px) scale(.94)'}],{duration:reduced?0:170,easing:'cubic-bezier(.4,0,1,1)',fill:'forwards'}).finished.then(()=>{if(modalRoot.contains(overlay)){closeModal();after?.();}}).catch(()=>{}); }
+  function dismissModal(after) {
+    const reward=modalRoot.querySelector('.reward-dialog-overlay');
+    if(reward){
+      if(reward.classList.contains('closing'))return;
+      const finish=()=>{if(modalRoot.contains(reward)){closeModal();after?.();}};
+      RewardMedal.dismiss(reward).then(finish,finish);return;
+    }
+    const overlay=modalRoot.querySelector('.rules-overlay');if(!overlay){const dialog=modalRoot.querySelector('.flow-dialog');if(dialog){ChallengeMotion.dialogOut(dialog,()=>{closeModal();after?.();});return;}closeModal();after?.();return;}if(overlay.classList.contains('closing'))return;overlay.classList.add('closing');const panel=overlay.querySelector('.rules-popover'),reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;panel.animate([{opacity:1,transform:'translateY(0) scale(1)'},{opacity:0,transform:'translateY(-8px) scale(.94)'}],{duration:reduced?0:170,easing:'cubic-bezier(.4,0,1,1)',fill:'forwards'}).finished.then(()=>{if(modalRoot.contains(overlay)){closeModal();after?.();}}).catch(()=>{});
+  }
   // The rules only explain the game; entering stays an explicit tap on the cover CTA.
   function cueStart() { const cta=app.querySelector('.cover-enter');if(cta)cta.focus({preventScroll:true}); }
   function start() {
@@ -569,12 +619,11 @@
     if(b.dataset.move){const [di,si,direction]=b.dataset.move.split('-'),list=s.route[Number(di)],from=Number(si),to=from+(direction==='up'?-1:1);if(to>=0&&to<list.length){[list[from],list[to]]=[list[to],list[from]];render();}return;}
     const action=b.dataset.action;
     if(action==='close')dismissModal();
-    else if(action==='reward-flip')RewardMedal.toggle(b);
     else if(action==='rules')showRules();
     else if(action==='rules-start')dismissModal(cueStart);
     else if(action==='start')start();
     else if(action==='show-result')go('result');
-    else if(action==='prev-city'){const prev=previousDestination(s.cityId);if(prev)selectCity(prev);}
+    else if(action==='prev-city'){const prev=previousDestination(s.cityId);if(prev)selectCity(prev,{back:true});}
     else if(action==='next-city'){const next=nextDestination(s.cityId,true);if(next)selectCity(next);else go('home');}
     else if(action==='quiz-back'&&s.view==='quiz'){if(s.deadline<=Date.now()){tick();return;}s.exploring=true;go('explore',{back:true});}
     else if(action==='leave')go('cover');
@@ -589,11 +638,20 @@
     else if(action==='zoom-out')mapView?.zoomBy(1/1.7);
     else if(action==='bookmark'){s.bookmarks[s.cityId]=!s.bookmarks[s.cityId];const y=app.scrollTop;render();app.scrollTop=y;resultReveal?.refresh();}
     else if(action==='claim'&&current().result){
-      const benefit=benefitFor(),score=(s.result||current().result).score;
+      const score=(s.result||current().result).score;
+      s.badges[s.cityId]??={date:today()};
+      // Keep the expanded result panel and its native scroll state intact.
+      b.textContent='查看徽章';
+      sheet(`奇境挑战徽章 · ${city().name}`,RewardMedal.markup({city:city(),score,percentile:estimateRewardPercentile(score)}),'reward-dialog');
+      app.inert=true;previousFocus=b;
+    }
+    else if(action==='claim-coupon'&&current().result){
+      const benefit=benefitFor();
       if(benefitStatus(s.cityId)!=='active')s.benefits[s.cityId]={...benefit,date:today(),expires:datePlusDays(benefit.validDays)};
-      const y=app.scrollTop;render();app.scrollTop=y;resultReveal?.refresh();
-      sheet(benefit.name,RewardMedal.markup({city:city(),score,percentile:estimateRewardPercentile(score),benefit:{...benefit,...s.benefits[s.cityId]}}),'reward-dialog');
-      app.inert=true;const card=app.querySelector('.benefit');if(card){card.tabIndex=-1;previousFocus=card;}
+      const earned=s.benefits[s.cityId];
+      b.textContent='查看权益';
+      sheet(benefit.name,benefitDialog(benefit,earned),'coupon-dialog');
+      app.inert=true;previousFocus=b;
     }
     else if(action==='share')share();else if(action==='share-challenge')sendChallenge(b);
     else if(action==='save-trip'){s.itineraries[s.cityId]={city:city().name,days:s.days,pace:s.pace,theme:s.theme,date:s.date,route:s.route.map(d=>[...d])};sheet('路线已保存',`<p>${esc(city().name)} ${s.days} 日路线已保存在本次体验中，刷新页面后会重新开始。</p><button class="primary" data-go="itinerary">查看我的行程</button>`);}
