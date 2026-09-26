@@ -1,15 +1,16 @@
 {
   "scene": "suzhou-huqiu",
   "city": "suzhou",
-  "source": "../original.jpg",
+  "source": "../oriented.jpg",
   "sourceSha256": "794cd4a2b274d36377028bb65199221922338c1bcad05e1a3077cebdaee6f0fe",
   "displayPhoto": "photo.jpg",
   "displaySize": [
-    1200,
-    1600
+    3024,
+    4032
   ],
-  "displaySha256": "565695c6cdbe665dcd85308a977e4bdd4f8493cae9683f91d5fca6e791e5f9cf",
+  "displaySha256": "794cd4a2b274d36377028bb65199221922338c1bcad05e1a3077cebdaee6f0fe",
   "sourceAspect": 0.75,
   "periphery": "blurred projection of the original photo, rendered at runtime (no AI content)",
-  "preparedAt": "2026-09-26T04:02:43.290Z"
+  "preparedAt": "2026-09-26T11:26:40.718Z",
+  "encoding": "original JPEG bytes"
 }

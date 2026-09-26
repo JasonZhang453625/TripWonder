@@ -2,7 +2,7 @@
   "city": "shanghai",
   "dir": "bund",
   "id": "sh-bund",
-  "src": "补充图/上海/pexels-jcterry-30685870.jpg",
+  "src": "photo-library/shanghai/bund/original.jpg",
   "original": {
     "src": "photo-library/shanghai/bund/original.jpg",
     "width": 6240,
@@ -10,7 +10,7 @@
     "bytes": 1725791,
     "untouched": true
   },
-  "sourceFile": "补充图/上海/pexels-jcterry-30685870.jpg",
+  "sourceFile": "photo-library/shanghai/bund/original.jpg",
   "sourceSha256": "bb10216797f1c6088f1d4cd254367c278fe650843099903cbacf435c27545b24",
   "thumb": {
     "src": "photo-library/shanghai/bund/thumb.webp",
@@ -29,5 +29,6 @@
     "width": 2400,
     "height": 1600,
     "bytes": 308692
-  }
+  },
+  "originalFilename": "pexels-jcterry-30685870.jpg"
 }

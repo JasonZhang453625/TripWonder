@@ -2,7 +2,7 @@
   "city": "shenzhen",
   "dir": "qianhai",
   "id": "sz-qianhai",
-  "src": "photo-library/shenzhen/pexels-ainc-t-76908403-34947074.jpg",
+  "src": "photo-library/shenzhen/qianhai/original.jpg",
   "original": {
     "src": "photo-library/shenzhen/qianhai/original.jpg",
     "width": 5019,
@@ -10,7 +10,7 @@
     "bytes": 2168214,
     "untouched": true
   },
-  "sourceFile": "photo-library/shenzhen/pexels-ainc-t-76908403-34947074.jpg",
+  "sourceFile": "photo-library/shenzhen/qianhai/original.jpg",
   "sourceSha256": "3c38385a7837d006f01baa0fade1085591c17b9aace9e5383bb74c599e73c668",
   "thumb": {
     "src": "photo-library/shenzhen/qianhai/thumb.webp",
@@ -29,5 +29,6 @@
     "width": 2400,
     "height": 1600,
     "bytes": 547972
-  }
+  },
+  "originalFilename": "pexels-ainc-t-76908403-34947074.jpg"
 }

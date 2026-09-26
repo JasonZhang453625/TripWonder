@@ -3,7 +3,7 @@
     "city": "shenzhen",
     "dir": "futian",
     "id": "sz-futian",
-    "src": "photo-library/shenzhen/pexels-lywin-55237728-38833568.jpg",
+    "src": "photo-library/shenzhen/futian/original.jpg",
     "original": {
       "src": "photo-library/shenzhen/futian/original.jpg",
       "width": 3000,
@@ -11,7 +11,7 @@
       "bytes": 732212,
       "untouched": true
     },
-    "sourceFile": "photo-library/shenzhen/pexels-lywin-55237728-38833568.jpg",
+    "sourceFile": "photo-library/shenzhen/futian/original.jpg",
     "sourceSha256": "f27f905d5680cd8874406fec3ac3b8454396eb69d4440622acf6ba1fbd693ef1",
     "thumb": {
       "src": "photo-library/shenzhen/futian/thumb.webp",
@@ -30,46 +30,48 @@
       "width": 2400,
       "height": 1600,
       "bytes": 430022
-    }
+    },
+    "originalFilename": "pexels-lywin-55237728-38833568.jpg"
   },
   {
     "city": "shenzhen",
     "dir": "houhai",
     "id": "sz-houhai",
-    "src": "photo-library/shenzhen/pexels-ben-cheung-140183-11980026.jpg",
+    "src": "photo-library/shenzhen/houhai/original.png",
     "original": {
-      "src": "photo-library/shenzhen/houhai/original.jpg",
-      "width": 6043,
-      "height": 2438,
-      "bytes": 2333024,
+      "src": "photo-library/shenzhen/houhai/original.png",
+      "width": 7002,
+      "height": 4668,
+      "bytes": 65344535,
       "untouched": true
     },
-    "sourceFile": "photo-library/shenzhen/pexels-ben-cheung-140183-11980026.jpg",
-    "sourceSha256": "7754897f11f1fd152d3ca51cc746b93fc7c0ca54f0dbb1e83b63fcaa7fed4efe",
+    "sourceFile": "photo-library/shenzhen/houhai/original.png",
+    "sourceSha256": "d7dc2681b3a042013cfe78d7077a252e69634c922983f0cb5254b491ce2e8f38",
     "thumb": {
       "src": "photo-library/shenzhen/houhai/thumb.webp",
       "width": 640,
-      "height": 258,
-      "bytes": 21920
+      "height": 427,
+      "bytes": 49412
     },
     "screen": {
       "src": "photo-library/shenzhen/houhai/screen.webp",
       "width": 1440,
-      "height": 581,
-      "bytes": 93124
+      "height": 960,
+      "bytes": 302168
     },
     "detail": {
       "src": "photo-library/shenzhen/houhai/detail.webp",
       "width": 2400,
-      "height": 968,
-      "bytes": 216424
-    }
+      "height": 1600,
+      "bytes": 940936
+    },
+    "originalFilename": "275bce49e88dfbe48264edfb74d19289.PNG"
   },
   {
     "city": "shenzhen",
     "dir": "qianhai",
     "id": "sz-qianhai",
-    "src": "photo-library/shenzhen/pexels-ainc-t-76908403-34947074.jpg",
+    "src": "photo-library/shenzhen/qianhai/original.jpg",
     "original": {
       "src": "photo-library/shenzhen/qianhai/original.jpg",
       "width": 5019,
@@ -77,7 +79,7 @@
       "bytes": 2168214,
       "untouched": true
     },
-    "sourceFile": "photo-library/shenzhen/pexels-ainc-t-76908403-34947074.jpg",
+    "sourceFile": "photo-library/shenzhen/qianhai/original.jpg",
     "sourceSha256": "3c38385a7837d006f01baa0fade1085591c17b9aace9e5383bb74c599e73c668",
     "thumb": {
       "src": "photo-library/shenzhen/qianhai/thumb.webp",
@@ -96,6 +98,7 @@
       "width": 2400,
       "height": 1600,
       "bytes": 547972
-    }
+    },
+    "originalFilename": "pexels-ainc-t-76908403-34947074.jpg"
   }
 ]

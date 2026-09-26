@@ -2,7 +2,7 @@
   "city": "shanghai",
   "dir": "lujiazui",
   "id": "sh-lujiazui",
-  "src": "补充图/上海/pexels-throughnislens-31772145.jpg",
+  "src": "photo-library/shanghai/lujiazui/original.jpg",
   "original": {
     "src": "photo-library/shanghai/lujiazui/original.jpg",
     "width": 8434,
@@ -10,7 +10,7 @@
     "bytes": 10223119,
     "untouched": true
   },
-  "sourceFile": "补充图/上海/pexels-throughnislens-31772145.jpg",
+  "sourceFile": "photo-library/shanghai/lujiazui/original.jpg",
   "sourceSha256": "05e3957a5220e57a274eaf31b23fe1ed8ec170b85da10566ebe111e0d0a4635a",
   "thumb": {
     "src": "photo-library/shanghai/lujiazui/thumb.webp",
@@ -29,5 +29,6 @@
     "width": 2400,
     "height": 1600,
     "bytes": 511800
-  }
+  },
+  "originalFilename": "pexels-throughnislens-31772145.jpg"
 }

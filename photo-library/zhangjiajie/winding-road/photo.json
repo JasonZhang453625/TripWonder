@@ -1,0 +1,38 @@
+{
+  "city": "zhangjiajie",
+  "dir": "winding-road",
+  "id": "zjj-winding-road",
+  "src": "photo-library/zhangjiajie/winding-road/original.jpg",
+  "sourceFile": "photo-library/zhangjiajie/winding-road/original.jpg",
+  "originalFilename": "Winding_road,_Tianmen_Mountain.jpg",
+  "sourceSha256": "cf876eb626e6e7fc349a7a9b3d8a6c67fcd97410dec34b54971728db659847f7",
+  "original": {
+    "src": "photo-library/zhangjiajie/winding-road/original.jpg",
+    "width": 1680,
+    "height": 1120,
+    "bytes": 1743265,
+    "untouched": true
+  },
+  "credit": "王计 / Wikimedia Commons",
+  "license": "CC BY 2.5",
+  "licenseUrl": "https://creativecommons.org/licenses/by/2.5/",
+  "source": "https://commons.wikimedia.org/wiki/File:Winding_road,_Tianmen_Mountain.jpg",
+  "thumb": {
+    "src": "photo-library/zhangjiajie/winding-road/thumb.webp",
+    "width": 640,
+    "height": 427,
+    "bytes": 98396
+  },
+  "screen": {
+    "src": "photo-library/zhangjiajie/winding-road/screen.webp",
+    "width": 1440,
+    "height": 960,
+    "bytes": 592802
+  },
+  "detail": {
+    "src": "photo-library/zhangjiajie/winding-road/detail.webp",
+    "width": 1680,
+    "height": 1120,
+    "bytes": 952652
+  }
+}

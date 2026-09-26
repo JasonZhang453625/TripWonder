@@ -1,0 +1,55 @@
+/* First-visit TripWonder promo on the Trip.com home. Art type: ZCOOL KuaiLe subset (OFL). */
+@font-face{font-family:'TripWonder Promo';src:url('assets/fonts/zcool-kuaile-promo.woff2') format('woff2');font-weight:400;font-style:normal;font-display:block}
+
+.hp-layer{position:absolute;inset:0;z-index:45;display:grid;place-items:center;padding:0 24px}
+.hp-backdrop{position:absolute;inset:0;background:radial-gradient(circle at 50% 42%,#1c3a9f59,#07123dad 70%);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
+.hp-card{position:relative;width:min(300px,100%);padding:0 0 18px;border-radius:28px;overflow:hidden;color:#fff;text-align:center;cursor:pointer;
+  background:radial-gradient(160px 120px at 12% 0,#6f95ff 0,#6f95ff00 70%),radial-gradient(180px 140px at 100% 100%,#8b5cf6aa,#8b5cf600 70%),linear-gradient(165deg,#3b6cff,#2450f0 55%,#3a3be0);
+  box-shadow:0 0 0 1px #ffffff2e inset,0 1px 0 #ffffff59 inset,0 30px 60px -12px #061a6b99,0 12px 24px -10px #0008;
+  transform-origin:50% 50%;will-change:transform,opacity}
+.hp-card:focus-visible{outline:3px solid #ffd24a;outline-offset:4px}
+
+/* Stage: rotating light rays behind two floating coupons. */
+.hp-stage{position:relative;height:150px;display:grid;place-items:center}
+.hp-rays{position:absolute;left:50%;top:58%;width:360px;height:360px;margin:-180px 0 0 -180px;border-radius:50%;opacity:.55;
+  background:repeating-conic-gradient(from 0deg,#ffffff2e 0 9deg,#fff0 9deg 22deg);
+  -webkit-mask:radial-gradient(circle,#000 0,#000 18%,#0000 62%);mask:radial-gradient(circle,#000 0,#000 18%,#0000 62%);
+  animation:hp-spin 14s linear infinite}
+.hp-glow{position:absolute;left:50%;top:58%;width:170px;height:110px;margin:-55px 0 0 -85px;border-radius:50%;background:radial-gradient(#ffe38a8c,#ffe38a00 70%)}
+.hp-ticket{position:absolute;display:flex;align-items:center;gap:10px;height:66px;padding:0 16px 0 14px;border-radius:10px;
+  -webkit-mask:radial-gradient(circle 8px at 0 50%,#0000 98%,#000) left/51% 100% no-repeat,radial-gradient(circle 8px at 100% 50%,#0000 98%,#000) right/51% 100% no-repeat;
+  mask:radial-gradient(circle 8px at 0 50%,#0000 98%,#000) left/51% 100% no-repeat,radial-gradient(circle 8px at 100% 50%,#0000 98%,#000) right/51% 100% no-repeat}
+.hp-ticket.main{top:42px;left:50%;width:168px;margin-left:-84px;background:linear-gradient(135deg,#fff3c4,#ffd044 45%,#ffab1f);color:#9a3412;transform:rotate(-6deg);
+  box-shadow:inset 0 -3px 0 #e8890f55;filter:drop-shadow(0 10px 14px #6b2c0066);animation:hp-float 2.6s ease-in-out infinite}
+.hp-ticket.main::after{content:'';position:absolute;top:10px;bottom:10px;left:58px;border-left:2px dashed #b4530966}
+.hp-ticket.side{top:30px;left:50%;width:120px;margin-left:-8px;background:linear-gradient(135deg,#ffd6e6,#ff7aa8);transform:rotate(12deg);opacity:.95;filter:drop-shadow(0 8px 12px #5b0b3a55);animation:hp-float 2.6s ease-in-out -1.3s infinite}
+.hp-pin{width:34px;height:34px;flex-shrink:0;border-radius:50%;background:#fff;display:grid;place-items:center;box-shadow:0 2px 0 #e8890f66}
+.hp-pin svg{width:24px;height:24px}
+.hp-ticket b{display:block;margin-left:10px;font-family:'TripWonder Promo',sans-serif;font-weight:400;font-size:25px;line-height:1;letter-spacing:.5px;text-align:left}
+.hp-ticket small{display:block;margin-top:3px;font-size:9px;font-weight:800;letter-spacing:1.6px}
+.hp-spark{position:absolute;width:14px;height:14px;background:#fff;clip-path:polygon(50% 0,62% 38%,100% 50%,62% 62%,50% 100%,38% 62%,0 50%,38% 38%);animation:hp-twinkle 1.6s ease-in-out infinite}
+.hp-spark.s1{left:36px;top:34px}.hp-spark.s2{right:34px;top:98px;width:10px;height:10px;animation-delay:-.5s;background:#ffe27a}
+.hp-spark.s3{left:58px;top:112px;width:8px;height:8px;animation-delay:-1s}.hp-spark.s4{right:62px;top:22px;width:9px;height:9px;animation-delay:-.8s;background:#ffe27a}
+.hp-confetti{position:absolute;width:6px;height:10px;border-radius:2px;opacity:.9}
+.hp-confetti.c1{left:26px;top:80px;background:#ffd24a;transform:rotate(25deg)}.hp-confetti.c2{right:24px;top:52px;background:#ff8fb8;transform:rotate(-30deg)}
+.hp-confetti.c3{left:84px;top:18px;background:#8ff0ff;transform:rotate(60deg);width:5px;height:8px}.hp-confetti.c4{right:88px;top:130px;background:#fff;transform:rotate(-15deg);width:5px;height:8px}
+
+/* Art headline */
+.hp-kicker{display:inline-block;margin-top:2px;padding:4px 10px;border-radius:20px;background:#ffffff24;box-shadow:inset 0 0 0 1px #ffffff33;font-size:11px;font-weight:700;letter-spacing:1.2px}
+.hp-title{margin:10px 0 0;padding:0 14px;font-family:'TripWonder Promo','Microsoft YaHei',sans-serif;font-weight:400;line-height:1.08}
+.hp-title span{display:block}
+.hp-line1{font-size:23px;letter-spacing:.5px;color:#fff;text-shadow:0 2px 0 #1b36b8,0 4px 12px #0a1a6680}
+.hp-line2{margin-top:8px;font-size:43px;letter-spacing:1px;white-space:nowrap;
+  background:linear-gradient(180deg,#fffbe6 0,#ffe27a 38%,#ffb321 70%,#ff8a1f 100%);-webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 3px 0 #b8400c) drop-shadow(0 7px 12px #0a1a6699)}
+.hp-progress{width:132px;height:4px;margin:18px auto 0;border-radius:4px;background:#ffffff33;overflow:hidden}
+.hp-progress i{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#ffe27a,#fff);transform-origin:0 50%}
+
+/* Entry icon cue after the card lands on it (driven by home-promo.js, < 1 s). */
+.hp-ripple{position:absolute;inset:0;border-radius:50%;border:2px solid #2d61ff;opacity:0;pointer-events:none}
+.hp-glint{position:absolute;inset:0;border-radius:50%;background:radial-gradient(circle at 50% 45%,#ffffff 0,#dbe5ff 45%,#dbe5ff00 72%);pointer-events:none}
+
+@keyframes hp-spin{to{transform:rotate(360deg)}}
+@keyframes hp-float{50%{translate:0 -5px}}
+@keyframes hp-twinkle{0%,100%{opacity:.35;scale:.7}50%{opacity:1;scale:1.1}}
+@media(prefers-reduced-motion:reduce){.hp-rays,.hp-ticket,.hp-spark{animation:none!important}}

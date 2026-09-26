@@ -1,0 +1,34 @@
+{
+  "city": "datong",
+  "dir": "huayan",
+  "id": "huayan",
+  "src": "photo-library/datong/huayan/original.jpg",
+  "original": {
+    "src": "photo-library/datong/huayan/original.jpg",
+    "width": 2304,
+    "height": 4096,
+    "bytes": 4651136,
+    "untouched": true
+  },
+  "sourceFile": "photo-library/datong/huayan/original.jpg",
+  "sourceSha256": "14705002fdc6361d422ee342fd31370985fa0d14f9104bf667e719c379a475e2",
+  "originalFilename": "微信图片_20260919174906_61_26.jpg",
+  "thumb": {
+    "src": "photo-library/datong/huayan/thumb.webp",
+    "width": 480,
+    "height": 853,
+    "bytes": 80342
+  },
+  "screen": {
+    "src": "photo-library/datong/huayan/screen.webp",
+    "width": 1080,
+    "height": 1920,
+    "bytes": 434214
+  },
+  "detail": {
+    "src": "photo-library/datong/huayan/detail.webp",
+    "width": 1600,
+    "height": 2844,
+    "bytes": 863454
+  }
+}

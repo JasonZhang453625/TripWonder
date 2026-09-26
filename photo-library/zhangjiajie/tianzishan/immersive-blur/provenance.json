@@ -1,0 +1,16 @@
+{
+  "scene": "zjj-tianzishan",
+  "city": "zhangjiajie",
+  "source": "../original.jpg",
+  "sourceSha256": "b5cef2b547547aeb19362667a4720ff3e4754fa173a0702812effe2fefe7d23d",
+  "displayPhoto": "photo.jpg",
+  "displaySize": [
+    8841,
+    4415
+  ],
+  "displaySha256": "b5cef2b547547aeb19362667a4720ff3e4754fa173a0702812effe2fefe7d23d",
+  "sourceAspect": 2.0024915062287656,
+  "periphery": "blurred projection of the original photo, rendered at runtime (no AI content)",
+  "encoding": "original JPEG bytes",
+  "preparedAt": "2026-09-26T17:07:16.039Z"
+}

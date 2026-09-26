@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import {ImmersiveSceneMedia} from './immersive-media-src.js';
 
 const rad = THREE.MathUtils.degToRad;
 const deg = THREE.MathUtils.radToDeg;
@@ -13,12 +14,14 @@ window.ImmersivePhotoViewer = class {
     this.root = root;
     this.plane = root.querySelector('.photo-plane');
     this.config = config;
-    this.fallback = new window.PhotoViewer(root, photo);
     this.abort = new AbortController();
     this.pointers = new Map();
     this.frame = 0;
     this.state = {yaw: 0, targetYaw: 0, pitch: 0, targetPitch: 0, zoom: 1, targetZoom: 1, walkX: 0, yawLimit: 0, pitchMin: 0, pitchMax: 0};
-    this.init().catch(error => { if (!this.destroyed) console.warn('Immersive photo unavailable; using original image.', error); });
+    this.minZoom = 1;
+    this.maxZoom = config.maxZoom ?? 3;
+    this.ready = this.init();
+    this.ready.catch(error => { if (!this.destroyed) console.warn('Immersive scene could not be prepared.', error); });
   }
 
   async init() {
@@ -26,22 +29,34 @@ window.ImmersivePhotoViewer = class {
     const assets = await this.loadAssets();
     const load = src => new Promise((resolve, reject) => {
       const image = new Image();
-      image.onload = () => resolve(image);
-      image.onerror = () => reject(new Error(`Could not load ${src}`));
+      const signal = this.abort.signal;
+      const finish = error => {
+        clearTimeout(timeout);
+        signal.removeEventListener('abort', cancel);
+        image.onload = image.onerror = null;
+        if (error) { image.removeAttribute('src'); reject(error); }
+        else resolve(image);
+      };
+      const cancel = () => finish(new DOMException('Scene loading cancelled', 'AbortError'));
+      const timeout = setTimeout(() => finish(new Error('Scene photo load timed out')), 45000);
+      image.onload = () => finish();
+      image.onerror = () => { ImmersiveSceneMedia.invalidate(cfg); finish(new Error('Scene photo unavailable')); };
+      signal.addEventListener('abort', cancel, {once:true});
+      if (signal.aborted) { cancel(); return; }
       image.src = src;
     });
     const blur = cfg.periphery === 'blur';
     const sourceImage = await load(assets.source);
     const atlasImage = blur ? blurredPeriphery(sourceImage, BLUR_PAD) : await load(assets.atlas);
     delete window.IMMERSIVE_ASSETS?.[cfg.id];
-    if (this.destroyed) return;
+    this.abort.signal.throwIfAborted();
     const canvas = document.createElement('canvas');
     canvas.className = 'immersive-canvas';
     // A single full-screen pass has no geometric edges, so the default framebuffer needs no MSAA.
     const renderer = new THREE.WebGLRenderer({canvas, antialias: false, alpha: false, depth: false, stencil: false, powerPreference: 'high-performance'});
     this.canvas = canvas;
     this.renderer = renderer;
-    renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 1.6));
+    renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2));
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     const makeTexture = (image, mipmaps) => {
       const result = new THREE.Texture(image);
@@ -52,7 +67,22 @@ window.ImmersivePhotoViewer = class {
       result.needsUpdate = true;
       return result;
     };
-    this.sourceTexture = makeTexture(sourceImage, true);
+    // Keep native pixels unless the device cannot accommodate the texture dimensions.
+    const limit = renderer.capabilities.maxTextureSize;
+    let textureImage = sourceImage;
+    if (Math.max(sourceImage.width, sourceImage.height) > limit) {
+      const scale = limit / Math.max(sourceImage.width, sourceImage.height);
+      textureImage = document.createElement('canvas');
+      textureImage.width = Math.round(sourceImage.width * scale);
+      textureImage.height = Math.round(sourceImage.height * scale);
+      const context = textureImage.getContext('2d');
+      context.imageSmoothingQuality = 'high';
+      context.drawImage(sourceImage, 0, 0, textureImage.width, textureImage.height);
+    }
+    this.root.dataset.sourceSize = `${sourceImage.width}x${sourceImage.height}`;
+    this.root.dataset.textureSize = `${textureImage.width}x${textureImage.height}`;
+    this.root.dataset.maxZoom = this.maxZoom;
+    this.sourceTexture = makeTexture(textureImage, true);
     // The blurred far layer is tiny and always magnified; it needs no mipmaps.
     this.atlasTexture = makeTexture(atlasImage, !blur);
     const {sourceAspect} = cfg;
@@ -131,8 +161,6 @@ window.ImmersivePhotoViewer = class {
     this.scene.add(new THREE.Mesh(this.geometry, this.material));
     this.camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
     this.markers = [...this.plane.querySelectorAll('.hotspot')].map(element => ({element, u: parseFloat(element.style.left) / 100, v: parseFloat(element.style.top) / 100, x: NaN, y: NaN, hidden: null}));
-    this.fallback.destroy();
-    this.fallback = null;
     this.root.classList.add('immersive-active');
     this.root.prepend(canvas);
     this.plane.style.width = '100%';
@@ -145,18 +173,18 @@ window.ImmersivePhotoViewer = class {
     document.addEventListener('visibilitychange', () => this.invalidate(), {signal: this.abort.signal});
     canvas.addEventListener('webglcontextrestored', () => this.invalidate(), {signal: this.abort.signal});
     this.resize();
+    this.updateCamera();
+    await renderer.compileAsync(this.scene, this.camera);
+    this.abort.signal.throwIfAborted();
+    renderer.render(this.scene, this.camera);
+    this.initialized = true;
+    this.root.dataset.rendered = 'true';
+    await new Promise(resolve => requestAnimationFrame(resolve));
+    this.abort.signal.throwIfAborted();
   }
 
   loadAssets() {
-    const cfg = this.config;
-    if (window.IMMERSIVE_ASSETS?.[cfg.id]) return Promise.resolve(window.IMMERSIVE_ASSETS[cfg.id]);
-    return new Promise((resolve, reject) => {
-      const script = document.createElement('script');
-      script.src = cfg.assetScript;
-      script.onload = () => {script.remove(); const assets = window.IMMERSIVE_ASSETS?.[cfg.id]; assets ? resolve(assets) : reject(new Error('Scene assets missing'));};
-      script.onerror = () => {script.remove(); reject(new Error('Scene asset script unavailable'));};
-      document.head.append(script);
-    });
+    return ImmersiveSceneMedia.load(this.config, this.abort.signal);
   }
 
   attachControls() {
@@ -174,12 +202,12 @@ window.ImmersivePhotoViewer = class {
       if (!old) return;
       this.pointers.set(event.pointerId, {x: event.clientX, y: event.clientY});
       if (this.pointers.size === 1) {
-        this.state.targetYaw = clamp(this.state.targetYaw - (event.clientX - old.x) * 75 / Math.max(this.w, 1), -this.state.yawLimit, this.state.yawLimit);
-        this.state.targetPitch = clamp(this.state.targetPitch + (event.clientY - old.y) * 45 / Math.max(this.h, 1), this.state.pitchMin, this.state.pitchMax);
+        this.state.targetYaw = clamp(this.state.targetYaw - (event.clientX - old.x) * 75 / (Math.max(this.w, 1) * this.state.zoom), -this.state.yawLimit, this.state.yawLimit);
+        this.state.targetPitch = clamp(this.state.targetPitch + (event.clientY - old.y) * 45 / (Math.max(this.h, 1) * this.state.zoom), this.state.pitchMin, this.state.pitchMax);
       } else if (this.pointers.size === 2 && this.pinch) {
         const points = [...this.pointers.values()];
         const distance = Math.hypot(points[0].x - points[1].x, points[0].y - points[1].y);
-        this.state.targetZoom = clamp(this.pinch.zoom * distance / Math.max(this.pinch.distance, 1), 1, 1.4);
+        this.state.targetZoom = clamp(this.pinch.zoom * distance / Math.max(this.pinch.distance, 1), this.minZoom, this.maxZoom);
       }
       this.state.walkX = this.config.walkX * this.state.targetYaw / Math.max(this.state.yawLimit, 1);
       this.invalidate();
@@ -189,7 +217,7 @@ window.ImmersivePhotoViewer = class {
       if (this.pointers.size === 2) this.startPinch();
       if (!this.pointers.size) this.root.classList.remove('dragging');
     });
-    on('wheel', event => {event.preventDefault(); this.state.targetZoom = clamp(this.state.targetZoom * Math.exp(-event.deltaY * .0008), 1, 1.4); this.invalidate();}, {passive: false});
+    on('wheel', event => {event.preventDefault(); this.state.targetZoom = clamp(this.state.targetZoom * Math.exp(-event.deltaY * .0008), this.minZoom, this.maxZoom); this.invalidate();}, {passive: false});
     on('dblclick', () => {
       const yaw = this.homeYaw();
       this.state.targetYaw = yaw; this.state.targetPitch = 0; this.state.targetZoom = 1;
@@ -200,7 +228,7 @@ window.ImmersivePhotoViewer = class {
       if (event.target !== this.root) return;
       if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
         event.preventDefault();
-        this.state.targetYaw = clamp(this.state.targetYaw + (event.key === 'ArrowLeft' ? -3 : 3), -this.state.yawLimit, this.state.yawLimit);
+        this.state.targetYaw = clamp(this.state.targetYaw + (event.key === 'ArrowLeft' ? -3 : 3) / this.state.zoom, -this.state.yawLimit, this.state.yawLimit);
         this.state.walkX = this.config.walkX * this.state.targetYaw / Math.max(this.state.yawLimit, 1);
         this.invalidate();
       }
@@ -214,16 +242,17 @@ window.ImmersivePhotoViewer = class {
 
   resize() {
     if (!this.renderer || this.destroyed) return;
-    this.w = this.root.clientWidth;
-    this.h = this.root.clientHeight;
-    if (!this.w || !this.h) return;
+    const width = this.root.clientWidth, height = this.root.clientHeight;
+    if (!width || !height || (this.w === width && this.h === height)) return;
+    this.w = width;
+    this.h = height;
     this.renderer.setSize(this.w, this.h, false);
-    this.invalidate();
+    if (this.initialized) this.invalidate();
   }
 
   // Schedule one frame; animate() keeps scheduling only while the view is still easing.
   invalidate() {
-    if (this.frame || this.destroyed || !this.renderer) return;
+    if (this.frame || this.destroyed || !this.renderer || !this.initialized) return;
     this.last = performance.now();
     this.frame = requestAnimationFrame(time => this.animate(time));
   }
@@ -232,12 +261,8 @@ window.ImmersivePhotoViewer = class {
     const a = this.w / this.h;
     const fov = clamp(a < .8 ? 62 : deg(2 * Math.atan(Math.tan(rad(60 / 2)) / a)), 18, 65);
     const baseTv = Math.tan(rad(fov / 2));
-    const tv = Math.tan(rad(fov / this.state.zoom / 2));
-    const th = tv * a;
-    this.tv = tv;
-    this.th = th;
-    // Fit the photo to this viewport: at zoom 1 its full height fits the screen (fitScale 1),
-    // it always covers the screen width, and the view never leaves the reachable region.
+    // Keep the existing 1x framing. The photo's projection stays fixed while zoom
+    // changes the field of view, including the available blur above and below it.
     const cfg = this.config, rect = this.region, aspect = cfg.sourceAspect;
     const margin = Math.atan(Math.max(cfg.walkX, .07) / cfg.radius) + rad(.5);
     const walkScale = (cfg.radius + Math.max(cfg.walkX, .07)) / cfg.radius;
@@ -248,6 +273,18 @@ window.ImmersivePhotoViewer = class {
     this.halfH = this.tanV * aspect;
     const left = (.5 - rect.x) * 2 * this.halfH;
     const right = (rect.x + rect.w - .5) * 2 * this.halfH;
+    const top = (.5 - rect.y) * 2 * this.tanV / walkScale, bottom = (rect.y + rect.h - .5) * 2 * this.tanV / walkScale;
+    // At minimum zoom, fit the blur's vertical bounds. Wide viewports may reach
+    // a horizontal boundary first; account for both so no uncovered area appears.
+    const maxHalfView = clamp(Math.min(left, right) - margin, 0, rad(89));
+    const maxTv = Math.min(top, bottom, Math.tan(maxHalfView) / a);
+    this.minZoom = cfg.periphery === 'blur' ? Math.min(1, fov / deg(2 * Math.atan(maxTv))) : 1;
+    this.state.zoom = clamp(this.state.zoom, this.minZoom, this.maxZoom);
+    this.state.targetZoom = clamp(this.state.targetZoom, this.minZoom, this.maxZoom);
+    const tv = Math.tan(rad(fov / this.state.zoom / 2));
+    const th = tv * a;
+    this.tv = tv;
+    this.th = th;
     this.state.yawLimit = Math.max(0, deg(Math.min(left, right) - Math.atan(th) - margin));
     if (!this.homed) {
       // First frame: open facing the scene's subject (config.focusX, 0–1 of the photo width).
@@ -258,7 +295,6 @@ window.ImmersivePhotoViewer = class {
     this.state.targetYaw = clamp(this.state.targetYaw, -this.state.yawLimit, this.state.yawLimit);
     this.state.yaw = clamp(this.state.yaw, -this.state.yawLimit, this.state.yawLimit);
     // Pitch is a vertical lens shift in tangent units; up and down limits differ when the region is asymmetric.
-    const top = (.5 - rect.y) * 2 * this.tanV / walkScale, bottom = (rect.y + rect.h - .5) * 2 * this.tanV / walkScale;
     this.state.pitchMax = deg(Math.atan(Math.max(0, top - tv)));
     this.state.pitchMin = -deg(Math.atan(Math.max(0, bottom - tv)));
     this.state.targetPitch = clamp(this.state.targetPitch, this.state.pitchMin, this.state.pitchMax);
@@ -273,6 +309,8 @@ window.ImmersivePhotoViewer = class {
     u.eye.value.set(this.eye.x, this.eye.z);
     u.projection.value.set(this.halfH, this.tanV);
     const data = this.root.dataset;
+    data.zoom = this.state.zoom.toFixed(3);
+    data.minZoom = this.minZoom.toFixed(6);
     data.pitchRange = `${this.state.pitchMin.toFixed(2)},${this.state.pitchMax.toFixed(2)}`;
     data.yawLimit = this.state.yawLimit.toFixed(2);
     data.yaw = this.state.yaw.toFixed(2);
@@ -328,17 +366,26 @@ window.ImmersivePhotoViewer = class {
   }
 
   destroy() {
+    if (this.destroyed) return;
     this.destroyed = true;
     this.abort.abort();
-    this.fallback?.destroy();
     this.observer?.disconnect();
     cancelAnimationFrame(this.frame);
+    this.canvas?.remove();
+    // Shader compilation can still be in flight when navigation cancels preparation.
+    // Release its program after the readiness promise settles, rather than deleting
+    // a program that compileAsync is still polling.
+    if (this.renderer && !this.initialized) this.ready.then(() => this.disposeGraphics(), () => this.disposeGraphics());
+    else this.disposeGraphics();
+  }
+
+  disposeGraphics() {
     this.geometry?.dispose();
     this.material?.dispose();
     this.sourceTexture?.dispose();
     this.atlasTexture?.dispose();
     this.renderer?.dispose();
-    this.canvas?.remove();
+    this.renderer?.forceContextLoss();
   }
 };
 

@@ -1,12 +1,12 @@
 # 上海场景照片来源与处理记录
 
-照片由 2026-09-26 更新后的素材库提供；每个场景目录保存 `original.jpg`、按长边 640/1440/2400 像素生成的 `thumb.webp`、`screen.webp`、`detail.webp`，以及记录尺寸与哈希的 `photo.json`。沉浸查看使用 `immersive-blur/photo.jpg`（1600 像素高，只用原片，画面外为运行时生成的模糊投影，不含 AI 内容）。
+照片由 2026-09-26 更新后的素材库提供；每个场景目录保存 `original.jpg`、按长边 640/1440/2400 像素生成的 `thumb.webp`、`screen.webp`、`detail.webp`，以及记录尺寸与哈希的 `photo.json`。沉浸查看使用 `immersive-blur/photo.jpg`（按原片像素尺寸构建，只用原片，画面外为运行时生成的模糊投影，不含 AI 内容）。
 
 | 场景 | 摄影作者 | 原图页面 | 许可 | 本地文件 |
 | --- | --- | --- | --- | --- |
-| 外滩·汇丰银行大楼与海关大楼 | jcterry / Pexels | [来源页](https://www.pexels.com/photo/30685870/) | [Pexels License](https://www.pexels.com/license/) | `bund/original.jpg` 6240×4160（原文件未改动）；素材库来源 `补充图/上海/pexels-jcterry-30685870.jpg`，SHA-256 `bb10216797f1c608…` |
-| 陆家嘴天际线 | throughnislens / Pexels | [来源页](https://www.pexels.com/photo/31772145/) | [Pexels License](https://www.pexels.com/license/) | `lujiazui/original.jpg` 8434×5623（原文件未改动）；素材库来源 `补充图/上海/pexels-throughnislens-31772145.jpg`，SHA-256 `05e3957a5220e57a…` |
-| 隔江望外滩夜景 | claudia-seidensticker / Pexels | [来源页](https://www.pexels.com/photo/345162/) | [Pexels License](https://www.pexels.com/license/) | `bund-night/original.jpg` 4701×3134（原文件未改动）；素材库来源 `补充图/上海/pexels-claudia-seidensticker-111222-345162.jpg`，SHA-256 `5991dd75f49671f7…` |
+| 外滩·汇丰银行大楼与海关大楼 | jcterry / Pexels | [来源页](https://www.pexels.com/photo/30685870/) | [Pexels License](https://www.pexels.com/license/) | `bund/original.jpg` 6240×4160（原文件未改动）；素材库来源 `photo-library/shanghai/bund/original.jpg`，SHA-256 `bb10216797f1c608…` |
+| 陆家嘴天际线 | throughnislens / Pexels | [来源页](https://www.pexels.com/photo/31772145/) | [Pexels License](https://www.pexels.com/license/) | `lujiazui/original.jpg` 8434×5623（原文件未改动）；素材库来源 `photo-library/shanghai/lujiazui/original.jpg`，SHA-256 `05e3957a5220e57a…` |
+| 隔江望外滩夜景 | claudia-seidensticker / Pexels | [来源页](https://www.pexels.com/photo/345162/) | [Pexels License](https://www.pexels.com/license/) | `bund-night/original.jpg` 4701×3134（原文件未改动）；素材库来源 `photo-library/shanghai/bund-night/original.jpg`，SHA-256 `5991dd75f49671f7…` |
 
 Pexels 许可允许免费使用与修改，不强制署名；这里仍保留摄影者与原图页面便于核对。Wikimedia Commons 照片按各自许可使用：CC BY-SA 要求署名并以相同许可分享衍生图，CC0 无署名要求。
 
@@ -23,4 +23,4 @@ Pexels 许可允许免费使用与修改，不强制署名；这里仍保留摄�
 
 ## 补充说明
 
-- 素材来自 `补充图/上海/`。其中 `pexels-biravencrow-38259314.jpg` 是品牌临时装置“路易号”，不作为长期景点；`pexels-tiago-447191634-19765782.jpg` 画面中的招牌显示为南京而非上海；两张均未采用，原文件仍留在补充图目录。
+- 已采用素材统一存入各场景的 `original.jpg`。其中 `pexels-biravencrow-38259314.jpg` 是品牌临时装置“路易号”，不作为长期景点；`pexels-tiago-447191634-19765782.jpg` 画面中的招牌显示为南京而非上海；两张均未采用，原文件保留在 `photo-library/_unused/shanghai/`。

@@ -2,7 +2,7 @@
   "city": "guilin",
   "dir": "longji",
   "id": "gl-longji",
-  "src": "photo-library/guilin/source-preview.jpg",
+  "src": "photo-library/guilin/longji/original.jpg",
   "original": {
     "src": "photo-library/guilin/longji/original.jpg",
     "width": 3840,
@@ -10,7 +10,7 @@
     "bytes": 3347360,
     "untouched": true
   },
-  "sourceFile": "photo-library/guilin/source-preview.jpg",
+  "sourceFile": "photo-library/guilin/longji/original.jpg",
   "sourceSha256": "d6824007fc07c3e9a9ecfc9bf78e30cf684a3dc8d435997ed6f94e632f7155f9",
   "thumb": {
     "src": "photo-library/guilin/longji/thumb.webp",
@@ -29,5 +29,6 @@
     "width": 2400,
     "height": 1800,
     "bytes": 1285306
-  }
+  },
+  "originalFilename": "source-preview.jpg"
 }

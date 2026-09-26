@@ -1,40 +1,25 @@
-/* Share sheet (ticket-style challenge card) and reward-claim celebration. */
+/* Photo challenge postcard and reward-claim celebration. */
 
 /* ---------- Share sheet ---------- */
-.share-sheet{display:grid;gap:14px;padding-top:2px}
-.share-ticket{margin:0;border-radius:22px;overflow:hidden;background:#fff;box-shadow:0 18px 40px #1f3b7a26,0 0 0 1px #e3eaf7}
-.share-ticket-art{position:relative;isolation:isolate;min-height:236px;padding:20px 22px 22px;color:#fff;display:flex;flex-direction:column;justify-content:space-between;text-align:left;background:#1d2d57}
-.share-ticket-art img{position:absolute;inset:-18%;width:136%;height:136%;object-fit:cover;filter:blur(16px) saturate(1.25) brightness(.8);z-index:-2;transform:scale(1.05)}
-.share-ticket-art::after{content:'';position:absolute;inset:0;z-index:-1;background:linear-gradient(160deg,#1c3b9acc 0%,#15204a66 45%,#0c142ecc 100%)}
-.share-ticket-top{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
-.share-ticket-top .brand{font-size:20px;font-weight:800;color:#fff;letter-spacing:-.01em}
-.share-ticket-top .brand span{color:#ffc53d}
-.share-kicker{font-size:10px;letter-spacing:.16em;color:#dbe6ff;opacity:.9}
-.share-score{display:flex;align-items:baseline;gap:6px;margin-top:18px}
-.share-score b{font-size:78px;line-height:.9;font-weight:800;letter-spacing:-.04em;background:linear-gradient(180deg,#fff 30%,#ffe29a);-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:0 6px 28px #ffd16655}
-.share-score small{font-size:15px;color:#c9d6f5;font-weight:600}
-.share-dare{margin:12px 0 0;font-size:15px;line-height:1.55;font-weight:600;color:#f3f6ff}
-.share-ticket-stub{position:relative;display:grid;grid-template-columns:repeat(3,1fr);padding:15px 8px 14px;border-top:2px dashed #dfe6f3;background:#fff}
-.share-ticket-stub::before,.share-ticket-stub::after{content:'';position:absolute;top:-11px;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:inset 0 0 0 1px #e3eaf7}
-.share-ticket-stub::before{left:-10px}
-.share-ticket-stub::after{right:-10px}
-.share-ticket-stub div{display:grid;justify-items:center;gap:3px}
-.share-ticket-stub div+div{border-left:1px solid #edf1f8}
-.share-ticket-stub b{font-size:21px;color:#1c2b4a;font-weight:800}
-.share-ticket-stub small{font-size:11px;color:#8391a8}
-.share-link{position:relative;display:flex;align-items:center;gap:11px;padding:11px 13px;border:1px solid #e1e8f5;border-radius:14px;background:#f7f9fe;cursor:pointer}
-.share-link-icon{flex:none;display:grid;place-items:center;width:34px;height:34px;border-radius:10px;background:#e6edff;color:#3264ff}
-.share-link svg,.share-actions svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-.share-link-text{display:grid;gap:2px;min-width:0}
-.share-link-text strong{font-size:13px;color:#1c2b4a}
-.share-link-text small{font-size:11px;color:#7d8aa3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-/* Kept for copying and tests, but the raw URL is not shown. */
-.share-link .invite-link{position:absolute;width:1px;height:1px;min-height:0;margin:0;padding:0;border:0;opacity:0;pointer-events:none}
-.share-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.share-actions button{display:flex;align-items:center;justify-content:center;gap:7px;width:100%;min-height:48px;margin:0}
-.share-more{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:8px;background:none;border:0;color:#3264ff;font-size:13px;font-weight:600}
-.share-more svg{width:16px;height:16px}
-.share-note{margin:0;font-size:11.5px;line-height:1.65;color:#8a96ab;text-align:center}
+.share-dialog-overlay{align-items:flex-end;justify-content:center;padding:0}
+.sheet.share-dialog{display:flex;flex-direction:column;height:min(640px,76%);overflow:hidden;scrollbar-width:none}
+.share-dialog::-webkit-scrollbar{display:none}
+.share-dialog .sheet-handle{flex:none}
+.share-dialog .sheet-heading{flex:none;margin:0 0 14px;min-height:36px}
+.share-dialog .sheet-heading h2{font-size:18px;color:#1c2b46;font-weight:700}
+.share-sheet{display:flex;flex-direction:column;flex:1;min-height:0;gap:16px}
+.share-preview{display:flex;align-items:center;justify-content:center;flex:1;min-height:0;min-width:0;margin:0}
+.share-poster{display:block;width:100%;height:100%;overflow:visible;filter:drop-shadow(0 6px 12px #1f3b7a1c)}
+.share-actions{display:flex;flex:none;flex-direction:column;gap:8px}
+.share-actions .primary{width:100%;min-height:50px;margin:0;gap:8px}
+.share-dialog .invite-link{margin:0;min-width:0}
+.share-dialog .invite-link[hidden]{display:none}
+@media (orientation:landscape) and (max-height:500px){
+  .sheet.share-dialog{height:calc(100% - var(--safe-top,0px) - 14px)}
+  .share-dialog .sheet-heading{margin-bottom:10px}
+  .share-sheet{display:grid;grid-template-columns:minmax(0,1fr) 160px;gap:22px;align-items:center}
+  .share-preview{height:100%}
+}
 
 /* ---------- Reward claim ---------- */
 .celebrate-canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:55}

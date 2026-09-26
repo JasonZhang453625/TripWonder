@@ -2,7 +2,7 @@
   "city": "hongkong",
   "dir": "sham-shui-po",
   "id": "hk-sham-shui-po",
-  "src": "photo-library/hongkong/pexels-throughnislens-33859545.jpg",
+  "src": "photo-library/hongkong/sham-shui-po/original.jpg",
   "original": {
     "src": "photo-library/hongkong/sham-shui-po/original.jpg",
     "width": 5612,
@@ -10,7 +10,7 @@
     "bytes": 3346977,
     "untouched": true
   },
-  "sourceFile": "photo-library/hongkong/pexels-throughnislens-33859545.jpg",
+  "sourceFile": "photo-library/hongkong/sham-shui-po/original.jpg",
   "sourceSha256": "a39cbf6b2fcdd3ae0092209e6d71bf3b6455f0129f41bfebfdf8181a08f98f49",
   "thumb": {
     "src": "photo-library/hongkong/sham-shui-po/thumb.webp",
@@ -29,5 +29,6 @@
     "width": 2400,
     "height": 1600,
     "bytes": 664964
-  }
+  },
+  "originalFilename": "pexels-throughnislens-33859545.jpg"
 }

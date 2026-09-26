@@ -1,0 +1,38 @@
+{
+  "city": "zhangjiajie",
+  "dir": "tianmen-cave",
+  "id": "zjj-tianmen-cave",
+  "src": "photo-library/zhangjiajie/tianmen-cave/original.jpg",
+  "sourceFile": "photo-library/zhangjiajie/tianmen-cave/original.jpg",
+  "originalFilename": "Tianmen_38330-Zhangjiajie.jpg",
+  "sourceSha256": "c15133d1a1cc82cb22ce26397c6a965dd00cd1e87c4ff00d59362bfb3eb2bef0",
+  "original": {
+    "src": "photo-library/zhangjiajie/tianmen-cave/original.jpg",
+    "width": 3000,
+    "height": 1996,
+    "bytes": 3415769,
+    "untouched": true
+  },
+  "credit": "xiquinhosilva / Wikimedia Commons",
+  "license": "CC BY 2.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/2.0/",
+  "source": "https://commons.wikimedia.org/wiki/File:Tianmen_38330-Zhangjiajie_(49047525877).jpg",
+  "thumb": {
+    "src": "photo-library/zhangjiajie/tianmen-cave/thumb.webp",
+    "width": 640,
+    "height": 426,
+    "bytes": 85712
+  },
+  "screen": {
+    "src": "photo-library/zhangjiajie/tianmen-cave/screen.webp",
+    "width": 1440,
+    "height": 958,
+    "bytes": 589154
+  },
+  "detail": {
+    "src": "photo-library/zhangjiajie/tianmen-cave/detail.webp",
+    "width": 2400,
+    "height": 1597,
+    "bytes": 1869650
+  }
+}

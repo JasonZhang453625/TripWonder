@@ -2,7 +2,7 @@
   "city": "shanghai",
   "dir": "bund-night",
   "id": "sh-bund-night",
-  "src": "补充图/上海/pexels-claudia-seidensticker-111222-345162.jpg",
+  "src": "photo-library/shanghai/bund-night/original.jpg",
   "original": {
     "src": "photo-library/shanghai/bund-night/original.jpg",
     "width": 4701,
@@ -10,7 +10,7 @@
     "bytes": 1943597,
     "untouched": true
   },
-  "sourceFile": "补充图/上海/pexels-claudia-seidensticker-111222-345162.jpg",
+  "sourceFile": "photo-library/shanghai/bund-night/original.jpg",
   "sourceSha256": "5991dd75f49671f7c39a0c49a7ee092a76f8c5fe946f10ce8d707f348adae74e",
   "thumb": {
     "src": "photo-library/shanghai/bund-night/thumb.webp",
@@ -29,5 +29,6 @@
     "width": 2400,
     "height": 1600,
     "bytes": 495122
-  }
+  },
+  "originalFilename": "pexels-claudia-seidensticker-111222-345162.jpg"
 }

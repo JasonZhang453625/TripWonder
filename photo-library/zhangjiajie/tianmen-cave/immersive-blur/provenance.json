@@ -1,0 +1,16 @@
+{
+  "scene": "zjj-tianmen-cave",
+  "city": "zhangjiajie",
+  "source": "../original.jpg",
+  "sourceSha256": "c15133d1a1cc82cb22ce26397c6a965dd00cd1e87c4ff00d59362bfb3eb2bef0",
+  "displayPhoto": "photo.jpg",
+  "displaySize": [
+    3000,
+    1996
+  ],
+  "displaySha256": "c15133d1a1cc82cb22ce26397c6a965dd00cd1e87c4ff00d59362bfb3eb2bef0",
+  "sourceAspect": 1.503006012024048,
+  "periphery": "blurred projection of the original photo, rendered at runtime (no AI content)",
+  "encoding": "original JPEG bytes",
+  "preparedAt": "2026-09-26T17:07:19.675Z"
+}

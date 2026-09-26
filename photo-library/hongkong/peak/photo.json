@@ -2,7 +2,7 @@
   "city": "hongkong",
   "dir": "peak",
   "id": "hk-peak",
-  "src": "photo-library/hongkong/pexels-willianjusten-35654634.jpg",
+  "src": "photo-library/hongkong/peak/original.jpg",
   "original": {
     "src": "photo-library/hongkong/peak/original.jpg",
     "width": 6000,
@@ -10,7 +10,7 @@
     "bytes": 3434470,
     "untouched": true
   },
-  "sourceFile": "photo-library/hongkong/pexels-willianjusten-35654634.jpg",
+  "sourceFile": "photo-library/hongkong/peak/original.jpg",
   "sourceSha256": "3e6b791cb267d7ba6fbcce61a0bd46f063b82858aa0c454c79101355014acf99",
   "thumb": {
     "src": "photo-library/hongkong/peak/thumb.webp",
@@ -29,5 +29,6 @@
     "width": 2400,
     "height": 1600,
     "bytes": 415902
-  }
+  },
+  "originalFilename": "pexels-willianjusten-35654634.jpg"
 }

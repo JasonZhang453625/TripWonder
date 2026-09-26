@@ -12,12 +12,15 @@
 .scene-nav>.prev-scene:disabled{opacity:.45}
 .explore-page .scene-counter{position:absolute;left:50%;transform:translateX(-50%)}
 .top-right{display:flex;align-items:center;gap:8px}
-.fav .icon{width:19px;height:19px;transition:fill .2s,stroke .2s,transform .2s}
-.fav[aria-pressed=true] .icon{fill:#ff5d7d;stroke:#ff5d7d;transform:scale(1.06)}
+/* Optical alignment: the heart's wide lobes make it look high inside its SVG box. */
+.glass.round.fav .icon{display:block;width:20px;height:20px;transform:translateY(1px);transform-origin:center;transition:fill .2s,stroke .2s,transform .2s}
+.glass.round.fav[aria-pressed=true] .icon{fill:#ff5d7d;stroke:#ff5d7d;transform:translateY(1px) scale(1.06)}
 @media (orientation:landscape) and (max-height:600px){.mobile-device .explore-page .scene-nav{width:380px;margin-left:auto}}
 .result-actions>.next-city{display:flex;align-items:center;justify-content:center;width:100%;margin-top:10px;color:var(--brand-blue,#2855f7)}
 .explore-page .explore-bottom{padding-top:56px}
 .quiz-submit .primary:disabled{opacity:.44;box-shadow:none}
+.quiz-timer{display:flex;align-items:center;padding:6px 10px;border-radius:18px;background:#eef3ff;color:var(--blue);font-size:13px;font-variant-numeric:tabular-nums}
+.quiz-timer.urgent{color:#b83d24;background:#fff0ea}
 .route-controls{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 17px 13px}
 .route-controls label{font-size:11px;color:#6d7b92;display:grid;gap:5px}
 .route-controls label:last-child{grid-column:1/-1}
@@ -65,15 +68,15 @@
 .rules-heading .icon-btn{width:30px;height:30px;margin:-2px -4px 0 0;color:#3d4a5f;background:#ffffff80;box-shadow:inset 0 1px #fff,0 0 0 .5px #0f1d3314}
 .rules-heading .icon{width:16px;height:16px}
 .rules-intro{font-size:13px;line-height:1.7;color:#3b4a60;margin:10px 0 14px}
-.rules-steps{display:grid;gap:7px;margin:0 0 12px;padding:0;border:0}
-.rules-steps li{margin:0;gap:12px;align-items:center;padding:9px 12px;border-radius:18px;background:#ffffff66;box-shadow:inset 0 1px #ffffffcc,0 0 0 .5px #0f1d330f}
-.rules-steps li>span{width:34px;height:34px;margin:0;border-radius:11px;font-size:15px;font-weight:700;color:#fff;background:linear-gradient(160deg,#5b84ff,#2855f7);box-shadow:inset 0 1px #ffffff66,0 3px 8px #2855f740}
+.rules-steps{display:grid;gap:18px;margin:18px 0 20px;padding:0;border:0}
+.rules-steps li{margin:0;gap:12px;align-items:flex-start;padding:0;border:0;border-radius:0;background:none;box-shadow:none}
+.rules-steps li>span{width:22px;height:auto;margin:0;border:0;border-radius:0;font-size:15px;font-weight:700;line-height:1.4;color:#2855f7;background:none;box-shadow:none}
 .rules-steps strong{display:block;font-size:14px;font-weight:650;line-height:1.4;color:#0f1d33}
 .rules-steps p{font-size:12px;line-height:1.55;margin:2px 0 0;color:#56647a}
 
-.rules-score{display:flex;align-items:center;gap:6px;margin:0 0 16px;padding:0 2px;font-size:12px;color:#3b4a60}
+.rules-score{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 16px;padding:0;font-size:12px;color:#3b4a60}
 .rules-score b{font-size:12px;font-weight:700;color:#0f1d33;margin-right:4px}
-.rules-score span{padding:4px 10px;border-radius:10px;background:#ffffff80;box-shadow:inset 0 1px #ffffffcc,0 0 0 .5px #0f1d3314;color:#2855f7;font-weight:600}
+.rules-score span{padding:0;border:0;border-radius:0;background:none;box-shadow:none;color:#2855f7;font-weight:600}
 .rules-score i{font-style:normal;color:#8190a9}
 
 /* Blue Liquid Glass CTA. */

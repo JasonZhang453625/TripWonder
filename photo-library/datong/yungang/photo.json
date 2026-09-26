@@ -1,0 +1,34 @@
+{
+  "city": "datong",
+  "dir": "yungang",
+  "id": "yungang",
+  "src": "photo-library/datong/yungang/original.jpg",
+  "original": {
+    "src": "photo-library/datong/yungang/original.jpg",
+    "width": 3072,
+    "height": 4096,
+    "bytes": 9005741,
+    "untouched": true
+  },
+  "sourceFile": "photo-library/datong/yungang/original.jpg",
+  "sourceSha256": "b2ef46326e39726b679b8e33626c6827c12dfdc839f77c75e9b6c8d041dc8026",
+  "originalFilename": "微信图片_20260919174904_59_26.jpg",
+  "thumb": {
+    "src": "photo-library/datong/yungang/thumb.webp",
+    "width": 480,
+    "height": 640,
+    "bytes": 61582
+  },
+  "screen": {
+    "src": "photo-library/datong/yungang/screen.webp",
+    "width": 1080,
+    "height": 1440,
+    "bytes": 439280
+  },
+  "detail": {
+    "src": "photo-library/datong/yungang/detail.webp",
+    "width": 1600,
+    "height": 2133,
+    "bytes": 1057662
+  }
+}

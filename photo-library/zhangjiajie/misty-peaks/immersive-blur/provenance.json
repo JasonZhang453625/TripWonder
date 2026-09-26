@@ -1,0 +1,16 @@
+{
+  "scene": "zjj-misty-peaks",
+  "city": "zhangjiajie",
+  "source": "../original.avif",
+  "sourceSha256": "0c5dfb9281568fb8940b2d3a8731be2dea10cb4490d05ee82aef01e863a434f1",
+  "displayPhoto": "photo.jpg",
+  "displaySize": [
+    2670,
+    1781
+  ],
+  "displaySha256": "fca69c4b8c72332e48ee342ec7b55dfcd74ef00489819cc2ffe8724a150b0b99",
+  "sourceAspect": 1.4991577765300392,
+  "periphery": "blurred projection of the original photo, rendered at runtime (no AI content)",
+  "encoding": "JPEG quality 98, 4:4:4, native pixel dimensions",
+  "preparedAt": "2026-09-26T17:07:18.376Z"
+}

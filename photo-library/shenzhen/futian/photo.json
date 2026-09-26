@@ -2,7 +2,7 @@
   "city": "shenzhen",
   "dir": "futian",
   "id": "sz-futian",
-  "src": "photo-library/shenzhen/pexels-lywin-55237728-38833568.jpg",
+  "src": "photo-library/shenzhen/futian/original.jpg",
   "original": {
     "src": "photo-library/shenzhen/futian/original.jpg",
     "width": 3000,
@@ -10,7 +10,7 @@
     "bytes": 732212,
     "untouched": true
   },
-  "sourceFile": "photo-library/shenzhen/pexels-lywin-55237728-38833568.jpg",
+  "sourceFile": "photo-library/shenzhen/futian/original.jpg",
   "sourceSha256": "f27f905d5680cd8874406fec3ac3b8454396eb69d4440622acf6ba1fbd693ef1",
   "thumb": {
     "src": "photo-library/shenzhen/futian/thumb.webp",
@@ -29,5 +29,6 @@
     "width": 2400,
     "height": 1600,
     "bytes": 430022
-  }
+  },
+  "originalFilename": "pexels-lywin-55237728-38833568.jpg"
 }

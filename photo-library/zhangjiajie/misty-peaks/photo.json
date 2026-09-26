@@ -1,0 +1,38 @@
+{
+  "city": "zhangjiajie",
+  "dir": "misty-peaks",
+  "id": "zjj-misty-peaks",
+  "src": "photo-library/zhangjiajie/misty-peaks/original.avif",
+  "sourceFile": "photo-library/zhangjiajie/misty-peaks/original.avif",
+  "originalFilename": "photo-1514920735211-8c697444a248.avif",
+  "sourceSha256": "0c5dfb9281568fb8940b2d3a8731be2dea10cb4490d05ee82aef01e863a434f1",
+  "original": {
+    "src": "photo-library/zhangjiajie/misty-peaks/original.avif",
+    "width": 2670,
+    "height": 1781,
+    "bytes": 414542,
+    "untouched": true
+  },
+  "credit": "Joshua Sortino / Unsplash",
+  "license": "Unsplash License",
+  "licenseUrl": "https://unsplash.com/license",
+  "source": "https://unsplash.com/photos/aerial-view-of-mountains-gii7lF4y0WY",
+  "thumb": {
+    "src": "photo-library/zhangjiajie/misty-peaks/thumb.webp",
+    "width": 640,
+    "height": 427,
+    "bytes": 26798
+  },
+  "screen": {
+    "src": "photo-library/zhangjiajie/misty-peaks/screen.webp",
+    "width": 1440,
+    "height": 961,
+    "bytes": 193872
+  },
+  "detail": {
+    "src": "photo-library/zhangjiajie/misty-peaks/detail.webp",
+    "width": 2400,
+    "height": 1601,
+    "bytes": 563844
+  }
+}

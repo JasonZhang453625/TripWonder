@@ -2,7 +2,7 @@
   "city": "guilin",
   "dir": "yulong",
   "id": "gl-yulong",
-  "src": "photo-library/guilin/pexels-yfs-visuals-921252577-19966000.jpg",
+  "src": "photo-library/guilin/yulong/original.jpg",
   "original": {
     "src": "photo-library/guilin/yulong/original.jpg",
     "width": 5996,
@@ -10,7 +10,7 @@
     "bytes": 3211514,
     "untouched": true
   },
-  "sourceFile": "photo-library/guilin/pexels-yfs-visuals-921252577-19966000.jpg",
+  "sourceFile": "photo-library/guilin/yulong/original.jpg",
   "sourceSha256": "b0fdfdba40c6a8677ee27908538518b4a1555c0f1e543723b34a603ce3c10590",
   "thumb": {
     "src": "photo-library/guilin/yulong/thumb.webp",
@@ -29,5 +29,6 @@
     "width": 2400,
     "height": 1474,
     "bytes": 428206
-  }
+  },
+  "originalFilename": "pexels-yfs-visuals-921252577-19966000.jpg"
 }

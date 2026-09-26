@@ -1,0 +1,94 @@
+/* Flat surfaces outside the photographic cover and exploration scenes. */
+.phone.flat-mode:not(.immersive):not(.result-on-photo) .statusbar{background:#fff;color:#171e2b;backdrop-filter:none;-webkit-backdrop-filter:none;filter:none}
+.phone.flat-mode #app{background:#fff}
+#app>.page:not(.explore-page):not(.cover-page):not(.result-page){background:#fff;color:#171e2b}
+#app>.page:not(.explore-page,.cover-page) .page-head{background:#fff;border-bottom:1px solid #e7e9ee}
+#app>.page:not(.explore-page,.cover-page) :is(.primary,.secondary,.glass-light,.head-action,.icon-btn),#app>.page:not(.explore-page,.cover-page) :is(.route-tabs,.stop-actions,.travel-products) button{box-shadow:none;text-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none;border:1px solid #d6dae1;border-radius:6px;background:#fff;color:#171e2b;font-weight:600}
+#app>.page:not(.explore-page,.cover-page) .primary{border-color:#3264ff;background:#3264ff;color:#fff;min-height:50px}
+#app>.page:not(.explore-page,.cover-page) .primary[aria-busy=true]{background:#3264ff;color:#fff}
+#app>.page:not(.explore-page,.cover-page) .page-head .icon-btn{background:transparent;border-color:transparent;border-radius:50%;width:40px;height:40px}
+#app>.page:not(.explore-page,.cover-page) .head-action{border-color:transparent;color:#3264ff;font-size:12px}
+#app>.page:not(.explore-page,.cover-page) :is(.primary,.secondary,.glass-light,.route-tabs button,.stop-actions button,.travel-products button):active{box-shadow:none;text-shadow:none}
+@media(hover:hover){
+  #app>.page:not(.explore-page,.cover-page) :is(.secondary,.glass-light,.route-tabs button,.stop-actions button,.travel-products button):hover{background:#f4f6fa}
+  #app>.page:not(.explore-page,.cover-page) .primary:hover{background:#2855eb}
+  #app>.page:not(.explore-page,.cover-page) :is(.head-action,.page-head .icon-btn):hover{background:#f4f5f7}
+}
+#app>.page:not(.explore-page,.cover-page) :is(.primary,.secondary,.glass-light,.stop-actions button):disabled{opacity:1;background:#f1f3f6;border-color:#e5e7eb;color:#9ba2ae;box-shadow:none;text-shadow:none}
+#app>.page:not(.explore-page,.cover-page):not(.result-page) :is(.content-card,.day-card){margin:0 22px;padding:24px 0;border:0;border-bottom:1px solid #e5e7eb;border-radius:0;background:#fff;box-shadow:none}
+#app>.page:not(.explore-page,.cover-page) .content-card h3{font-size:18px;letter-spacing:-.02em}
+#app>.page:not(.explore-page,.cover-page) .pad h2{font-size:25px;letter-spacing:-.04em;line-height:1.4}
+#app>.page:not(.explore-page,.cover-page) .pill{border-radius:4px}
+#app>.page:not(.explore-page,.cover-page) .bottom-nav{background:#fff;border:0;border-top:1px solid #e7e9ee;border-radius:0;box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none;left:0;right:0;bottom:0}
+#app>.page:not(.explore-page,.cover-page) .bottom-nav button.active{background:#fff;box-shadow:none;border-radius:0;color:#3264ff}
+#app>.page:not(.explore-page,.cover-page) .bottom-nav{height:calc(64px + max(14px,var(--safe-bottom,0px)));padding:0 6px max(14px,var(--safe-bottom,0px))}
+.phone.flat-mode #toast{border:0;border-radius:6px;background:#182437;box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none}
+
+/* Home: solid icon discs, quieter sections and clear rectangular actions. */
+.flat-mode .top-brand,.flat-mode .quick-apps,.flat-mode .home-body{background:#fff}
+.flat-mode .services{border-radius:0}
+.flat-mode .service .bubble{background:#3264ff;box-shadow:none}
+.flat-mode .coin{background:#ffbc23;box-shadow:none}
+.flat-mode .quick-apps .quick-icon,.flat-mode .quick-apps .entry .quick-icon{background:#f2f5ff;box-shadow:none}
+.flat-mode .quick-apps .new-dot{border-radius:3px}
+.flat-mode .search-box{border:1px solid #3264ff;border-radius:8px;box-shadow:none;padding:15px}
+.flat-mode .search-box .chips span{border-radius:4px;background:#f4f5f7}
+.flat-mode .offer{border:0;border-radius:8px;background:#f5f7fb;padding:16px}
+.flat-mode .offer .claim{border-radius:5px;background:#3264ff;min-height:32px}
+.flat-mode .ticket{border-radius:6px}
+.flat-mode .recent{border-color:#e5e7eb;border-radius:8px;padding:12px}
+.flat-mode .recent img{border-radius:5px}
+.flat-mode .home-banner{border-radius:8px;background:#edf2ff}
+.flat-mode .home-banner .pill{border-radius:3px}
+
+/* Quiz: retain its flow and responsive layout, replace every glass surface. */
+#app>.quiz-page .quiz-header{border-bottom:0}
+#app>.quiz-page .quiz-timer{border:0;border-radius:5px;background:#f2f5ff;color:#2855f7;box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none}
+#app>.quiz-page .quiz-timer.urgent{color:#b33b24;background:#fff0e8}
+#app>.quiz-page .quiz-number{color:#3264ff;font-weight:400}
+#app>.quiz-page .quiz-count{color:#727b89}
+#app>.quiz-page .quiz-progress span{border-radius:0;box-shadow:none}
+#app>.quiz-page .quiz-options .option{border:1px solid #dce1e9;border-radius:8px;background:#fff;box-shadow:none;color:#171e2b;backdrop-filter:none;-webkit-backdrop-filter:none}
+#app>.quiz-page .quiz-options .option-letter{border:0;border-radius:5px;background:#f2f4f8;box-shadow:none;color:#687385}
+#app>.quiz-page .quiz-options .option.selected{border-color:#3264ff;background:#f0f4ff;box-shadow:none;color:#171e2b}
+#app>.quiz-page .quiz-options .option.selected .option-letter{border:0;background:#3264ff;color:#fff;box-shadow:none}
+#app>.quiz-page .quiz-submit{background:#fff;border-top:1px solid #edf0f4}
+#app>.quiz-page .quiz-submit .primary{background:#3264ff;color:#fff;border-color:#3264ff;border-radius:6px;box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none}
+#app>.quiz-page .quiz-submit .primary:disabled{background:#f1f3f6;color:#9ba2ae;border-color:#e5e7eb;box-shadow:none}
+#app>.quiz-page .quiz-submit .primary[aria-busy=true]{background:#3264ff;color:#fff}
+#app>.quiz-page .quiz-submit .primary:not(:disabled):active{box-shadow:none}
+@media(hover:hover){
+  #app>.quiz-page .quiz-options .option:not(.selected):hover{border-color:#acb9d1;background:#f8faff}
+  #app>.quiz-page .quiz-submit .primary:not(:disabled):hover{background:#2855eb;border-color:#2855eb}
+}
+
+/* Map controls and itinerary use the same flat visual language. */
+#app>.guess-page{background:#edf3f9}
+#app>.guess-page .guess-top{background:#fff;border-bottom:1px solid #e7e9ee;padding-bottom:12px}
+#app>.guess-page :is(.glass,.guess-zoom button,.guess-card,.gm-dist){background:#fff;color:#171e2b;border:1px solid #e2e6ed;box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none}
+#app>.guess-page .guess-zoom button{border-radius:8px}
+#app>.guess-page .guess-card{border-radius:16px}
+#app>.guess-page .guess-recall button{border-radius:6px;box-shadow:none}
+#app>.guess-page .gm-pin i{background:#3264ff;box-shadow:none}
+#app>.guess-page .gm-pin.answer i,#app>.guess-page .gm-tag{background:#f04b2c;box-shadow:none}
+#app>.page:not(.explore-page,.cover-page) .route-tabs button{background:#f5f6f9;border-color:#f5f6f9;color:#677180}
+#app>.page:not(.explore-page,.cover-page) .route-tabs button.active{background:#3264ff;border-color:#3264ff;color:#fff;box-shadow:none}
+.flat-mode .route-controls :is(select,input){border-radius:6px;border-color:#d6dae1}
+.flat-mode .route-bottom{padding:24px 22px}
+.flat-mode .availability-warning{border-radius:5px;background:#fff5e7}
+.flat-mode .tag-row .pill{background:#f2f5ff;border:0;border-radius:4px}
+.flat-mode .itinerary-card>strong{font-size:18px}
+.flat-mode .itinerary-card>p{line-height:1.8}
+
+/* Sheets outside exploration follow the same surfaces. The share art and medal
+   keep their own artwork; no blanket filters are applied to their descendants. */
+.flat-mode #modal-root .sheet:not(.reward-dialog){background:#fff;box-shadow:none;border:0}
+.flat-mode #modal-root :is(.primary,.secondary,.sheet-close),.flat-mode #modal-root .rules-heading .icon-btn{background:#fff;border:1px solid #d6dae1;border-radius:6px;color:#171e2b;box-shadow:none;text-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none}
+.flat-mode #modal-root .primary{background:#3264ff;border-color:#3264ff;color:#fff}
+.flat-mode #modal-root .primary:hover{background:#2855eb}
+.flat-mode #modal-root .primary:active{box-shadow:none}
+.flat-mode #modal-root .primary:disabled{background:#f1f3f6;border-color:#e5e7eb;color:#9ba2ae;box-shadow:none}
+.flat-mode #modal-root .sheet-close,.flat-mode #modal-root .rules-heading .icon-btn{border:0;border-radius:50%;background:#f4f5f7;color:#171e2b}
+.flat-mode #modal-root .rules-popover{border-radius:18px;background:#fff;border:1px solid #e5e7eb;box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none}
+.flat-mode #modal-root .rules-score{background:#f3f6ff;border:0;border-radius:6px;box-shadow:none}
+.flat-mode #modal-root .clue-quote{border-radius:0;background:#f5f7fb;color:#58687f}

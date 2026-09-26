@@ -2,7 +2,7 @@
   "city": "guilin",
   "dir": "xingping",
   "id": "gl-xingping",
-  "src": "photo-library/guilin/pexels-willianjusten-36535023.jpg",
+  "src": "photo-library/guilin/xingping/original.jpg",
   "original": {
     "src": "photo-library/guilin/xingping/original.jpg",
     "width": 6000,
@@ -10,7 +10,7 @@
     "bytes": 3434199,
     "untouched": true
   },
-  "sourceFile": "photo-library/guilin/pexels-willianjusten-36535023.jpg",
+  "sourceFile": "photo-library/guilin/xingping/original.jpg",
   "sourceSha256": "6db15dfcd91bd0e5c4b2fe55d97c66f423ce03161d3fdcf80a0a6b9038774c7f",
   "thumb": {
     "src": "photo-library/guilin/xingping/thumb.webp",
@@ -29,5 +29,6 @@
     "width": 2400,
     "height": 1600,
     "bytes": 657022
-  }
+  },
+  "originalFilename": "pexels-willianjusten-36535023.jpg"
 }

@@ -2,7 +2,7 @@
   "city": "beijing",
   "dir": "hongyige",
   "id": "bj-hongyige",
-  "src": "补充图/北京/pexels-zhai-zhai-822160214-28956203.jpg",
+  "src": "photo-library/beijing/hongyige/original.jpg",
   "original": {
     "src": "photo-library/beijing/hongyige/original.jpg",
     "width": 8164,
@@ -10,7 +10,7 @@
     "bytes": 3668179,
     "untouched": true
   },
-  "sourceFile": "补充图/北京/pexels-zhai-zhai-822160214-28956203.jpg",
+  "sourceFile": "photo-library/beijing/hongyige/original.jpg",
   "sourceSha256": "efb1331c8ea9792c558d898fd1683f505d91112894726004df07165ddcb56ade",
   "thumb": {
     "src": "photo-library/beijing/hongyige/thumb.webp",
@@ -29,5 +29,6 @@
     "width": 2400,
     "height": 1600,
     "bytes": 504184
-  }
+  },
+  "originalFilename": "pexels-zhai-zhai-822160214-28956203.jpg"
 }

@@ -1,0 +1,97 @@
+/* Only the controls below the existing postcard; no changes to its SVG artwork. */
+.sheet.share-dialog {
+  height:min(710px,80%);
+  max-height:80%;
+  overflow:hidden;
+  box-shadow:none;
+}
+.share-dialog .share-sheet {
+  display:flex;
+  flex-direction:column;
+  gap:16px;
+  min-height:0;
+}
+.share-dialog .share-preview {flex:1 1 0;min-height:0}
+.share-dialog .share-actions {flex:0 0 auto;min-width:0;gap:0}
+.share-dialog .share-options {flex:none;min-width:0;border-top:1px solid #edf0f3;padding-top:12px}
+.share-dialog .share-options-row {
+  display:flex;
+  gap:12px;
+  overflow-x:auto;
+  overflow-y:hidden;
+  overscroll-behavior-x:contain;
+  scrollbar-width:none;
+  -webkit-overflow-scrolling:touch;
+  scroll-padding:3px;
+  padding:3px 2px 5px;
+}
+.share-dialog .share-options-row::-webkit-scrollbar {display:none}
+.share-dialog .share-options-tools {margin-top:5px}
+#modal-root .share-dialog .share-option {
+  display:flex;
+  flex:0 0 61px;
+  flex-direction:column;
+  align-items:center;
+  justify-content:flex-start;
+  gap:7px;
+  min-width:0;
+  min-height:0;
+  padding:0;
+  border:0;
+  border-radius:0;
+  color:#171e28;
+  background:transparent;
+  background-image:none;
+  box-shadow:none;
+  text-shadow:none;
+  backdrop-filter:none;
+  -webkit-backdrop-filter:none;
+}
+.share-dialog .share-option-disc {
+  display:grid;
+  place-items:center;
+  width:49px;
+  height:49px;
+  border:1px solid #e5e7eb;
+  border-radius:50%;
+  color:#141c26;
+  background:#fff;
+  transition:transform .18s ease,background-color .18s ease;
+}
+.share-dialog .share-option-disc svg {display:block;width:29px;height:29px}
+.share-dialog .share-option-label {font-size:10px;line-height:1.4;white-space:nowrap;font-weight:400;letter-spacing:0}
+.share-dialog .share-options-social .share-option-disc {border:0;color:#fff}
+.share-dialog .share-option--whatsapp .share-option-disc {background:#2ccc62}
+.share-dialog .share-option--line .share-option-disc {background:#06c755}
+.share-dialog .share-option--wechat .share-option-disc {background:#39c938}
+.share-dialog .share-option--instagram .share-option-disc {background:radial-gradient(circle at 28% 105%,#ffd66b 0,#fc9e29 22%,#f23f73 45%,#bb19c7 68%,#6544d6 100%)}
+.share-dialog .share-option--snapchat .share-option-disc {background:#fffc00}
+.share-dialog .share-option:active .share-option-disc {transform:scale(.92)}
+.share-dialog .share-option:disabled {opacity:.42}
+.share-dialog .share-option:focus-visible {outline:2px solid #3264ff;outline-offset:1px;border-radius:6px}
+.share-dialog .invite-link:not([hidden]) {width:100%;padding:8px;border:1px solid #dce1e8;border-radius:4px;margin:8px 0 0;color:#45546a;font-size:11px}
+@media (hover:hover) {
+  .share-dialog .share-option:hover .share-option-disc {transform:translateY(-2px)}
+  .share-dialog .share-options-tools .share-option:hover .share-option-disc {background:#f5f7fb}
+}
+@media (max-height:650px) {
+  .sheet.share-dialog {height:calc(100% - var(--safe-top,0px) - 14px);max-height:calc(100% - var(--safe-top,0px) - 14px)}
+  .share-dialog .sheet-heading {margin-bottom:8px}
+  .share-dialog .sheet-handle {margin-bottom:10px}
+  .share-dialog .share-sheet {gap:10px}
+  .share-dialog .share-options {padding-top:7px}
+  .share-dialog .share-option-disc {width:42px;height:42px}
+  .share-dialog .share-option-disc svg {width:26px;height:26px}
+  .share-dialog .share-options-tools {margin-top:0}
+}
+@media (orientation:landscape) and (max-height:500px) {
+  .share-dialog .share-sheet {display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:20px;align-items:center}
+  .share-dialog .share-preview {height:100%;align-self:stretch}
+  .share-dialog .share-options {padding-top:0;border-top:0}
+  .share-dialog .share-options-row {gap:5px}
+  #modal-root .share-dialog .share-option {flex-basis:54px}
+  .share-dialog .share-options-tools {margin-top:8px}
+}
+@media (prefers-reduced-motion:reduce) {
+  .share-dialog .share-option-disc {transition:none}
+}

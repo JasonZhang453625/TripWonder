@@ -5,11 +5,12 @@
   "sourceSha256": "05e3957a5220e57a274eaf31b23fe1ed8ec170b85da10566ebe111e0d0a4635a",
   "displayPhoto": "photo.jpg",
   "displaySize": [
-    2400,
-    1600
+    8434,
+    5623
   ],
-  "displaySha256": "546b020e99c13819d67e8250c33e0215de32a7fc5a6f658685cf22095988bf2b",
-  "sourceAspect": 1.5,
+  "displaySha256": "05e3957a5220e57a274eaf31b23fe1ed8ec170b85da10566ebe111e0d0a4635a",
+  "sourceAspect": 1.4999110794949315,
   "periphery": "blurred projection of the original photo, rendered at runtime (no AI content)",
-  "preparedAt": "2026-09-26T04:04:00.630Z"
+  "preparedAt": "2026-09-26T11:26:41.614Z",
+  "encoding": "original JPEG bytes"
 }

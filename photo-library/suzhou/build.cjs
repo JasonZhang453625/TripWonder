@@ -5,7 +5,7 @@ const sharp = require('sharp');
 const files = [
   ['zhuozheng', 'original.jpg'],
   ['shizilin', 'source-1280.jpg'],
-  ['huqiu', 'original.jpg'],
+  ['huqiu', 'oriented.jpg'],
 ];
 
 async function main() {

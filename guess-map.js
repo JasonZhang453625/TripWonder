@@ -67,7 +67,7 @@
     constructor(root, { onPick, onReject, insets = () => ({}), avoid = [] } = {}) {
       this.root = root; this.onPick = onPick; this.onReject = onReject;
       this.measure = insets; this.insets = { top: 0, bottom: 0 };
-      this.z = 1; this.tx = 0; this.ty = 0; this.pin = null; this.locked = false;
+      this.z = 1; this.tx = 0; this.ty = 0; this.pin = null; this.locked = false; this.revealing = false;
       this.pointers = new Map(); this.frame = 0; this.anim = 0; this.lastScaleZ = 0; this.lastS = 0;
       root.classList.add('gm');
       const near = (x, y) => avoid.some(c => { const p = toXY(c.lat, c.lng); return Math.hypot(p.x - x, p.y - y) * KM_PER_UNIT < 40; });
@@ -98,7 +98,7 @@
       this.fit();
     }
     destroy() {
-      this.dead = true;
+      this.dead = true; this.revealing = false; this.clearGesture();
       cancelAnimationFrame(this.frame); cancelAnimationFrame(this.anim); clearTimeout(this.wheelEnd); this.observer.disconnect();
       this.root.removeEventListener('pointerdown', this.handlers.down);
       this.root.removeEventListener('pointermove', this.handlers.move);
@@ -182,6 +182,12 @@
       }).catch(() => { this.cityRequested = false; });
     }
     moving(on) { if (on !== this.isMoving) { this.isMoving = on; this.root.parentElement?.classList.toggle('moving', on); } }
+    clearGesture() {
+      clearTimeout(this.wheelEnd);
+      for (const id of this.pointers.keys()) if (this.root.hasPointerCapture?.(id)) this.root.releasePointerCapture(id);
+      this.pointers.clear(); this.gesture = this.pinch = null;
+      this.root.classList.remove('dragging'); this.moving(false);
+    }
     local(e) { const r = this.root.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; }
     toMap(pt) { const s = this.base * this.z; return { x: (pt.x - this.tx) / s, y: (pt.y - this.ty) / s }; }
     zoomAt(pt, z) {
@@ -190,6 +196,7 @@
       this.tx = pt.x - m.x * s; this.ty = pt.y - m.y * s; this.clamp(); this.schedule();
     }
     zoomBy(factor) {
+      if (this.dead || this.revealing) return;
       const pt = { x: this.vw / 2, y: this.insets.top + (this.vh - this.insets.top - this.insets.bottom) / 2 };
       const from = { z: this.z, tx: this.tx, ty: this.ty };
       this.zoomAt(pt, this.z * factor);
@@ -197,10 +204,12 @@
       Object.assign(this, from); this.animate(to, 260);
     }
     animate(to, duration, done) {
+      if (this.dead) return;
       cancelAnimationFrame(this.anim);
       const from = { z: this.z, tx: this.tx, ty: this.ty }, t0 = performance.now();
       if (reduced() || duration <= 0) { Object.assign(this, to); this.apply(); done?.(); return; }
       const step = now => {
+        if (this.dead) return;
         const t = Math.min(1, (now - t0) / duration), e = ease(t);
         this.z = from.z + (to.z - from.z) * e; this.tx = from.tx + (to.tx - from.tx) * e; this.ty = from.ty + (to.ty - from.ty) * e;
         this.apply();
@@ -210,7 +219,7 @@
     }
 
     down(e) {
-      if (e.button > 0) return;
+      if (this.dead || this.revealing || e.button > 0) return;
       cancelAnimationFrame(this.anim); this.anim = 0;
       this.root.setPointerCapture?.(e.pointerId);
       this.pointers.set(e.pointerId, this.local(e)); this.moving(true);
@@ -261,7 +270,9 @@
       this.anim = requestAnimationFrame(glide);
     }
     wheel(e) {
-      e.preventDefault(); cancelAnimationFrame(this.anim); this.anim = 0;
+      e.preventDefault();
+      if (this.dead || this.revealing) return;
+      cancelAnimationFrame(this.anim); this.anim = 0;
       this.moving(true); clearTimeout(this.wheelEnd); this.wheelEnd = setTimeout(() => this.moving(false), 180);
       this.zoomAt(this.local(e), this.z * Math.exp(-Math.max(-60, Math.min(60, e.deltaY)) * .004));
     }
@@ -300,7 +311,9 @@
     }
     // Frames guess and answer, draws the connecting line, drops the answer pin and labels.
     reveal(answer, { name = '', km } = {}, done) {
-      this.locked = true; this.root.classList.add('revealed');
+      if (this.dead || this.locked) return;
+      // Keep framing and line drawing uninterrupted; pan/zoom resumes when both are complete.
+      this.locked = true; this.revealing = true; this.clearGesture(); this.root.classList.add('revealed');
       const a = toXY(answer.lat, answer.lng), g = this.pin || a;
       this.line.setAttribute('x1', g.x); this.line.setAttribute('y1', g.y); this.line.setAttribute('x2', g.x); this.line.setAttribute('y2', g.y);
       this.answerEl.querySelector('.gm-tag').textContent = name;
@@ -308,11 +321,12 @@
       this.animate(this.frameFor(a, g), 760, () => {
         const t0 = performance.now(), dur = reduced() ? 0 : 520;
         const draw = now => {
+          if (this.dead) return;
           const t = dur ? Math.min(1, (now - t0) / dur) : 1, e = ease(t);
           this.line.setAttribute('x2', g.x + (a.x - g.x) * e); this.line.setAttribute('y2', g.y + (a.y - g.y) * e);
           if (t < 1) { this.anim = requestAnimationFrame(draw); return; }
           this.anim = 0; this.answer = a; this.answerEl.hidden = false; this.answerEl.classList.add('drop');
-          this.distEl.hidden = km === undefined; this.placeMarks(); done?.();
+          this.distEl.hidden = km === undefined; this.placeMarks(); this.revealing = false; done?.();
         };
         this.anim = requestAnimationFrame(draw);
       });

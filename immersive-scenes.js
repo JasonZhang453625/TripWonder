@@ -2,127 +2,178 @@
 // (no AI periphery). Scale, yaw and pitch limits are fitted per viewport by ImmersivePhotoViewer:
 // the photo keeps its true proportions, its full height fits the screen at zoom 1, and turning
 // reaches every edge of the photo plus the blur margin.
-// Assets: node build-immersive-assets.cjs <id> <dir with photo.jpg, 1600 px tall> none
+// Assets: node build-immersive-assets.cjs <id> <dir with native-resolution photo.jpg> none
 const BLUR_SCENE = {periphery: 'blur', blurMargin: .12, blurFeather: .004, radius: 8, walkX: .07};
 
 window.IMMERSIVE_SCENES = {
   yungang: {
     ...BLUR_SCENE,
     id: 'yungang',
-    assetScript: 'immersive-yungang-assets.js?v=20260926-540d5820',
+    assetScript: 'immersive-yungang-assets.js?v=b2ef46326e39',
+    sourceUrl: 'photo-library/datong/yungang/immersive-blur/photo.jpg?v=b2ef46326e39',
     sourceAspect: 0.75
   },
   huayan: {
     ...BLUR_SCENE,
     id: 'huayan',
-    assetScript: 'immersive-huayan-assets.js?v=20260926-56600ae1',
+    assetScript: 'immersive-huayan-assets.js?v=14705002fdc6',
+    sourceUrl: 'photo-library/datong/huayan/immersive-blur/photo.jpg?v=14705002fdc6',
     sourceAspect: 0.5625
   },
   xuankong: {
     ...BLUR_SCENE,
     id: 'xuankong',
-    assetScript: 'immersive-xuankong-assets.js?v=20260926-d9dcc0b3',
+    assetScript: 'immersive-xuankong-assets.js?v=aa45bd9550ff',
+    sourceUrl: 'photo-library/datong/xuankong/immersive-blur/photo.jpg?v=aa45bd9550ff',
     sourceAspect: 1.5
   },
   'sz-futian': {
     ...BLUR_SCENE,
     id: 'sz-futian',
-    assetScript: 'immersive-sz-futian-assets.js?v=20260926-80ccb40a',
+    assetScript: 'immersive-sz-futian-assets.js?v=f27f905d5680',
+    sourceUrl: 'photo-library/shenzhen/futian/immersive-blur/photo.jpg?v=f27f905d5680',
     sourceAspect: 1.5,
     focusX: 0.64
   },
   'sz-houhai': {
     ...BLUR_SCENE,
     id: 'sz-houhai',
-    assetScript: 'immersive-sz-houhai-assets.js?v=20260926-92acd1ac',
-    sourceAspect: 2.47875,
+    assetScript: 'immersive-sz-houhai-assets.js?v=6965ecd58c4d',
+    sourceUrl: 'photo-library/shenzhen/houhai/immersive-blur/photo.jpg?v=6965ecd58c4d',
+    sourceAspect: 1.5,
     focusX: 0.53
   },
   'sz-qianhai': {
     ...BLUR_SCENE,
     id: 'sz-qianhai',
-    assetScript: 'immersive-sz-qianhai-assets.js?v=20260926-ca30e868',
+    assetScript: 'immersive-sz-qianhai-assets.js?v=3c38385a7837',
+    sourceUrl: 'photo-library/shenzhen/qianhai/immersive-blur/photo.jpg?v=3c38385a7837',
     sourceAspect: 1.5,
     focusX: 0.36
   },
   'hk-peak': {
     ...BLUR_SCENE,
     id: 'hk-peak',
-    assetScript: 'immersive-hk-peak-assets.js?v=20260926-94113fde',
+    assetScript: 'immersive-hk-peak-assets.js?v=3e6b791cb267',
+    sourceUrl: 'photo-library/hongkong/peak/immersive-blur/photo.jpg?v=3e6b791cb267',
     sourceAspect: 1.5,
     focusX: 0.56
   },
   'hk-star-ferry': {
     ...BLUR_SCENE,
     id: 'hk-star-ferry',
-    assetScript: 'immersive-hk-star-ferry-assets.js?v=20260926-10049c28',
-    sourceAspect: 1.333125
+    assetScript: 'immersive-hk-star-ferry-assets.js?v=b4ad9a8754b1',
+    sourceUrl: 'photo-library/hongkong/star-ferry/immersive-blur/photo.jpg?v=b4ad9a8754b1',
+    sourceAspect: 1.3333333333333333
   },
   'hk-sham-shui-po': {
     ...BLUR_SCENE,
     id: 'hk-sham-shui-po',
-    assetScript: 'immersive-hk-sham-shui-po-assets.js?v=20260926-fb91cb22',
-    sourceAspect: 1.5
+    assetScript: 'immersive-hk-sham-shui-po-assets.js?v=a39cbf6b2fcd',
+    sourceUrl: 'photo-library/hongkong/sham-shui-po/immersive-blur/photo.jpg?v=a39cbf6b2fcd',
+    sourceAspect: 1.500133654103181
   },
   'gl-xingping': {
     ...BLUR_SCENE,
     id: 'gl-xingping',
-    assetScript: 'immersive-gl-xingping-assets.js?v=20260926-be15bd55',
+    assetScript: 'immersive-gl-xingping-assets.js?v=6db15dfcd91b',
+    sourceUrl: 'photo-library/guilin/xingping/immersive-blur/photo.jpg?v=6db15dfcd91b',
     sourceAspect: 1.5
   },
   'gl-yulong': {
     ...BLUR_SCENE,
     id: 'gl-yulong',
-    assetScript: 'immersive-gl-yulong-assets.js?v=20260926-033e9279',
-    sourceAspect: 1.628125
+    assetScript: 'immersive-gl-yulong-assets.js?v=b0fdfdba40c6',
+    sourceUrl: 'photo-library/guilin/yulong/immersive-blur/photo.jpg?v=b0fdfdba40c6',
+    sourceAspect: 1.6280206353516156
   },
   'gl-longji': {
     ...BLUR_SCENE,
     id: 'gl-longji',
-    assetScript: 'immersive-gl-longji-assets.js?v=20260926-6ab6cc55',
-    sourceAspect: 1.333125
+    assetScript: 'immersive-gl-longji-assets.js?v=d6824007fc07',
+    sourceUrl: 'photo-library/guilin/longji/immersive-blur/photo.jpg?v=d6824007fc07',
+    sourceAspect: 1.3333333333333333
   },
   'suzhou-huqiu': {
     ...BLUR_SCENE,
     id: 'suzhou-huqiu',
-    assetScript: 'immersive-suzhou-huqiu-assets.js?v=20260926-565695c6',
+    assetScript: 'immersive-suzhou-huqiu-assets.js?v=794cd4a2b274',
+    sourceUrl: 'photo-library/suzhou/huqiu/immersive-blur/photo.jpg?v=794cd4a2b274',
     sourceAspect: 0.75
   },
   'bj-zhengyangmen': {
     ...BLUR_SCENE,
     id: 'bj-zhengyangmen',
-    assetScript: 'immersive-bj-zhengyangmen-assets.js?v=20260926-44f798f1',
-    sourceAspect: 1.333125
+    assetScript: 'immersive-bj-zhengyangmen-assets.js?v=8ba032d363f1',
+    sourceUrl: 'photo-library/beijing/zhengyangmen/immersive-blur/photo.jpg?v=8ba032d363f1',
+    sourceAspect: 1.3333333333333333
   },
   'bj-hongyige': {
     ...BLUR_SCENE,
     id: 'bj-hongyige',
-    assetScript: 'immersive-bj-hongyige-assets.js?v=20260926-5347af30',
-    sourceAspect: 1.5,
+    assetScript: 'immersive-bj-hongyige-assets.js?v=efb1331c8ea9',
+    sourceUrl: 'photo-library/beijing/hongyige/immersive-blur/photo.jpg?v=efb1331c8ea9',
+    sourceAspect: 1.4999081388939923,
     focusX: 0.58
   },
   'bj-beihai': {
     ...BLUR_SCENE,
     id: 'bj-beihai',
-    assetScript: 'immersive-bj-beihai-assets.js?v=20260926-28ffecdc',
+    assetScript: 'immersive-bj-beihai-assets.js?v=7721d65f08b9',
+    sourceUrl: 'photo-library/beijing/beihai/immersive-blur/photo.jpg?v=7721d65f08b9',
     sourceAspect: 1.5
   },
   'sh-bund': {
     ...BLUR_SCENE,
     id: 'sh-bund',
-    assetScript: 'immersive-sh-bund-assets.js?v=20260926-213bb1fe',
+    assetScript: 'immersive-sh-bund-assets.js?v=bb10216797f1',
+    sourceUrl: 'photo-library/shanghai/bund/immersive-blur/photo.jpg?v=bb10216797f1',
     sourceAspect: 1.5
   },
   'sh-lujiazui': {
     ...BLUR_SCENE,
     id: 'sh-lujiazui',
-    assetScript: 'immersive-sh-lujiazui-assets.js?v=20260926-546b020e',
-    sourceAspect: 1.5
+    assetScript: 'immersive-sh-lujiazui-assets.js?v=05e3957a5220',
+    sourceUrl: 'photo-library/shanghai/lujiazui/immersive-blur/photo.jpg?v=05e3957a5220',
+    sourceAspect: 1.4999110794949315
   },
   'sh-bund-night': {
     ...BLUR_SCENE,
     id: 'sh-bund-night',
-    assetScript: 'immersive-sh-bund-night-assets.js?v=20260926-e839282e',
+    assetScript: 'immersive-sh-bund-night-assets.js?v=5991dd75f496',
+    sourceUrl: 'photo-library/shanghai/bund-night/immersive-blur/photo.jpg?v=5991dd75f496',
     sourceAspect: 1.5
+  },
+  'zjj-tianzishan': {
+    ...BLUR_SCENE,
+    id: 'zjj-tianzishan',
+    assetScript: 'immersive-zjj-tianzishan-assets.js?v=b5cef2b54754',
+    sourceUrl: 'photo-library/zhangjiajie/tianzishan/immersive-blur/photo.jpg?v=b5cef2b54754',
+    sourceAspect: 2.0024915062287656,
+    focusX: 0.48
+  },
+  'zjj-misty-peaks': {
+    ...BLUR_SCENE,
+    id: 'zjj-misty-peaks',
+    assetScript: 'immersive-zjj-misty-peaks-assets.js?v=fca69c4b8c72',
+    sourceUrl: 'photo-library/zhangjiajie/misty-peaks/immersive-blur/photo.jpg?v=fca69c4b8c72',
+    sourceAspect: 1.4991577765300392,
+    focusX: 0.62
+  },
+  'zjj-tianmen-cave': {
+    ...BLUR_SCENE,
+    id: 'zjj-tianmen-cave',
+    assetScript: 'immersive-zjj-tianmen-cave-assets.js?v=c15133d1a1cc',
+    sourceUrl: 'photo-library/zhangjiajie/tianmen-cave/immersive-blur/photo.jpg?v=c15133d1a1cc',
+    sourceAspect: 1.503006012024048,
+    focusX: 0.48
+  },
+  'zjj-winding-road': {
+    ...BLUR_SCENE,
+    id: 'zjj-winding-road',
+    assetScript: 'immersive-zjj-winding-road-assets.js?v=cf876eb626e6',
+    sourceUrl: 'photo-library/zhangjiajie/winding-road/immersive-blur/photo.jpg?v=cf876eb626e6',
+    sourceAspect: 1.5,
+    focusX: 0.54
   }
 };

@@ -1,15 +1,16 @@
 {
   "scene": "sz-houhai",
   "city": "shenzhen",
-  "source": "../original.jpg",
-  "sourceSha256": "7754897f11f1fd152d3ca51cc746b93fc7c0ca54f0dbb1e83b63fcaa7fed4efe",
+  "source": "../original.png",
+  "sourceSha256": "d7dc2681b3a042013cfe78d7077a252e69634c922983f0cb5254b491ce2e8f38",
   "displayPhoto": "photo.jpg",
   "displaySize": [
-    3966,
-    1600
+    7002,
+    4668
   ],
-  "displaySha256": "92acd1ac7578c899cd4b254e4bffa05bab2b7fec6ebd22649193bb4483e8dde1",
-  "sourceAspect": 2.47875,
+  "displaySha256": "6965ecd58c4d0e1cf318bed68c356858c5933701ab727ba27d3370e2b6428460",
+  "sourceAspect": 1.5,
   "periphery": "blurred projection of the original photo, rendered at runtime (no AI content)",
-  "preparedAt": "2026-09-26T04:43:32.572Z"
+  "preparedAt": "2026-09-26T11:26:40.528Z",
+  "encoding": "JPEG quality 98, 4:4:4, native pixel dimensions"
 }

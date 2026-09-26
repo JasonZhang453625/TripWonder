@@ -1,0 +1,51 @@
+/* Photographic cover: a shared glass dock with one flat primary action. */
+#app .cover-page {touch-action:pan-y pinch-zoom;user-select:none;-webkit-user-select:none}
+#app .cover-page .cover-hero {cursor:grab;will-change:transform;background:#26372e}
+#app .cover-page.cover-dragging .cover-hero {cursor:grabbing}
+#app .cover-page .cover-hero:focus-visible {outline:2px solid #fff9;outline-offset:-5px}
+#app .cover-page .cover-footer {
+  display:block;padding:52px 20px 33px;
+  background:linear-gradient(transparent,rgba(8,19,16,.24) 40%,rgba(8,19,16,.6));pointer-events:none;
+}
+#app .cover-page .cover-dock {
+  display:grid;grid-template-columns:minmax(0,.95fr) minmax(0,1fr);align-items:center;
+  gap:7px;max-width:470px;margin:0 auto;padding:7px;min-height:72px;
+  border:1px solid #ffffff6e;border-radius:44px;background:rgba(236,247,238,.16);
+  backdrop-filter:blur(22px) saturate(125%);-webkit-backdrop-filter:blur(22px) saturate(125%);
+  box-shadow:inset 0 1px 0 #ffffff26,0 4px 20px #03130c14;pointer-events:auto;
+}
+#app .cover-page .cover-dock-links {display:grid;grid-template-columns:1fr 1fr;align-items:center;min-width:0}
+#app .cover-page .cover-tool {
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;
+  min-width:44px;min-height:52px;padding:3px 0;border:0;border-radius:26px;
+  background:transparent;box-shadow:none;color:#fffffff0;font-size:11px;font-weight:400;
+}
+#app .cover-page .cover-tool:first-child {position:relative}
+#app .cover-page .cover-tool:first-child:after {content:'';position:absolute;right:0;top:10px;bottom:10px;width:1px;background:#ffffff2e}
+#app .cover-page .cover-tool .icon {width:24px;height:24px;stroke-width:1.5}
+#app .cover-page .cover-enter {
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  width:100%;height:56px;min-height:56px;min-width:0;padding:0 12px;
+  border:0;border-radius:32px;background:#3264ff;box-shadow:none;text-shadow:none;
+  color:white;font-size:15px;font-weight:650;letter-spacing:0;white-space:nowrap;
+  backdrop-filter:none;-webkit-backdrop-filter:none;transition:background .18s,transform .18s;
+}
+#app .cover-page .cover-enter .icon {height:18px;width:18px;flex-shrink:0;stroke-width:1.8}
+#app .cover-page .cover-enter:active {background:#2856ed;box-shadow:none;transform:scale(.98)}
+#app .cover-page .cover-enter:disabled,#app .cover-page .cover-enter[aria-busy=true] {background:#3264ff;color:white;box-shadow:none;border:0;text-shadow:none}
+#app .cover-page .cover-dock button:focus-visible {outline:2px solid white;outline-offset:3px}
+#app .cover-page.cover-dragging .cover-footer,#app .cover-page.cover-dragging .cover-dock {pointer-events:none}
+@media(hover:hover){
+  #app .cover-page .cover-enter:hover {background:#2856ed}
+  #app .cover-page .cover-tool:hover {background:#ffffff14}
+}
+.mobile-device #app .cover-page .cover-footer {padding:52px calc(18px + var(--safe-right)) calc(16px + var(--safe-bottom)) calc(18px + var(--safe-left))}
+@media(max-width:350px){
+  #app .cover-page .cover-dock {gap:5px;padding:6px;min-height:68px}
+  #app .cover-page .cover-enter {height:54px;min-height:54px;font-size:13px;gap:5px;padding:0 8px}
+  #app .cover-page .cover-tool {font-size:10px}
+}
+@media(orientation:landscape) and (max-height:600px){
+  .mobile-device #app .cover-page .cover-footer {padding-top:25px;padding-bottom:calc(12px + var(--safe-bottom))}
+}
+@media(prefers-reduced-motion:reduce){#app .cover-page .cover-enter {transition:none}}

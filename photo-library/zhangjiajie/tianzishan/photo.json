@@ -1,0 +1,38 @@
+{
+  "city": "zhangjiajie",
+  "dir": "tianzishan",
+  "id": "zjj-tianzishan",
+  "src": "photo-library/zhangjiajie/tianzishan/original.jpg",
+  "sourceFile": "photo-library/zhangjiajie/tianzishan/original.jpg",
+  "originalFilename": "tianzishan_wulingyuan_zhangjiajie.jpg",
+  "sourceSha256": "b5cef2b547547aeb19362667a4720ff3e4754fa173a0702812effe2fefe7d23d",
+  "original": {
+    "src": "photo-library/zhangjiajie/tianzishan/original.jpg",
+    "width": 8841,
+    "height": 4415,
+    "bytes": 7808903,
+    "untouched": true
+  },
+  "credit": "chensiyuan / Wikimedia Commons",
+  "license": "CC BY-SA 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+  "source": "https://commons.wikimedia.org/wiki/File:1_tianzishan_wulingyuan_zhangjiajie_2012.jpg",
+  "thumb": {
+    "src": "photo-library/zhangjiajie/tianzishan/thumb.webp",
+    "width": 640,
+    "height": 319,
+    "bytes": 33160
+  },
+  "screen": {
+    "src": "photo-library/zhangjiajie/tianzishan/screen.webp",
+    "width": 1440,
+    "height": 719,
+    "bytes": 231098
+  },
+  "detail": {
+    "src": "photo-library/zhangjiajie/tianzishan/detail.webp",
+    "width": 2400,
+    "height": 1198,
+    "bytes": 799758
+  }
+}

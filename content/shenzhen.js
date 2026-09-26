@@ -1,5 +1,5 @@
 // 深圳关卡。探索文字不直接说出城市名；坐标为原片百分比（photo.src 的完整画面）。
-// 照片来自 Pexels（Pexels License），来源与处理记录见 photo-library/shenzhen/ATTRIBUTION.md。
+// 照片来自 Pexels 与用户提供的原图，来源与处理记录见 photo-library/shenzhen/ATTRIBUTION.md。
 window.CITY_SHENZHEN = {
   id: 'shenzhen',
   name: '深圳',
@@ -46,38 +46,38 @@ window.CITY_SHENZHEN = {
     },
     {
       id: 'sz-houhai',
-      name: '深圳湾·后海天际线',
-      type: '海湾夜景',
+      name: '深圳·城市夜色',
+      type: '高处俯瞰',
       photo: {
-        src: 'photo-library/shenzhen/houhai/original.jpg',
-        width: 6043,
-        height: 2438,
-        screen: { src: 'photo-library/shenzhen/houhai/screen.webp', width: 1440, height: 581 },
-        thumb: { src: 'photo-library/shenzhen/houhai/thumb.webp', width: 640, height: 258 },
-        detail: { src: 'photo-library/shenzhen/houhai/detail.webp', width: 2400, height: 968 },
-        credit: 'ben-cheung / Pexels',
-        license: 'Pexels License',
-        licenseUrl: 'https://www.pexels.com/license/',
-        source: 'https://www.pexels.com/photo/11980026/'
+        src: 'photo-library/shenzhen/houhai/original.png',
+        width: 7002,
+        height: 4668,
+        screen: { src: 'photo-library/shenzhen/houhai/screen.webp?v=20260926-a71cb979', width: 1440, height: 960 },
+        thumb: { src: 'photo-library/shenzhen/houhai/thumb.webp?v=20260926-a71cb979', width: 640, height: 427 },
+        detail: { src: 'photo-library/shenzhen/houhai/detail.webp?v=20260926-a71cb979', width: 2400, height: 1600 },
+        credit: '用户提供',
+        license: '',
+        licenseUrl: '',
+        source: ''
       },
       hotspots: [
         {
-          x: 53, y: 52, title: '一颗竖起的“笋”', tag: '建筑',
-          text: '亮灯的子弹形塔楼被叫作“春笋”，高 392.5 米，是这片海湾边的第一高楼。外框由 56 根钢柱围成，每层平面都是圆形，直径逐层变化，最宽处约 68 米，所以远看像一根向上收尖的竹笋。',
-          en: 'The lit bullet-shaped tower is nicknamed the “Spring Bamboo Shoot”. At 392.5 metres it is the tallest building on this bay. Its outer frame is 56 steel columns around circular floors whose diameter changes storey by storey — about 68 metres at the widest — so it tapers like a shoot.',
-          source: 'http://ilonggang.sznews.com/lgnews/content/2017-01/17/content_14838429_0.htm'
+          x: 52.2, y: 24, title: '远处的高楼群', tag: '建筑',
+          text: '先找远处这座轮廓收尖的高塔，再看看它周围：高低不同的楼顶叠成一条天际线，亮着的窗户让楼身显出细密的格子。向下看，前景楼顶也清晰可见，这是一幅从高处俯瞰城区的夜景。',
+          en: 'Find the slender, tapering tower in the distance, then look around it. Rooftops of different heights form a layered skyline, while lit windows trace grids across the buildings. The visible rooftops in the foreground show that we are looking down over the city from a high viewpoint.',
+          source: 'photo-library/shenzhen/houhai/original.png'
         },
         {
-          x: 86, y: 76, title: '岸边那只白色的“茧”', tag: '建筑',
-          text: '右侧低矮的白色曲面屋顶是一座体育中心，因外形像一只蚕茧又称“春茧”。一个屋盖下装着“一场两馆”：2 万座的海景体育场、1.3 万座的体育馆和游泳馆，大型赛事后向公众开放。',
-          en: 'The low white curved roof on the right is a sports centre called the “Spring Cocoon” for its silkworm-cocoon shape. One roof covers a 20,000-seat seaside stadium, a 13,000-seat arena and a swimming hall, opened to the public after a major games.',
-          source: 'https://www.szns.gov.cn/mlns/whns/tycg/content/post_12589347.html'
+          x: 59, y: 51, title: '楼群之间的山脊', tag: '自然',
+          text: '前后两片亮着灯的楼群之间，横着一片起伏的暗色轮廓。沿着它的边缘看，可以辨认出山坡和树木；周围的楼房贴着山脚展开。记住这处山脊：密集的城区里，也能看到山体穿插其间。',
+          en: 'An uneven dark ridge separates the lit buildings in the foreground from those behind it. Follow its edge to pick out wooded slopes, with buildings gathered around their foot. Remember this ridge: hills remain visible among the dense city blocks.',
+          source: 'photo-library/shenzhen/houhai/original.png'
         },
         {
-          x: 36, y: 87, title: '水面上的一排排浮架', tag: '生态',
-          text: '前景水面上的深色方格是养蚝的浮排，照片应是从海湾对岸拍的：那一侧的滩岸处在咸淡水交界，适合养蚝，是当地唯一的产蚝区。一湾之隔，一边是蚝排，一边是摩天楼。',
-          en: 'The dark grids on the water are oyster rafts. The photo was taken from the opposite shore, where brackish water makes the only oyster-farming area on that side of the bay — oyster rafts on one shore, skyscrapers on the other.',
-          source: 'https://www.gohk.gov.hk/tc/spots/spot_detail.php?spot=Lau+Fau+Shan'
+          x: 43, y: 67, title: '绕山延伸的灯带', tag: '城市',
+          text: '顺着脚下这条亮着灯的道路看，它在楼房与暗色山坡之间弯出一道弧线，再接入前方的街区。道路两侧的灯光把走向勾勒出来。把这条曲线和旁边的山脊放在一起看，能发现楼群、道路与地形之间的关系。',
+          en: 'Follow the brightly lit road below. It curves between buildings and a dark hillside before joining the blocks ahead. Lights along its sides reveal its course. Compare this curve with the ridge beside it to see how streets and buildings fit around the terrain.',
+          source: 'photo-library/shenzhen/houhai/original.png'
         }
       ]
     },
@@ -128,11 +128,12 @@ window.CITY_SHENZHEN = {
       source: 'http://www.sznews.com/news/content/2019-04/09/content_21610673.htm'
     },
     {
-      q: '第二处海湾边那座白色曲面屋顶的建筑，为什么被叫作“春茧”？',
-      options: ['外形像一只蚕茧', '屋顶种满桑树', '只在春天开放', '最早是丝绸仓库'],
+      category: '观察',
+      q: '第二处夜景中，前后两片楼群之间起伏的暗色轮廓是什么？',
+      options: ['覆盖着树木的山脊', '平坦开阔的海面', '沿岸排列的码头', '规则矩形的运动场'],
       answer: 0, points: 30,
-      explain: '这座体育中心的椭圆形屋盖像一只蚕茧，因此又称“春茧”；一个屋盖下包含 2 万座体育场、1.3 万座体育馆和游泳馆。',
-      source: 'https://www.szns.gov.cn/mlns/whns/tycg/content/post_12589347.html'
+      explain: '画面中部的暗色轮廓有起伏的山坡和树木，前后分布着亮灯的楼群，左侧还有弯曲的道路。线索“楼群之间的山脊”对应的正是这处地形。',
+      source: '第2处 · 楼群之间的山脊'
     },
     {
       q: '第三处摩天轮在夜里变色，主要靠什么？',

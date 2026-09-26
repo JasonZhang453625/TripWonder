@@ -13,8 +13,8 @@ window.CITY_SUZHOU = {
       type: '古塔',
       photo: {
         src: 'photo-library/suzhou/huqiu/original.jpg',
-        width: 3024,
-        height: 4032,
+        width: 4032,
+        height: 3024,
         screen: { src: 'photo-library/suzhou/huqiu/screen.webp', width: 1080, height: 1440 },
         thumb: { src: 'photo-library/suzhou/huqiu/thumb.webp', width: 480, height: 640 },
         detail: { src: 'photo-library/suzhou/huqiu/detail.webp', width: 1800, height: 2400 },

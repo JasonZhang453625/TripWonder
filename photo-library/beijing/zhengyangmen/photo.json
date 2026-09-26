@@ -2,7 +2,7 @@
   "city": "beijing",
   "dir": "zhengyangmen",
   "id": "bj-zhengyangmen",
-  "src": "补充图/北京/pexels-yuan-yuan-2128550312-35385599.jpg",
+  "src": "photo-library/beijing/zhengyangmen/original.jpg",
   "original": {
     "src": "photo-library/beijing/zhengyangmen/original.jpg",
     "width": 4096,
@@ -10,7 +10,7 @@
     "bytes": 2170814,
     "untouched": true
   },
-  "sourceFile": "补充图/北京/pexels-yuan-yuan-2128550312-35385599.jpg",
+  "sourceFile": "photo-library/beijing/zhengyangmen/original.jpg",
   "sourceSha256": "8ba032d363f1fe90397d3353f04431baa79ffb6d8243427087b2ec867881fb01",
   "thumb": {
     "src": "photo-library/beijing/zhengyangmen/thumb.webp",
@@ -29,5 +29,6 @@
     "width": 2400,
     "height": 1800,
     "bytes": 734888
-  }
+  },
+  "originalFilename": "pexels-yuan-yuan-2128550312-35385599.jpg"
 }

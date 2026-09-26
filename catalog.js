@@ -16,7 +16,7 @@
       {name:'大同博物馆', lat:40.0706, lng:113.3165, visitMinutes:90, theme:'文化', note:'适合补足城市历史背景，先核对开放日。'}
     ]
   };
-  const cities = [datong, window.CITY_SHENZHEN, window.CITY_SUZHOU, window.CITY_GUILIN, window.CITY_HONGKONG, window.CITY_BEIJING, window.CITY_SHANGHAI].filter(Boolean);
+  const cities = [datong, window.CITY_SHENZHEN, window.CITY_SUZHOU, window.CITY_GUILIN, window.CITY_HONGKONG, window.CITY_BEIJING, window.CITY_SHANGHAI, window.CITY_ZHANGJIAJIE].filter(Boolean);
   const interests = {
     datong: [['文化','建筑'],['文化','建筑'],['建筑','摄影'],['文化','摄影'],['建筑','摄影'],['文化']],
     shenzhen: [['文化','摄影'],['文化'],['自然','摄影'],['自然','摄影'],['建筑','文化'],['自然','摄影']],

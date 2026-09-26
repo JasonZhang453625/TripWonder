@@ -1,0 +1,34 @@
+{
+  "city": "datong",
+  "dir": "xuankong",
+  "id": "xuankong",
+  "src": "photo-library/datong/xuankong/original.jpg",
+  "original": {
+    "src": "photo-library/datong/xuankong/original.jpg",
+    "width": 5472,
+    "height": 3648,
+    "bytes": 13100386,
+    "untouched": true
+  },
+  "sourceFile": "photo-library/datong/xuankong/original.jpg",
+  "sourceSha256": "aa45bd9550ff132d9e31582eee781ea6483b11825d78499a32ec2cfca109d42e",
+  "originalFilename": "悬空寺.jpg",
+  "thumb": {
+    "src": "photo-library/datong/xuankong/thumb.webp",
+    "width": 640,
+    "height": 427,
+    "bytes": 112356
+  },
+  "screen": {
+    "src": "photo-library/datong/xuankong/screen.webp",
+    "width": 1440,
+    "height": 960,
+    "bytes": 550844
+  },
+  "detail": {
+    "src": "photo-library/datong/xuankong/detail.webp",
+    "width": 2400,
+    "height": 1600,
+    "bytes": 1423712
+  }
+}
