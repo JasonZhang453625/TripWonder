@@ -1,0 +1,33 @@
+{
+  "city": "beijing",
+  "dir": "beihai",
+  "id": "bj-beihai",
+  "src": "补充图/北京/pexels-zhangkaiyv-6963404.jpg",
+  "original": {
+    "src": "photo-library/beijing/beihai/original.jpg",
+    "width": 9504,
+    "height": 6336,
+    "bytes": 7862191,
+    "untouched": true
+  },
+  "sourceFile": "补充图/北京/pexels-zhangkaiyv-6963404.jpg",
+  "sourceSha256": "7721d65f08b97de964853ef57a622b9faf383771f61e5c308e115ee7d0ff2146",
+  "thumb": {
+    "src": "photo-library/beijing/beihai/thumb.webp",
+    "width": 640,
+    "height": 427,
+    "bytes": 70492
+  },
+  "screen": {
+    "src": "photo-library/beijing/beihai/screen.webp",
+    "width": 1440,
+    "height": 960,
+    "bytes": 279404
+  },
+  "detail": {
+    "src": "photo-library/beijing/beihai/detail.webp",
+    "width": 2400,
+    "height": 1600,
+    "bytes": 653026
+  }
+}

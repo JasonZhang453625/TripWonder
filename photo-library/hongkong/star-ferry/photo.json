@@ -1,0 +1,33 @@
+{
+  "city": "hongkong",
+  "dir": "star-ferry",
+  "id": "hk-star-ferry",
+  "src": "photo-library/hongkong/source-preview.jpg",
+  "original": {
+    "src": "photo-library/hongkong/star-ferry/original.jpg",
+    "width": 3840,
+    "height": 2880,
+    "bytes": 1598093,
+    "untouched": true
+  },
+  "sourceFile": "photo-library/hongkong/source-preview.jpg",
+  "sourceSha256": "b4ad9a8754b14874d71842b14cbd270b63e4b5f540c3af5e2d650033d0811284",
+  "thumb": {
+    "src": "photo-library/hongkong/star-ferry/thumb.webp",
+    "width": 640,
+    "height": 480,
+    "bytes": 44368
+  },
+  "screen": {
+    "src": "photo-library/hongkong/star-ferry/screen.webp",
+    "width": 1440,
+    "height": 1080,
+    "bytes": 175280
+  },
+  "detail": {
+    "src": "photo-library/hongkong/star-ferry/detail.webp",
+    "width": 2400,
+    "height": 1800,
+    "bytes": 378972
+  }
+}

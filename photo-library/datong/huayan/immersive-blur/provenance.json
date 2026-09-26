@@ -1,0 +1,15 @@
+{
+  "scene": "huayan",
+  "city": "datong",
+  "source": "../original.jpg",
+  "sourceSha256": "14705002fdc6361d422ee342fd31370985fa0d14f9104bf667e719c379a475e2",
+  "displayPhoto": "photo.jpg",
+  "displaySize": [
+    900,
+    1600
+  ],
+  "displaySha256": "56600ae1d0b74a251eff10e7be44677bc6e2c91cd176f364322616f1e244332f",
+  "sourceAspect": 0.5625,
+  "periphery": "blurred projection of the original photo, rendered at runtime (no AI content)",
+  "preparedAt": "2026-09-25T19:39:59.276Z"
+}

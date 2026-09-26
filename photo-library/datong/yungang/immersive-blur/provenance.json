@@ -1,0 +1,15 @@
+{
+  "scene": "yungang",
+  "city": "datong",
+  "source": "../original.jpg",
+  "sourceSha256": "b2ef46326e39726b679b8e33626c6827c12dfdc839f77c75e9b6c8d041dc8026",
+  "displayPhoto": "photo.jpg",
+  "displaySize": [
+    1200,
+    1600
+  ],
+  "displaySha256": "540d5820700407310114f093902bb8281db2f408ec4c04de0152f7084d62a85b",
+  "sourceAspect": 0.75,
+  "periphery": "blurred projection of the original photo, rendered at runtime (no AI content)",
+  "preparedAt": "2026-09-25T19:39:58.683Z"
+}

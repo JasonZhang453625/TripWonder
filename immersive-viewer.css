@@ -1,0 +1,5 @@
+.photo-viewport.immersive-active .immersive-canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;z-index:0}
+.photo-viewport.immersive-active .photo-plane{left:0;top:0;z-index:1;pointer-events:none;will-change:auto}
+.photo-viewport.immersive-active .photo-plane>img{display:none}
+.photo-viewport.immersive-active .photo-plane .hotspot{pointer-events:auto}
+.photo-viewport.immersive-active .photo-plane .hotspot[hidden]{display:none}

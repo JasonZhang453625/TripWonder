@@ -1,0 +1,15 @@
+{
+  "scene": "hk-peak",
+  "city": "hongkong",
+  "source": "../original.jpg",
+  "sourceSha256": "3e6b791cb267d7ba6fbcce61a0bd46f063b82858aa0c454c79101355014acf99",
+  "displayPhoto": "photo.jpg",
+  "displaySize": [
+    2400,
+    1600
+  ],
+  "displaySha256": "94113fde50bf87dd84319e8c4fd2baa201c21d2a5b5fdfd3e2043be4b84033a9",
+  "sourceAspect": 1.5,
+  "periphery": "blurred projection of the original photo, rendered at runtime (no AI content)",
+  "preparedAt": "2026-09-26T04:43:33.414Z"
+}

@@ -1,0 +1,89 @@
+/* Five-city challenge additions; keep the Trip.com blue and compact mobile rhythm. */
+.page{animation:none}
+.cover-actions{display:flex;gap:12px;width:100%}
+.cover-actions>.primary,.cover-actions>.cover-skip{flex:1 1 0;min-width:0;width:0;height:50px;min-height:50px;padding:0;display:flex;align-items:center;justify-content:center;border-radius:13px;font-size:14px;font-weight:650;white-space:nowrap}
+.cover-actions>.cover-skip,.scene-nav>.prev-scene{border:1px solid #ffffff8a;background:#ffffff36;color:#fff;-webkit-backdrop-filter:blur(14px) saturate(140%);backdrop-filter:blur(14px) saturate(140%);box-shadow:inset 0 1px #ffffff40,0 5px 18px #0b15252c}
+.cover-actions>.cover-skip:hover,.scene-nav>.prev-scene:hover{background:#ffffff4d}
+
+/* Scene: previous / next side by side, favorite at top-right. */
+.scene-nav{display:flex;gap:12px;width:100%}
+.scene-nav>button{flex:1 1 0;min-width:0;width:0;height:50px;min-height:50px;padding:0;display:flex;align-items:center;justify-content:center;gap:4px;border-radius:13px;font-size:14px;font-weight:650;white-space:nowrap}
+.scene-nav .icon{width:17px;height:17px}
+.scene-nav>.prev-scene:disabled{opacity:.45}
+.explore-page .scene-counter{position:absolute;left:50%;transform:translateX(-50%)}
+.top-right{display:flex;align-items:center;gap:8px}
+.fav .icon{width:19px;height:19px;transition:fill .2s,stroke .2s,transform .2s}
+.fav[aria-pressed=true] .icon{fill:#ff5d7d;stroke:#ff5d7d;transform:scale(1.06)}
+@media (orientation:landscape) and (max-height:600px){.mobile-device .explore-page .scene-nav{width:380px;margin-left:auto}}
+.result-actions>.next-city{display:flex;align-items:center;justify-content:center;width:100%;margin-top:10px;color:var(--brand-blue,#2855f7)}
+.explore-page .explore-bottom{padding-top:56px}
+.quiz-submit .primary:disabled{opacity:.44;box-shadow:none}
+.route-controls{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 17px 13px}
+.route-controls label{font-size:11px;color:#6d7b92;display:grid;gap:5px}
+.route-controls label:last-child{grid-column:1/-1}
+.route-controls select,.route-controls input{height:39px;min-width:0;width:100%;padding:0 10px;border:1px solid #dce6f5;border-radius:11px;color:#263953;background:#fff;font:inherit;font-size:13px}
+.route-controls select:focus,.route-controls input:focus{outline:2px solid #3264ff66}
+.stop-actions{display:flex;gap:8px;margin-top:10px}
+.stop-actions button{padding:6px 11px;min-height:29px;border:1px solid #dce6f5;border-radius:9px;background:#fff;color:#3264ff;font-size:11px}
+.stop-actions button:disabled{opacity:.32}
+.route-day-date{float:right;font-size:11px;font-weight:500;color:#8a97aa;line-height:1.8}
+.availability-warning{margin-top:9px;padding:9px 10px;border-radius:9px;background:#fff3e8;color:#a3511d;font-size:11px;line-height:1.6}
+.availability-warning a{color:#a3511d;text-decoration:underline;margin-left:3px}
+.swap-list{display:grid;gap:4px;max-height:48vh;overflow:auto}
+.swap-list .answer-line{width:100%;text-align:left;display:flex;justify-content:space-between}
+.swap-list small{color:#8793a6}
+.itinerary-card{margin:0 16px 13px}
+.itinerary-card>strong{font-size:17px}
+.itinerary-card>p{font-size:12px;color:#7c8ba0;margin:8px 0 14px}
+.itinerary-card>.secondary{min-height:34px;font-size:12px;padding:6px 13px}
+.atlas-grid button.atlas-item{padding:0;border:0;text-align:left;display:block;color:inherit;cursor:pointer}
+.benefit button:disabled{opacity:.58;cursor:default}
+.friend-compare{margin-top:12px}.friend-compare>strong{font-size:15px}.friend-compare p{margin:8px 0;color:#4f617e;font-size:13px}.friend-compare>b{color:#3264ff;font-size:17px}.friend-compare small{display:block;color:#8793a6;font-size:10px;line-height:1.5;margin-top:6px}
+.invite-link{width:100%;min-height:42px;border:1px solid #dce6f5;border-radius:10px;padding:0 10px;font-size:11px;color:#40516d;background:#f8faff;margin-top:14px}
+@media(max-width:800px){.route-controls select,.route-controls input{height:44px}}
+@media(orientation:landscape) and (max-height:600px){.mobile-device .explore-page .explore-bottom{display:block;padding-top:36px}.mobile-device .explore-bottom>.primary{width:100%}}
+@media(orientation:landscape) and (max-height:600px){.mobile-device .cover-page .cover-footer{display:block;padding-top:30px}.mobile-device .cover-links{margin-top:12px;gap:14px}}
+
+/* Result page: previous / next destination side by side. */
+.stop-nav{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.stop-nav>button{display:flex;align-items:center;justify-content:center;gap:4px;min-width:0;min-height:46px;padding:0 10px;border-radius:13px;font-size:13px;font-weight:600;white-space:nowrap}
+.stop-nav .icon{width:16px;height:16px}
+.stop-nav>.next-city{color:var(--brand-blue,#2855f7)}
+.glass-light{position:relative;color:var(--brand-blue,#2855f7);border:1px solid #ffffffe6;background:linear-gradient(160deg,#ffffffd9,#ffffff73 55%,#eef3ffa6);-webkit-backdrop-filter:blur(14px) saturate(140%);backdrop-filter:blur(14px) saturate(140%);box-shadow:inset 0 1px #fff,inset 0 -1px #3264ff12,0 0 0 1px #3264ff14,0 5px 18px #0b152514}
+.glass-light:hover{background:linear-gradient(160deg,#ffffffeb,#ffffff8c 55%,#eaf0ffb8)}
+.glass-light:disabled{opacity:.45}
+
+/* Rules popover: Liquid Glass sheet over the destination photo. */
+.rules-overlay{background:#07120c33}
+.rules-popover{width:348px;padding:22px 20px 20px;border-radius:30px;color:#0f1d33;border:1px solid #ffffffa6;border-top-color:#ffffffe6;
+  background:linear-gradient(155deg,#ffffffc2 0%,#ffffff8c 45%,#f3f7ffa6 100%);
+  -webkit-backdrop-filter:blur(30px) saturate(190%) brightness(1.06);backdrop-filter:blur(30px) saturate(190%) brightness(1.06);
+  box-shadow:inset 0 1px 0 #ffffffe6,inset 0 -1px 0 #ffffff4d,inset 0 0 24px #ffffff59,0 22px 50px #07140e40,0 3px 10px #07140e1f}
+.rules-heading{align-items:flex-start}
+.rules-eyebrow{display:block;font-size:11px;font-weight:600;letter-spacing:.14em;color:#2855f7;margin-bottom:6px}
+.rules-heading h2{font-size:22px;font-weight:750;line-height:1.3;letter-spacing:-.02em;color:#0f1d33}
+.rules-heading .icon-btn{width:30px;height:30px;margin:-2px -4px 0 0;color:#3d4a5f;background:#ffffff80;box-shadow:inset 0 1px #fff,0 0 0 .5px #0f1d3314}
+.rules-heading .icon{width:16px;height:16px}
+.rules-intro{font-size:13px;line-height:1.7;color:#3b4a60;margin:10px 0 14px}
+.rules-steps{display:grid;gap:7px;margin:0 0 12px;padding:0;border:0}
+.rules-steps li{margin:0;gap:12px;align-items:center;padding:9px 12px;border-radius:18px;background:#ffffff66;box-shadow:inset 0 1px #ffffffcc,0 0 0 .5px #0f1d330f}
+.rules-steps li>span{width:34px;height:34px;margin:0;border-radius:11px;font-size:15px;font-weight:700;color:#fff;background:linear-gradient(160deg,#5b84ff,#2855f7);box-shadow:inset 0 1px #ffffff66,0 3px 8px #2855f740}
+.rules-steps strong{display:block;font-size:14px;font-weight:650;line-height:1.4;color:#0f1d33}
+.rules-steps p{font-size:12px;line-height:1.55;margin:2px 0 0;color:#56647a}
+
+.rules-score{display:flex;align-items:center;gap:6px;margin:0 0 16px;padding:0 2px;font-size:12px;color:#3b4a60}
+.rules-score b{font-size:12px;font-weight:700;color:#0f1d33;margin-right:4px}
+.rules-score span{padding:4px 10px;border-radius:10px;background:#ffffff80;box-shadow:inset 0 1px #ffffffcc,0 0 0 .5px #0f1d3314;color:#2855f7;font-weight:600}
+.rules-score i{font-style:normal;color:#8190a9}
+
+/* Blue Liquid Glass CTA. */
+.rules-popover .rules-cta{min-height:50px;border-radius:16px;font-size:15px;font-weight:650;letter-spacing:.04em;color:#fff;
+  border:1px solid #9fb8ff8c;border-top-color:#dfe8ffcc;
+  background:linear-gradient(180deg,#5a86fff2 0%,#2f60fbe6 52%,#2350f0f2 100%);
+  -webkit-backdrop-filter:blur(16px) saturate(180%);backdrop-filter:blur(16px) saturate(180%);
+  box-shadow:inset 0 1px 0 #ffffff80,inset 0 -2px 6px #1238b84d,inset 0 0 14px #ffffff26,0 8px 22px #2855f74d;text-shadow:0 1px 2px #0d2c8a59}
+.rules-popover .rules-cta:hover{background:linear-gradient(180deg,#6690fff7 0%,#3868fdeb 52%,#2855f7f7 100%)}
+
+/* After closing the rules, point at the cover's explicit start button. */
+.cover-actions>.primary.cue{animation:cta-cue 1.2s ease-out 2}
+@keyframes cta-cue{0%{box-shadow:0 0 0 0 #5a86ffb3}70%{box-shadow:0 0 0 12px #5a86ff00}100%{box-shadow:0 0 0 0 #5a86ff00}}

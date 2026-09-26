@@ -1,0 +1,33 @@
+{
+  "city": "hongkong",
+  "dir": "peak",
+  "id": "hk-peak",
+  "src": "photo-library/hongkong/pexels-willianjusten-35654634.jpg",
+  "original": {
+    "src": "photo-library/hongkong/peak/original.jpg",
+    "width": 6000,
+    "height": 4000,
+    "bytes": 3434470,
+    "untouched": true
+  },
+  "sourceFile": "photo-library/hongkong/pexels-willianjusten-35654634.jpg",
+  "sourceSha256": "3e6b791cb267d7ba6fbcce61a0bd46f063b82858aa0c454c79101355014acf99",
+  "thumb": {
+    "src": "photo-library/hongkong/peak/thumb.webp",
+    "width": 640,
+    "height": 427,
+    "bytes": 34984
+  },
+  "screen": {
+    "src": "photo-library/hongkong/peak/screen.webp",
+    "width": 1440,
+    "height": 960,
+    "bytes": 160628
+  },
+  "detail": {
+    "src": "photo-library/hongkong/peak/detail.webp",
+    "width": 2400,
+    "height": 1600,
+    "bytes": 415902
+  }
+}

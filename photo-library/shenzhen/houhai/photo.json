@@ -1,0 +1,33 @@
+{
+  "city": "shenzhen",
+  "dir": "houhai",
+  "id": "sz-houhai",
+  "src": "photo-library/shenzhen/pexels-ben-cheung-140183-11980026.jpg",
+  "original": {
+    "src": "photo-library/shenzhen/houhai/original.jpg",
+    "width": 6043,
+    "height": 2438,
+    "bytes": 2333024,
+    "untouched": true
+  },
+  "sourceFile": "photo-library/shenzhen/pexels-ben-cheung-140183-11980026.jpg",
+  "sourceSha256": "7754897f11f1fd152d3ca51cc746b93fc7c0ca54f0dbb1e83b63fcaa7fed4efe",
+  "thumb": {
+    "src": "photo-library/shenzhen/houhai/thumb.webp",
+    "width": 640,
+    "height": 258,
+    "bytes": 21920
+  },
+  "screen": {
+    "src": "photo-library/shenzhen/houhai/screen.webp",
+    "width": 1440,
+    "height": 581,
+    "bytes": 93124
+  },
+  "detail": {
+    "src": "photo-library/shenzhen/houhai/detail.webp",
+    "width": 2400,
+    "height": 968,
+    "bytes": 216424
+  }
+}

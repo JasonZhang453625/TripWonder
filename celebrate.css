@@ -1,0 +1,52 @@
+/* Share sheet (ticket-style challenge card) and reward-claim celebration. */
+
+/* ---------- Share sheet ---------- */
+.share-sheet{display:grid;gap:14px;padding-top:2px}
+.share-ticket{margin:0;border-radius:22px;overflow:hidden;background:#fff;box-shadow:0 18px 40px #1f3b7a26,0 0 0 1px #e3eaf7}
+.share-ticket-art{position:relative;isolation:isolate;min-height:236px;padding:20px 22px 22px;color:#fff;display:flex;flex-direction:column;justify-content:space-between;text-align:left;background:#1d2d57}
+.share-ticket-art img{position:absolute;inset:-18%;width:136%;height:136%;object-fit:cover;filter:blur(16px) saturate(1.25) brightness(.8);z-index:-2;transform:scale(1.05)}
+.share-ticket-art::after{content:'';position:absolute;inset:0;z-index:-1;background:linear-gradient(160deg,#1c3b9acc 0%,#15204a66 45%,#0c142ecc 100%)}
+.share-ticket-top{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+.share-ticket-top .brand{font-size:20px;font-weight:800;color:#fff;letter-spacing:-.01em}
+.share-ticket-top .brand span{color:#ffc53d}
+.share-kicker{font-size:10px;letter-spacing:.16em;color:#dbe6ff;opacity:.9}
+.share-score{display:flex;align-items:baseline;gap:6px;margin-top:18px}
+.share-score b{font-size:78px;line-height:.9;font-weight:800;letter-spacing:-.04em;background:linear-gradient(180deg,#fff 30%,#ffe29a);-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:0 6px 28px #ffd16655}
+.share-score small{font-size:15px;color:#c9d6f5;font-weight:600}
+.share-dare{margin:12px 0 0;font-size:15px;line-height:1.55;font-weight:600;color:#f3f6ff}
+.share-ticket-stub{position:relative;display:grid;grid-template-columns:repeat(3,1fr);padding:15px 8px 14px;border-top:2px dashed #dfe6f3;background:#fff}
+.share-ticket-stub::before,.share-ticket-stub::after{content:'';position:absolute;top:-11px;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:inset 0 0 0 1px #e3eaf7}
+.share-ticket-stub::before{left:-10px}
+.share-ticket-stub::after{right:-10px}
+.share-ticket-stub div{display:grid;justify-items:center;gap:3px}
+.share-ticket-stub div+div{border-left:1px solid #edf1f8}
+.share-ticket-stub b{font-size:21px;color:#1c2b4a;font-weight:800}
+.share-ticket-stub small{font-size:11px;color:#8391a8}
+.share-link{position:relative;display:flex;align-items:center;gap:11px;padding:11px 13px;border:1px solid #e1e8f5;border-radius:14px;background:#f7f9fe;cursor:pointer}
+.share-link-icon{flex:none;display:grid;place-items:center;width:34px;height:34px;border-radius:10px;background:#e6edff;color:#3264ff}
+.share-link svg,.share-actions svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.share-link-text{display:grid;gap:2px;min-width:0}
+.share-link-text strong{font-size:13px;color:#1c2b4a}
+.share-link-text small{font-size:11px;color:#7d8aa3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* Kept for copying and tests, but the raw URL is not shown. */
+.share-link .invite-link{position:absolute;width:1px;height:1px;min-height:0;margin:0;padding:0;border:0;opacity:0;pointer-events:none}
+.share-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.share-actions button{display:flex;align-items:center;justify-content:center;gap:7px;width:100%;min-height:48px;margin:0}
+.share-more{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:8px;background:none;border:0;color:#3264ff;font-size:13px;font-weight:600}
+.share-more svg{width:16px;height:16px}
+.share-note{margin:0;font-size:11.5px;line-height:1.65;color:#8a96ab;text-align:center}
+
+/* ---------- Reward claim ---------- */
+.celebrate-canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:55}
+.benefit.just-claimed{position:relative;overflow:hidden;animation:claim-glow 1.8s ease-out}
+.benefit.just-claimed::before{content:'';position:absolute;top:0;bottom:0;left:-60%;width:45%;background:linear-gradient(100deg,transparent,#ffffffcc,transparent);transform:skewX(-18deg);animation:claim-shine 1.1s .15s ease-out both;pointer-events:none}
+.benefit.just-claimed::after{content:'已领取';position:absolute;right:16px;bottom:12px;padding:3px 10px;border:2px solid #e8894a;border-radius:8px;color:#e8894a;font-size:13px;font-weight:800;letter-spacing:.2em;transform:rotate(-12deg);opacity:0;animation:claim-stamp .5s .45s cubic-bezier(.2,1.6,.4,1) forwards;pointer-events:none}
+.benefit.just-claimed button{animation:claim-pop .45s cubic-bezier(.2,1.8,.4,1)}
+@keyframes claim-glow{0%{box-shadow:0 0 0 0 #ffc24d99}35%{box-shadow:0 0 0 7px #ffc24d44,0 10px 34px #ffb02e55}100%{box-shadow:0 0 0 0 #ffc24d00}}
+@keyframes claim-shine{to{left:130%}}
+@keyframes claim-stamp{0%{opacity:0;transform:rotate(-12deg) scale(2.2)}100%{opacity:.9;transform:rotate(-12deg) scale(1)}}
+@keyframes claim-pop{0%{transform:scale(1)}40%{transform:scale(1.16)}100%{transform:scale(1)}}
+@media (prefers-reduced-motion:reduce){
+  .benefit.just-claimed,.benefit.just-claimed button,.benefit.just-claimed::before{animation:none}
+  .benefit.just-claimed::after{animation:none;opacity:.9}
+}

@@ -5,7 +5,7 @@ const assert=require('node:assert/strict');
  const page=await browser.newPage({viewport:{width:390,height:844},hasTouch:true});const errors=[];page.on('pageerror',e=>errors.push(e.message));
  await page.goto('http://127.0.0.1:8765/');await page.locator('.entry').click();
  assert.equal(await page.locator('.cover-heading,.hero-bottom,.cover-meta').count(),0);
- await page.locator('[data-action="rules-start"]').click();const viewport=page.locator('.photo-viewport');
+ await page.locator('[data-action="rules-start"]').click();await page.locator('[data-action="start"]').click();const viewport=page.locator('.photo-viewport');
  await page.locator('.photo-plane img').evaluate(e=>e.decode());
  const zoom=()=>viewport.getAttribute('data-zoom').then(Number);
  assert.equal(await zoom(),1.15);

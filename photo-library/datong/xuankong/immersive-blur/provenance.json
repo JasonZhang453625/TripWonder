@@ -1,0 +1,15 @@
+{
+  "scene": "xuankong",
+  "city": "datong",
+  "source": "../original.jpg",
+  "sourceSha256": "aa45bd9550ff132d9e31582eee781ea6483b11825d78499a32ec2cfca109d42e",
+  "displayPhoto": "photo.jpg",
+  "displaySize": [
+    2400,
+    1600
+  ],
+  "displaySha256": "d9dcc0b3efff4c35ff31f8ae467fed6af0c23d26d67ff79856aea5ca69fdd52e",
+  "sourceAspect": 1.5,
+  "periphery": "blurred projection of the original photo, rendered at runtime (no AI content)",
+  "preparedAt": "2026-09-25T19:40:00.248Z"
+}

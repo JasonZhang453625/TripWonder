@@ -1,0 +1,15 @@
+{
+  "scene": "sz-qianhai",
+  "city": "shenzhen",
+  "source": "../original.jpg",
+  "sourceSha256": "3c38385a7837d006f01baa0fade1085591c17b9aace9e5383bb74c599e73c668",
+  "displayPhoto": "photo.jpg",
+  "displaySize": [
+    2400,
+    1600
+  ],
+  "displaySha256": "ca30e86810050456c5570ae0e2599242e6b873df3c81c456b4ee3b53a5d02c93",
+  "sourceAspect": 1.5,
+  "periphery": "blurred projection of the original photo, rendered at runtime (no AI content)",
+  "preparedAt": "2026-09-26T04:43:31.506Z"
+}

@@ -1,0 +1,15 @@
+{
+  "scene": "sh-bund-night",
+  "city": "shanghai",
+  "source": "../original.jpg",
+  "sourceSha256": "5991dd75f49671f7c39a0c49a7ee092a76f8c5fe946f10ce8d707f348adae74e",
+  "displayPhoto": "photo.jpg",
+  "displaySize": [
+    2400,
+    1600
+  ],
+  "displaySha256": "e839282e08e6f5b683d6c50b18b953d1be5b202999e39524e6afbbcd5eb3d9e8",
+  "sourceAspect": 1.5,
+  "periphery": "blurred projection of the original photo, rendered at runtime (no AI content)",
+  "preparedAt": "2026-09-26T04:02:47.081Z"
+}

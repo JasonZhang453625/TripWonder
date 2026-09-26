@@ -1,0 +1,15 @@
+{
+  "scene": "sh-bund",
+  "city": "shanghai",
+  "source": "../original.jpg",
+  "sourceSha256": "bb10216797f1c6088f1d4cd254367c278fe650843099903cbacf435c27545b24",
+  "displayPhoto": "photo.jpg",
+  "displaySize": [
+    2400,
+    1600
+  ],
+  "displaySha256": "213bb1fef0c3548d11a8d75073e90167804c0b7e27ab8678c4a9050d096dbf68",
+  "sourceAspect": 1.5,
+  "periphery": "blurred projection of the original photo, rendered at runtime (no AI content)",
+  "preparedAt": "2026-09-26T04:03:59.930Z"
+}

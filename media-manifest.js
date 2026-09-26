@@ -43,42 +43,24 @@ window.MEDIA_ASSETS = {
     }
   },
   "xuankong": {
-    "originalBytes": 13010532,
+    "originalBytes": 13100386,
     "thumb": {
-      "src": "photo-library/datong/xuankong/thumb.webp",
-      "width": 480,
-      "height": 640,
-      "bytes": 85958
+      "src": "photo-library/datong/xuankong/thumb.webp?v=20260926",
+      "width": 640,
+      "height": 427,
+      "bytes": 112356
     },
     "screen": {
-      "src": "photo-library/datong/xuankong/screen.webp",
-      "width": 1080,
-      "height": 1440,
-      "bytes": 527164
+      "src": "photo-library/datong/xuankong/screen.webp?v=20260926",
+      "width": 1440,
+      "height": 960,
+      "bytes": 550844
     },
     "detail": {
-      "src": "photo-library/datong/xuankong/detail.webp",
-      "width": 1600,
-      "height": 2133,
-      "bytes": 1041250
-    }
-  },
-  "city-wall": {
-    "originalBytes": 846632,
-    "thumb": {
-      "src": "photo-library/datong/city-wall/thumb.webp",
-      "width": 480,
-      "height": 1067,
-      "bytes": 21328
-    }
-  },
-  "yingxian": {
-    "originalBytes": 4547704,
-    "thumb": {
-      "src": "photo-library/shuozhou/yingxian/thumb.webp",
-      "width": 480,
-      "height": 640,
-      "bytes": 40468
+      "src": "photo-library/datong/xuankong/detail.webp?v=20260926",
+      "width": 2400,
+      "height": 1600,
+      "bytes": 1423712
     }
   }
 };

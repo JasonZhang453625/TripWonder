@@ -16,7 +16,7 @@ const assert=require('node:assert/strict');
   const checkFit=async()=>{const metrics=await page.evaluate(()=>{const r=document.querySelector('.phone').getBoundingClientRect();return {x:r.x,y:r.y,w:r.width,h:r.height,iw:innerWidth,ih:innerHeight,scroll:document.documentElement.scrollWidth}});assert.deepEqual([metrics.x,metrics.y,metrics.w,metrics.h],[0,0,metrics.iw,metrics.ih],name);assert.equal(metrics.scroll,metrics.iw,name)};
   if(!mobile){assert.ok(await page.locator('.presentation').isVisible());assert.ok(await page.locator('.phone').evaluate(e=>e.clientWidth<500));await context.close();continue}
   await checkFit();assert.equal(await page.locator('.presentation').isVisible(),false);assert.equal(await page.locator('.statusbar').isVisible(),false);assert.equal(await page.locator('.home-indicator').isVisible(),false);
-  await page.locator('.entry').click();await page.locator('[data-action="rules-start"]').click();await page.locator('.photo-plane img').evaluate(e=>e.decode());
+  await page.locator('.entry').click();await page.locator('[data-action="rules-start"]').click();await page.locator('[data-action="start"]').click();await page.locator('.photo-plane img').evaluate(e=>e.decode());
   await checkFit();assert.equal(await page.locator('.photo-viewport').evaluate(e=>e.clientHeight),await page.evaluate(()=>innerHeight));
   if(name==='iphone')await page.screenshot({path:'preview-mobile-device.png',animations:'disabled'});
   await page.setViewportSize({width:844,height:390});await checkFit();

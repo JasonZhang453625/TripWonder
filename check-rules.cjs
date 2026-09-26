@@ -10,7 +10,7 @@ for(const [name,opts] of [['desktop',{viewport:{width:1440,height:1000}}],['mobi
  if(name==='mobile')await page.screenshot({path:'preview-rules-popover.png'});
  await page.locator('[aria-label="关闭玩法"]').click();await panel.waitFor({state:'detached'});assert.equal(await page.locator('#app').evaluate(e=>e.inert),false);assert.equal(await page.locator('[data-action="rules"]').evaluate(e=>e===document.activeElement),true);
  await page.locator('[data-action="rules"]').click();await panel.waitFor();await page.keyboard.press('Escape');await panel.waitFor({state:'detached'});
- await page.locator('[data-action="rules"]').click();await panel.waitFor();await page.locator('[data-action="rules-start"]').click();await page.locator('.photo-viewport').waitFor();assert.equal(await page.locator('#app').evaluate(e=>e.inert),false);
+ await page.locator('[data-action="rules"]').click();await panel.waitFor();await page.locator('[data-action="rules-start"]').click();await page.locator('[data-action="start"]').click();await page.locator('.photo-viewport').waitFor();assert.equal(await page.locator('#app').evaluate(e=>e.inert),false);
  await page.locator('[data-action="leave"]').click();await page.locator('.sheet [data-go="cover"]').click();await panel.waitFor();assert.match(await page.locator('[data-action="rules-start"]').textContent(),/继续探索/);
  await page.emulateMedia({reducedMotion:'reduce'});await page.keyboard.press('Escape');await panel.waitFor({state:'detached'});assert.deepEqual(errors,[]);await page.close();
 }await browser.close();console.log('PASS: auto rules; top-right anchor; desktop/mobile/landscape fit; animated close/reopen; focus restoration; start/resume; reduced motion');})().catch(e=>{console.error(e);process.exit(1)});

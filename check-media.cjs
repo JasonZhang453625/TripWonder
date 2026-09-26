@@ -3,7 +3,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const url = 'http://127.0.0.1:8765/';
 const waitScene = (page,n) => page.waitForFunction(n=>document.querySelector('.scene-counter')?.textContent===`${n} / 3`,n);
-const begin = async page => {await page.goto(url);await page.locator('.entry').click();await page.locator('[data-action="rules-start"]').click();await waitScene(page,1)};
+const begin = async page => {await page.goto(url);await page.locator('.entry').click();await page.locator('[data-action="rules-start"]').click();await page.locator('[data-action="start"]').click();await waitScene(page,1)};
 (async()=>{
  const browser=await chromium.launch({executablePath:'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe',headless:true});
  const errors=[], report={};
@@ -70,7 +70,7 @@ const begin = async page => {await page.goto(url);await page.locator('.entry').c
   await new Promise(r=>setTimeout(r,1200));recorder.stop();await done;clearInterval(frame);stream.getTracks().forEach(t=>t.stop());canvas.remove();
   window.fixtureURL=URL.createObjectURL(new Blob(chunks,{type:'video/webm'}));SCENES[0].video={sources:[{src:fixtureURL,type:'video/webm'}]};
  });
- await video.locator('.entry').click();await video.locator('[data-action="rules-start"]').click();await video.locator('.scene-video.ready').waitFor();
+ await video.locator('.entry').click();await video.locator('[data-action="rules-start"]').click();await video.locator('[data-action="start"]').click();await video.locator('.scene-video.ready').waitFor();
  assert.equal(await video.locator('.photo-plane>img').evaluate(e=>e.complete&&e.naturalWidth>0),true);
  assert.equal(await video.locator('video').evaluate(e=>e.muted&&e.playsInline&&!e.paused&&e.videoWidth>0),true);
  const element=await video.locator('video').elementHandle();
@@ -85,7 +85,7 @@ const begin = async page => {await page.goto(url);await page.locator('.entry').c
   const p=await make();await p.goto(url);
   if(mode==='reduced')await p.emulateMedia({reducedMotion:'reduce'});
   await p.evaluate(mode=>{SCENES[0].video={sources:[{src:'missing-test-video.mp4',type:'video/mp4'}]};if(mode==='autoplay')HTMLMediaElement.prototype.play=function(){return Promise.reject(new DOMException('Blocked','NotAllowedError'))}},mode);
-  await p.locator('.entry').click();await p.locator('[data-action="rules-start"]').click();await waitScene(p,1);
+  await p.locator('.entry').click();await p.locator('[data-action="rules-start"]').click();await p.locator('[data-action="start"]').click();await waitScene(p,1);
   await p.waitForFunction(()=>!document.querySelector('video'));assert.ok(await p.locator('.photo-plane>img').evaluate(e=>e.complete&&e.naturalWidth>0));await p.close();
  }
  report.videoFallback=true;assert.deepEqual(errors,[]);report.errors=errors;

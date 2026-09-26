@@ -1,137 +1,341 @@
 (() => {
-'use strict';
-const paths={back:'m15 5-7 7 7 7',next:'m9 5 7 7-7 7',close:'m6 6 12 12M18 6 6 18',pin:'M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 1 1 16 0ZM9.5 8a2.5 2.5 0 1 1 4 2c-1.5 1-1.5 1-1.5 2M12 15h.01',bed:'M3 19V7m18 12V7M3 15h18M5 15V9h14v6M8 9V6h8v3',plane:'m22 2-8 20-3-9-9-3 20-8ZM11 13l5-5',building:'M4 21V6l10-3v18M14 9h6v12M8 8h2M8 12h2M8 16h2M17 12h1M17 16h1M2 21h20',train:'M6 17h12V4H6v13ZM6 11h12M9 17l-3 4m9-4 3 4M9 14h.01M15 14h.01M9 2h6',home:'m3 11 9-8 9 8M5 10v11h14V10M10 21v-7h4v7',spark:'m12 2 3 7 7 3-7 3-3 7-3-7-7-3 7-3 3-7Z',car:'M3 17V9l3-5h12l3 5v8H3ZM3 10h18M6 17v3m12-3v3M7 14h1m8 0h1',palm:'M11 21h9M15 21l-2-13M13 8Q4 4 2 10q7-3 11-2ZM13 8Q17 1 22 6q-6-1-9 2ZM13 8Q10 0 5 3q5 2 8 5Z',down:'m6 9 6 6 6-6',music:'M9 17V5l10-3v12M9 5l10-3M9 17c0 4-6 4-6 1s6-3 6-1ZM19 14c0 4-6 4-6 1s6-3 6-1Z',route:'M7 3a3 3 0 1 0 0 6 3 3 0 0 0 0-6ZM17 15a3 3 0 1 0 0 6 3 3 0 0 0 0-6ZM10 6h6a3 3 0 0 1 0 6H8a3 3 0 0 0 0 6h6',trend:'M4 3h16v18H4V3Zm3 12 4-4 3 2 4-6m-4 0h4v4',search:'M10 3a7 7 0 1 0 0 14 7 7 0 0 0 0-14Zm5 12 6 6',mic:'M9 4a3 3 0 0 1 6 0v7a3 3 0 0 1-6 0V4ZM5 10v1a7 7 0 0 0 14 0v-1M12 18v4m-4 0h8',message:'M3 4h18v14H8l-5 3V4Zm3 3 6 5 6-5',people:'M8 3a3 3 0 1 0 0 6 3 3 0 0 0 0-6ZM2 21v-6a6 6 0 0 1 12 0v6M17 4a3 3 0 0 1 0 6m0 3a5 5 0 0 1 5 5v3',bag:'M4 7h16v14H4V7Zm4 0V3h8v4M8 11v5m8-5v5',user:'M12 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8ZM4 21a8 8 0 0 1 16 0',clock:'M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20ZM12 6v6l4 2',eye:'M2 12s4-7 10-7 10 7 10 7-4 7-10 7-10-7-10-7ZM12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6Z',check:'m5 12 4 4L19 6',heart:'M12 21 3 12C-3 5 7-2 12 6c5-8 15-1 9 6l-9 9Z',share:'M12 16V2m-5 5 5-5 5 5M5 12H3v10h18V12h-2',trophy:'M7 3h10v8a5 5 0 0 1-10 0V3Zm0 2H3v4a4 4 0 0 0 4 4M17 5h4v4a4 4 0 0 1-4 4M12 16v5m-5 0h10',book:'M12 5Q6 1 2 4v16q5-3 10 0 5-3 10 0V4q-4-3-10 1Zm0 0v15',volume:'M3 9h4l5-5v16l-5-5H3V9Zm13-1q5 4 0 8m3-11q8 7 0 14',ticket:'M2 6h20v4a2 2 0 0 0 0 4v4H2v-4a2 2 0 0 0 0-4V6Zm13 0v3m0 3v2m0 2v2',globe:'M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20ZM2 12h20M12 2q8 10 0 20-8-10 0-20Z'};
-const icon=n=>`<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="${paths[n]||paths.spark}"/></svg>`;
-const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const app=document.querySelector('#app'),modalRoot=document.querySelector('#modal-root');
-const key='tripguessr-datong-v1';let storageOK=true,saved={};try{saved=JSON.parse(localStorage.getItem(key)||'{}')}catch{storageOK=false}
-const s={view:'home',scene:0,deadline:0,clues:new Set(),visited:new Set([0]),lang:'zh',questions:[],answers:[],q:0,selected:null,revealed:false,result:saved.result||null,bookmarked:!!saved.bookmarked,itinerary:saved.itinerary||null,claimed:!!saved.claimed,days:2,rank:'日榜'};
-let timer,toastTimer,viewer,sceneVideo,prefetchTimer,transition=0,pendingCleanup;
-function persist(){try{localStorage.setItem(key,JSON.stringify({result:s.result,bookmarked:s.bookmarked,itinerary:s.itinerary,claimed:s.claimed}))}catch{storageOK=false;toast('浏览器未允许保存，当前页面仍可继续体验')}}
-function photo(id){return PHOTOS.find(p=>p.id===id)}
-function img(id,alt='',extra=''){const p=photo(id),asset=SceneMedia.source(p,extra.includes('draggable')||(s.view==='cover'&&id==='yungang'));return `<img src="${asset.src}" width="${asset.width}" height="${asset.height}" decoding="async" alt="${esc(alt)}" ${extra}>`}
+  'use strict';
+  const C = window.TRIPWONDER_CATALOG;
+  const paths = {
+    back:'m15 5-7 7 7 7', next:'m9 5 7 7-7 7', close:'m6 6 12 12M18 6 6 18',
+    pin:'M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 1 1 16 0ZM9.5 8a2.5 2.5 0 1 1 4 2c-1.5 1-1.5 1-1.5 2M12 15h.01',
+    bed:'M3 19V7m18 12V7M3 15h18M5 15V9h14v6M8 9V6h8v3', plane:'m22 2-8 20-3-9-9-3 20-8ZM11 13l5-5',
+    building:'M4 21V6l10-3v18M14 9h6v12M8 8h2M8 12h2M8 16h2M17 12h1M17 16h1M2 21h20',
+    train:'M6 17h12V4H6v13ZM6 11h12M9 17l-3 4m9-4 3 4M9 14h.01M15 14h.01M9 2h6',
+    home:'m3 11 9-8 9 8M5 10v11h14V10M10 21v-7h4v7', spark:'m12 2 3 7 7 3-7 3-3 7-3-7-7-3 7-3 3-7Z',
+    car:'M3 17V9l3-5h12l3 5v8H3ZM3 10h18M6 17v3m12-3v3M7 14h1m8 0h1',
+    palm:'M11 21h9M15 21l-2-13M13 8Q4 4 2 10q7-3 11-2ZM13 8Q17 1 22 6q-6-1-9 2ZM13 8Q10 0 5 3q5 2 8 5Z',
+    down:'m6 9 6 6 6-6', route:'M7 3a3 3 0 1 0 0 6 3 3 0 0 0 0-6ZM17 15a3 3 0 1 0 0 6 3 3 0 0 0 0-6ZM10 6h6a3 3 0 0 1 0 6H8a3 3 0 0 0 0 6h6',
+    search:'M10 3a7 7 0 1 0 0 14 7 7 0 0 0 0-14Zm5 12 6 6', mic:'M9 4a3 3 0 0 1 6 0v7a3 3 0 0 1-6 0V4ZM5 10v1a7 7 0 0 0 14 0v-1M12 18v4m-4 0h8',
+    music:'M9 17V5l10-3v12M9 5l10-3M9 17c0 4-6 4-6 1s6-3 6-1ZM19 14c0 4-6 4-6 1s6-3 6-1Z',
+    trend:'M4 3h16v18H4V3Zm3 12 4-4 3 2 4-6m-4 0h4v4', message:'M3 4h18v14H8l-5 3V4Zm3 3 6 5 6-5',
+    people:'M8 3a3 3 0 1 0 0 6 3 3 0 0 0 0-6ZM2 21v-6a6 6 0 0 1 12 0v6M17 4a3 3 0 0 1 0 6m0 3a5 5 0 0 1 5 5v3',
+    bag:'M4 7h16v14H4V7Zm4 0V3h8v4M8 11v5m8-5v5', user:'M12 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8ZM4 21a8 8 0 0 1 16 0',
+    check:'m5 12 4 4L19 6', heart:'M12 21 3 12C-3 5 7-2 12 6c5-8 15-1 9 6l-9 9Z',
+    share:'M12 16V2m-5 5 5-5 5 5M5 12H3v10h18V12h-2', book:'M12 5Q6 1 2 4v16q5-3 10 0 5-3 10 0V4q-4-3-10 1Zm0 0v15',
+    ticket:'M2 6h20v4a2 2 0 0 0 0 4v4H2v-4a2 2 0 0 0 0-4V6Zm13 0v3m0 3v2m0 2v2'
+  };
+  const icon = name => `<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="${paths[name] || paths.spark}"/></svg>`;
+  const esc = value => String(value ?? '').replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+  const app = document.querySelector('#app'), modalRoot = document.querySelector('#modal-root');
+  const today = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; };
+  const day = today();
+  try { localStorage.removeItem('tripwonder-challenges-v1'); } catch {}
+  const pageUrl = new URL(location.href);
+  if (pageUrl.searchParams.has('preview')) {
+    pageUrl.searchParams.delete('preview');
+    try { history.replaceState(history.state, '', pageUrl.href); } catch {}
+  }
+  const hash = str => [...str].reduce((n, char) => Math.imul(n ^ char.charCodeAt(0), 16777619) >>> 0, 2166136261);
+  const shuffle = (items, seed) => { const out = [...items]; let n = hash(seed); for (let i=out.length-1;i>0;i--) { n ^= n<<13; n ^= n>>>17; n ^= n<<5; const j = (n>>>0)%(i+1); [out[i],out[j]]=[out[j],out[i]]; } return out; };
+  const order = shuffle(C.cities.map(c => c.id), day);
+  const daily = {}, benefits = {};
+  let invitation=null;
+  try { const raw=new URL(location.href).searchParams.get('challenge');if(raw){const token=raw.replace(/-/g,'+').replace(/_/g,'/'),candidate=JSON.parse(atob(token));if(order.includes(candidate.cityId)&&Number.isInteger(candidate.score)&&candidate.score>=0&&candidate.score<=100)invitation=candidate;} } catch {}
+  const s = {
+    view:invitation?'cover':'home', cityId: invitation?.cityId || order.find(id => !daily[id]?.result && !daily[id]?.skipped) || order[0],
+    scene:0, deadline:0, clues:new Set(), visited:new Set([0]), questions:[], answers:[], q:0, selected:null,
+    result:null, days:2, pace:'舒适', theme:'自动', date:'', route:null, rank:'今日',
+    daily, benefits, invitation, itineraries:{}, bookmarks:{}, rulesSeen:false
+  };
+  let timer, viewer, mapView, prefetchTimer, toastTimer, transition=0, pendingCleanup, rulesCleanup, previousFocus;
+  const city = () => C.cities.find(c => c.id === s.cityId) || C.cities[0];
+  const current = () => s.daily[s.cityId] || {};
+  // Location guess scoring: full marks inside fullKm, then exponential decay. A city may override via city.guess.
+  const GUESS = {max:40, fullKm:25, decayKm:450}, QUIZ_POINTS = [20,20,20];
+  const guessRule = () => ({...GUESS, ...city().guess});
+  function guessScore(km) { const c=guessRule(); return km<=c.fullKm?c.max:Math.round(c.max*Math.exp(-(km-c.fullKm)/c.decayKm)); }
+  const guessVerdict = km => km<=25?'精准命中':km<=100?'近在咫尺':km<=300?'八九不离十':km<=800?'方向对了':'下次再近一点';
+  function nextDestination(fromId=s.cityId, includeSkipped=false) {
+    const index=Math.max(0,order.indexOf(fromId));
+    const following=order.slice(index+1).concat(order.slice(0,index));
+    return following.find(id=>!s.daily[id]?.result&&!s.daily[id]?.skipped)
+      || (includeSkipped ? following.find(id=>!s.daily[id]?.result) : null);
+  }
+  function previousDestination(fromId=s.cityId) {
+    const index=order.indexOf(fromId);
+    return index>0 ? order[index-1] : null;
+  }
+  function openToday() {
+    const id=order.find(id=>!s.daily[id]?.result&&!s.daily[id]?.skipped)
+      || order.find(id=>!s.daily[id]?.result) || order[0];
+    selectCity(id);
+  }
+  const photo = id => C.photoById.get(id);
+  const activePhoto = () => city().scenes[s.scene].photo;
+  function img(id, alt='', immersive=false) { const p=photo(id), a=SceneMedia.source(p,immersive); return `<img src="${esc(a.src)}" width="${a.width}" height="${a.height}" alt="${esc(alt)}" decoding="async" draggable="false">`; }
+  function toast(message) { const el=document.querySelector('#toast'); el.textContent=message; el.classList.add('show'); clearTimeout(toastTimer); toastTimer=setTimeout(()=>el.classList.remove('show'),3200); }
+  function head(title,back='today',right='') { return `<header class="page-head"><button class="icon-btn" data-go="${back}" aria-label="返回">${icon('back')}</button><strong>${esc(title)}</strong>${right || '<span style="width:36px"></span>'}</header>`; }
+  function nav(active='home') { return `<nav class="bottom-nav" aria-label="携程导航">${[['home','首页','home'],['message','消息','notice'],['people','社区','community'],['bag','行程','itinerary'],['user','我的','profile']].map(([i,t,v])=>`<button class="${active===v?'active':''}" data-go="${v}">${icon(i)}${t}</button>`).join('')}</nav>`; }
+  function home() { return `<div class="page white"><div class="top-brand"><span class="brand">Trip<span>.</span>com</span><div class="row"><span class="silver"><b>⬟</b> Silver</span><span class="coin">T</span></div></div><section class="services"><div class="service-row">${[['bed','酒店'],['plane','机票'],['building','机票 + 酒店'],['train','火车票']].map(([i,t])=>`<button class="service" data-service="${t}"><span class="bubble">${icon(i)}</span>${t}</button>`).join('')}</div><div class="service-row small">${[['home','民宿·短租'],['spark','景点·玩乐'],['car','租车'],['palm','旅游度假'],['down','更多']].map(([i,t])=>`<button class="service" data-service="${t}">${icon(i)}${t}</button>`).join('')}</div></section><div class="quick-apps">${[['pin','TripWonder','today'],['music','演出·赛事','events'],['route','Trip.Planner','itinerary'],['trend','旅行热点','trending']].map(([i,t,v])=>`<button class="${v==='today'?'entry':''}" data-go="${v}"><span class="quick-icon">${icon(i)}${v==='today'?'<span class="new-dot">NEW</span>':''}</span>${t}</button>`).join('')}</div><div class="home-body"><div class="search-box"><button class="search-line" data-action="search">${icon('search')}<span>下一站，想去哪里？</span>${icon('mic')}</button><div class="chips"><span>上海</span><span>曼谷</span><span>北京</span><span>悉尼</span></div></div><section class="offer"><div class="row"><strong>🎁 新人专享 · 旅行好礼</strong><button class="claim" data-action="home-coupon">一键领取</button></div><div class="tickets"><div class="ticket">${icon('bed')}<span>酒店优惠<strong>9 折起</strong></span></div><div class="ticket">${icon('train')}<span>境外火车票<strong>95 折</strong></span></div></div></section><div class="home-section-head"><strong>最近浏览</strong></div><button class="recent" data-go="today" style="width:100%;text-align:left">${img('huayan','目的地照片')}<div style="flex:1"><strong>下一站，等你发现</strong><small>TripWonder <span style="color:var(--blue)"> | 奇境挑战</span></small></div>${icon('next')}</button><button class="home-banner" data-go="today">${img('yungang','目的地照片')}<span class="pill">每日灵感</span><p>打开世界的另一种方式</p><strong>先探索，再出发</strong></button></div>${nav()}</div>`; }
+  function cover() { const c=city(), record=current(),friend=s.invitation?.cityId===c.id; return `<div class="page cover-page"><div class="cover-hero">${img(c.scenes[0].id,'待探索的目的地',true)}</div><header class="immersive-top"><button class="glass round" data-go="home" aria-label="返回首页">${icon('back')}</button><span class="cover-name">TripWonder</span><button class="glass" data-action="rules" aria-haspopup="dialog" aria-expanded="false">玩法</button></header><div class="cover-footer"><div class="cover-actions"><button class="primary" data-action="${record.result&&!friend?'show-result':'start'}">${friend?'接受好友挑战':record.result?'查看探索结果':s.deadline>Date.now()?'继续探索':'进入探索'}</button><button class="glass cover-skip" data-action="skip">跳过</button></div><div class="cover-links"><button class="glass" data-go="atlas">图鉴</button><button class="glass" data-go="ranking">排行榜</button></div></div></div>`; }
+  function explore() { const scene=city().scenes[s.scene]; return `<div class="page explore-page"><div class="photo-viewport" tabindex="0" role="region" aria-label="景点照片，可双指缩放、拖动和平移"><div class="photo-plane">${img(scene.id,`第${s.scene+1}处景点`,true)}${scene.hotspots.map((h,i)=>`<button class="hotspot ${s.clues.has(`${s.scene}-${i}`)?'read':''}" data-clue="${i}" aria-label="查看线索 ${i+1}" aria-haspopup="dialog" style="left:${h.x}%;top:${h.y}%;--pulse-delay:${i*-.8}s"><span class="hotspot-dot" aria-hidden="true"></span></button>`).join('')}</div></div><header class="immersive-top"><button class="glass round" data-action="leave" aria-label="退出探索">${icon('back')}</button><span class="scene-counter">${s.scene+1} / ${city().scenes.length}</span><span class="top-right"><span class="timer"><b id="timer">03:00</b></span><button class="glass round fav" data-action="fav" aria-pressed="${!!s.bookmarks[s.cityId]}" aria-label="${s.bookmarks[s.cityId]?'取消收藏':'收藏这个目的地'}">${icon('heart')}</button></span></header><div class="explore-bottom"><div class="scene-nav"><button class="glass prev-scene" data-action="prev-scene"${s.scene?'':' disabled'}>${icon('back')} 上一处</button><button class="primary" data-action="next-scene">${s.scene===city().scenes.length-1?'开始答题':'下一处'} ${icon('next')}</button></div></div></div>`; }
+  function quiz() { const q=s.questions[s.q]; return `<div class="page">${head('线索挑战','cover',`<span class="pill">${s.q+1} / 3</span>`)}<div class="quiz-top"><div class="row"><span class="eyebrow">${['观察','文化','推理'][s.q]}</span><span class="pill">${q.points} 分</span></div><div class="quiz-progress"><span style="width:${s.q/3*100}%"></span></div><h2>${esc(q.q)}</h2></div><div class="question-card">${q.options.map((o,i)=>`<button class="option ${s.selected===i?'selected':''}" data-option="${i}"><b>${String.fromCharCode(65+i)}</b><span style="flex:1">${esc(o)}</span></button>`).join('')}</div><div class="quiz-submit"><button class="primary" data-action="submit" ${s.selected===null?'disabled':''}>${s.q===2?'下一步：地图定位':'下一题'} ${icon('next')}</button><p class="quiz-foot">三题答完后在地图上标出目的地，最后一起揭晓。</p></div></div>`; }
+  function guess() { return `<div class="page guess-page${s.guessDone?' done':''}"><div class="guess-map" id="guess-map" role="application" aria-label="中国地图：轻点放置落点，双指或滚轮缩放，拖动平移"></div><header class="guess-top"><button class="glass-light round" data-action="guess-back" aria-label="返回第 3 题">${icon('back')}</button><div><h2>这个目的地在哪里？</h2></div></header><div class="guess-zoom"><button class="glass-light" data-action="zoom-in" aria-label="放大地图">+</button><button class="glass-light" data-action="zoom-out" aria-label="缩小地图">−</button></div><section class="guess-card" aria-live="polite">${guessCard()}</section></div>`; }
+  function guessStatus() { const g=s.guess; return g?`${icon('pin')}<div><strong>${esc([g.province,g.city].filter(Boolean).join(' · ')||'所选位置')}</strong><small>北纬 ${g.lat.toFixed(1)}° · 东经 ${g.lng.toFixed(1)}° · 再点一次可调整</small></div>`:`<span class="guess-hint-dot" aria-hidden="true"></span><div><strong>轻点地图，放下你的落点</strong><small>双指缩放更精准 · 越近得分越高，最高 ${guessRule().max} 分</small></div>`; }
+  function guessCard() {
+    if(s.guessDone){ const g=s.guess; return `<div class="guess-result"><div><span class="guess-verdict">${esc(guessVerdict(g.km))}</span><strong class="guess-km"><b data-count="${g.km}">${g.km}</b> km</strong><small>你的落点距${esc(city().name)}（直线）</small></div><div class="guess-points"><b data-count="${g.points}">${g.points}</b><small>/ ${guessRule().max} 定位分</small></div></div><button class="primary" data-action="show-result">查看完整结果 ${icon('next')}</button>`; }
+    return `<div class="guess-status">${guessStatus()}</div><div class="guess-actions"><div class="guess-recall" role="group" aria-label="回看实景">${city().scenes.map((sc,i)=>`<button data-recall="${i}" aria-label="回看第 ${i+1} 处景点">${img(sc.id,'')}</button>`).join('')}</div><button class="primary" data-action="guess-submit" ${s.guess?'':'disabled'}>确认落点</button></div>`;
+  }
+  function mountGuess() {
+    const root=app.querySelector('#guess-map'),card=app.querySelector('.guess-card'),top=app.querySelector('.guess-top');
+    const insets=()=>({top:top.offsetTop+top.offsetHeight,bottom:root.clientHeight-card.offsetTop+10});
+    mapView=new GuessMap(root,{insets,avoid:C.cities.map(c=>({name:c.name,lat:c.lat,lng:c.lng})),onPick:pickGuess,onReject:()=>toast('请在主图上标记，右下角为南海诸岛示意')});
+    if(s.guess)mapView.setPin(s.guess,s.guess.province,s.guess.city);
+  }
+  function pickGuess(point) {
+    s.guess={lat:point.lat,lng:point.lng,x:point.x,y:point.y,province:point.province,city:point.city};
+    const status=app.querySelector('.guess-status'),submit=app.querySelector('[data-action="guess-submit"]');
+    if(status)status.innerHTML=guessStatus(); if(submit)submit.disabled=false;
+  }
+  function submitGuess() {
+    if(!s.guess||s.guessDone)return;
+    const km=Math.round(distance(s.guess,city()));s.guess={...s.guess,km,points:guessScore(km)};s.guessDone=true;finish();
+    const page=app.querySelector('.guess-page'),card=app.querySelector('.guess-card');page.classList.add('done');page.querySelector('.guess-top h2').textContent=`答案揭晓：${city().name}`;card.innerHTML=guessCard();
+    const counters=[...card.querySelectorAll('[data-count]')];counters.forEach(el=>el.textContent='0');
+    card.querySelector('.primary').focus({preventScroll:true});
+    mapView.remeasure();mapView.reveal(city(),{name:city().name,km},()=>countUp(counters));
+  }
+  function countUp(els) {
+    const t0=performance.now(),dur=matchMedia('(prefers-reduced-motion: reduce)').matches?0:650;
+    const step=now=>{const t=dur?Math.min(1,(now-t0)/dur):1,e=1-(1-t)**3;els.forEach(el=>{if(el.isConnected)el.textContent=Math.round(Number(el.dataset.count)*e);});if(t<1)requestAnimationFrame(step);};
+    requestAnimationFrame(step);
+  }
+  function recall(index) {
+    const scene=city().scenes[index];if(!scene)return;
+    const read=scene.hotspots.filter((_,j)=>s.clues.has(`${index}-${j}`));
+    sheet(`第 ${index+1} 处实景`,`<div class="recall-photo">${img(scene.id,`第 ${index+1} 处景点`)}</div><p class="recall-note">${read.length?'你在这里点开过的线索：':'这一处还没有点开线索。'}</p>${read.length?`<div class="tag-row recall-tags">${read.map(h=>`<span class="pill">${esc(h.title)}</span>`).join('')}</div>`:''}`);
+  }
+  const benefitFor = result => result.score>=60 ? {name:result.score===100?'满分探索礼':'探索好礼',detail:'景点门票 20 元优惠券',threshold:'示例满 100 元可用'} : {name:'探索纪念徽章',detail:'完成本次挑战的发现记录',threshold:'无需消费'};
+  const benefitStatus = id => !s.benefits[id]?'none':s.benefits[id].expires>=day?'active':'expired';
+  const datePlusDays = count => {const d=new Date();d.setDate(d.getDate()+count);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;};
+  function result() { const r=s.result || current().result; if(!r)return empty('目的地尚未揭晓','完成探索和三道题，再来查看结果。'); const c=city(), benefit=benefitFor(r), status=benefitStatus(c.id), next=nextDestination(s.cityId,true), prev=previousDestination(s.cityId); return `<div class="page">${head('我的发现','home',`<button class="icon-btn" data-action="share" aria-label="分享成绩">${icon('share')}</button>`)}<div class="result-hero"><div class="score">${r.score}<small> / 100</small></div><div class="score-split"><span>定位 <b>${r.guess?.points??0}</b> / ${GUESS.max}</span><span>答题 <b>${r.quiz??r.score}</b> / 60</span></div><h2>你好，${esc(c.name)}。</h2><p>三题答对 ${r.correct} 题 · 看过 ${r.clues} 条线索</p><div class="tag-row">${r.tags.map(tag=>`<span class="pill">${esc(tag)}</span>`).join('')}</div></div><section class="destination-card">${img(c.scenes.at(-1).id,c.name)}<div><span class="pill">${esc(c.region)}</span><h3>${esc(c.name)}</h3><p>${c.scenes.length>1?`刚才探索的 ${c.scenes.length} 处景点，都在这座目的地。`:'刚才探索的那处景点，就在这座目的地。'}</p></div></section>${r.guess?`<section class="content-card guess-summary"><div class="row"><h3>地图定位</h3><span class="pill">${esc(guessVerdict(r.guess.km))}</span></div><div class="guess-mini">${GuessMap.snapshot(r.guess,c)}<div class="guess-legend"><span class="you">你的落点</span><span class="target">${esc(c.name)}</span></div></div><div class="guess-stats"><div><b>${r.guess.km} km</b><small>直线距离</small></div><div><b>+${r.guess.points}</b><small>定位得分 / ${GUESS.max}</small></div><div><b>${esc(r.guess.city||r.guess.province||'—')}</b><small>你的落点</small></div></div></section>`:''}<section class="content-card"><h3>三题一起揭晓</h3>${r.answers.map((a,i)=>`<button class="answer-line" data-review="${i}" style="width:100%;text-align:left">${icon(a.correct?'check':'book')}<span>第 ${i+1} 题 · ${a.correct?'答对':'查看解析'}</span><b>${a.correct?'+'+a.points:'0'} 分</b>${icon('next')}</button>`).join('')}</section><section class="content-card benefit"><div class="row"><div><strong>${benefit.name}</strong><p>${benefit.detail}</p></div><button data-action="claim" ${status==='active'?'disabled':''}>${status==='active'?'已领取':status==='expired'?'重新领取':'领取'}</button></div><div class="tiny muted">${benefit.threshold} · 领取后 7 日内有效 · 仅限${esc(c.name)}相关产品 · 原型示例，无真实券码或抵扣效力${status==='expired'?' · 上次权益已过期':''}</div></section><div class="result-actions"><button class="primary" data-go="route">为我规划${esc(c.name)}之旅 ${icon('next')}</button><div class="stop-nav"><button class="glass-light prev-city" data-action="prev-city"${prev?'':' disabled'}>${icon('back')} 上一个目的地</button>${next?`<button class="secondary next-city" data-action="next-city">下一个目的地 ${icon('next')}</button>`:'<button class="secondary next-city" data-go="home">返回首页</button>'}</div><div class="split-actions"><button class="secondary" data-action="bookmark">${icon('heart')} ${s.bookmarks[c.id]?'已收藏':'收藏目的地'}</button><button class="secondary" data-action="share">${icon('share')} 分享挑战</button></div></div><p class="demo-note">今日已完成 ${order.filter(id=>s.daily[id]?.result).length} / 5 个目的地 · 综合得分 = 地图定位 ${GUESS.max} + 三题 60</p></div>`; }
+  function distance(a,b) { const rad=Math.PI/180, dLat=(b.lat-a.lat)*rad, dLng=(b.lng-a.lng)*rad; const h=Math.sin(dLat/2)**2+Math.cos(a.lat*rad)*Math.cos(b.lat*rad)*Math.sin(dLng/2)**2; return 12742*Math.asin(Math.sqrt(h)); }
+  function travelMinutes(a,b) { const km=distance(a,b); return Math.max(15,Math.ceil((km/32*60+12)/5)*5); }
+  function makeRoute() {
+    const stops=[...city().stops], capacity=s.pace==='慢游'?1:s.pace==='紧凑'?3:2;
+    const target=Math.min(stops.length,s.days*capacity);
+    const featured=stop=>city().scenes.some(scene=>scene.name===stop.name || scene.id===stop.id || (stop.id&&scene.id.split('-').at(-1)===stop.id.split('-').at(-1)));
+    const priority=[...stops.filter(stop=>s.theme!=='自动'&&stop.interests?.includes(s.theme)),...stops.filter(featured),...stops].filter((stop,index,all)=>all.indexOf(stop)===index);
+    const anchorCount=Math.min(target,priority.filter(stop=>(s.theme!=='自动'&&stop.interests?.includes(s.theme))||featured(stop)).length);
+    const chosen=priority.slice(0,anchorCount);
+    const arrange=items=>{
+      const sizes=Array.from({length:s.days},(_,i)=>Math.floor(items.length/s.days)+(i<items.length%s.days?1:0));
+      let bestCost=Infinity,best=null;
+      function visit(prefix,remaining) {
+        if(!remaining.length){let at=0,cost=0;const groups=sizes.map(size=>{const group=prefix.slice(at,at+size);at+=size;for(let i=1;i<group.length;i++)cost+=distance(group[i-1],group[i]);return group;});if(cost<bestCost){bestCost=cost;best=groups;}return;}
+        for(let i=0;i<remaining.length;i++)visit([...prefix,remaining[i]],[...remaining.slice(0,i),...remaining.slice(i+1)]);
+      }
+      visit([],items);return {cost:bestCost,groups:best};
+    };
+    while(chosen.length<target){const next=stops.filter(stop=>!chosen.includes(stop)).map(stop=>({stop,cost:arrange([...chosen,stop]).cost})).sort((a,b)=>a.cost-b.cost)[0];chosen.push(next.stop);}
+    const best=arrange(chosen).groups;
+    best.sort((a,b)=>Math.min(...a.map(stop=>distance(city(),stop)))-Math.min(...b.map(stop=>distance(city(),stop))));
+    s.route=reorderDaysForOpenings(best.map(group=>group.map(stop=>stop.name)));
+  }
+  function stopByName(name) { return city().stops.find(x=>x.name===name); }
+  function time(t) { return `${String(Math.floor(t/60)).padStart(2,'0')}:${String(t%60).padStart(2,'0')}`; }
+  function dateForDay(index) { if(!s.date)return null;const [year,month,date]=s.date.split('-').map(Number),d=new Date(year,month-1,date+index);return d; }
+  function openConflict(stop,date,start,end) {
+    if(!date)return '';
+    if(date.getDay()===1 && stop.openingHours?.includes('周一闭馆'))return '周一闭馆';
+    let open=null,close=null;
+    const match=stop.openingHours?.match(/(\d{2}):(\d{2})[–-](\d{2}):(\d{2})/);
+    if(match){open=Number(match[1])*60+Number(match[2]);close=Number(match[3])*60+Number(match[4]);}
+    if(stop.opening==='seasonal'){
+      const month=date.getMonth()+1;open=7*60+30;
+      close=stop.name==='虎丘景区'?(month>=5&&month<=10?18*60:17*60+30):(month>=3&&month<=10?17*60+30:17*60);
+    }
+    if(open!==null && start<open)return `建议 ${time(open)} 后入园`;
+    if(close!==null && end>close)return `预计 ${time(end)} 结束，晚于参考闭园时间 ${time(close)}`;
+    return '';
+  }
+  function dayConflicts(stops,index) { const date=dateForDay(index);if(!date)return 0;let clock=9*60,previous=null,count=0;for(const name of stops){const stop=stopByName(name);clock+=previous?travelMinutes(previous,stop):0;const start=clock;clock+=stop.visitMinutes;if(openConflict(stop,date,start,clock))count++;previous=stop;}return count; }
+  function reorderDaysForOpenings(route) {
+    if(!s.date||route.length<2)return route;
+    let best=route,bestScore=Infinity;
+    const visit=(prefix,remaining)=>{if(!remaining.length){const score=prefix.reduce((n,day,i)=>n+dayConflicts(day,i)*1000+Math.abs(route.indexOf(day)-i),0);if(score<bestScore){bestScore=score;best=prefix;}return;}for(const group of remaining)visit([...prefix,group],remaining.filter(item=>item!==group));};
+    visit([],route);return best;
+  }
+  function showOpeningWarnings() {
+    if(s.view!=='route'||!s.date)return;
+    app.querySelectorAll('.day-card').forEach((card,index)=>{
+      const date=dateForDay(index),dateText=`${date.getFullYear()}.${String(date.getMonth()+1).padStart(2,'0')}.${String(date.getDate()).padStart(2,'0')}`;
+      card.querySelector('.day-label')?.insertAdjacentHTML('beforeend',`<span class="route-day-date">${dateText}</span>`);
+      card.querySelectorAll('.route-stop').forEach((row,si)=>{const stop=stopByName(s.route[index][si]),startText=row.querySelector('.time').textContent,[hour,minute]=startText.split(':').map(Number),start=hour*60+minute,reason=openConflict(stop,date,start,start+stop.visitMinutes);if(reason)row.insertAdjacentHTML('beforeend',`<div class="availability-warning">${esc(reason)}。请调整日期或替换地点。${stop.source?.startsWith('http')?`<a href="${esc(stop.source)}" target="_blank" rel="noopener noreferrer">核对来源 ↗</a>`:''}</div>`);});
+    });
+  }
+  function showFriendComparison() {
+    if(s.view!=='result'||s.invitation?.cityId!==s.cityId)return;
+    const score=(s.result||current().result)?.score;if(score===undefined)return;
+    const other=s.invitation.score,difference=score-other;
+    const card=document.createElement('section');card.className='content-card friend-compare';
+    card.innerHTML=`<strong>好友挑战</strong><p>好友 ${other} 分 · 你 ${score} 分</p><b>${difference>0?`领先 ${difference} 分`:difference<0?`还差 ${-difference} 分`:'本局打平'}</b><small>链接携带的是好友分享时的分数；仅在本地比对，不是实时榜单。</small>`;
+    app.querySelector('.result-actions')?.before(card);
+  }
+  function route() { if(!current().result&&!s.route)return empty('先发现，再出发','完成目的地挑战后，就能规划这座城市的行程。'); if(!s.route)makeRoute(); const c=city(); return `<div class="page">${head('我的路线',current().result?'result':'itinerary',`<button class="head-action" data-go="itinerary">行程单</button>`)}<div class="route-hero">${img(c.scenes.at(-1).id,c.name)}<div><span class="pill">可调整的路线示例</span><h2>${esc(c.name)} ${s.days} 日</h2><p>从刚才的景点出发，按兴趣安排停留。</p></div></div><div class="route-tabs">${[1,2,3].map(d=>`<button class="${s.days===d?'active':''}" data-days="${d}">${d} 日</button>`).join('')}</div><div class="route-controls"><label>节奏<select id="route-pace">${['慢游','舒适','紧凑'].map(v=>`<option ${s.pace===v?'selected':''}>${v}</option>`).join('')}</select></label><label>兴趣<select id="route-theme">${['自动','文化','建筑','自然','摄影','美食'].map(v=>`<option ${s.theme===v?'selected':''}>${v}</option>`).join('')}</select></label><label>出发日期<input id="route-date" type="date" value="${esc(s.date)}"></label></div>${s.route.map((day,di)=>{let clock=9*60,prior=null;return `<section class="day-card"><div class="day-label">第 ${di+1} 天</div>${day.map((name,si)=>{const stop=stopByName(name); const transfer=prior?travelMinutes(prior,stop):0; clock+=transfer;const at=time(clock);clock+=stop.visitMinutes;prior=stop;return `<div class="route-stop"><div class="row"><strong>${esc(name)}</strong><span class="time">${at}</span></div><p>${prior&&si>0?`建议预留约 ${transfer} 分钟交通 · `:''}停留约 ${stop.visitMinutes} 分钟。${esc(stop.note)}</p><div class="stop-actions"><button data-swap="${di}-${si}">替换</button><button data-move="${di}-${si}-up" ${si===0?'disabled':''}>上移</button><button data-move="${di}-${si}-down" ${si===day.length-1?'disabled':''}>下移</button></div></div>`;}).join('')}</section>`;}).join('')}<section class="content-card"><h3>接着安排出行</h3><div class="travel-products">${[['bed','附近酒店'],['ticket','景点门票'],['train','往返交通']].map(([i,t])=>`<button data-product="${t}">${icon(i)}${t}</button>`).join('')}</div>${benefitStatus(c.id)==='active'?'<p class="tiny muted">已领取的示例权益可在门票承接弹窗中查看使用范围。</p>':''}</section><div class="route-bottom"><button class="primary" data-action="save-trip">保存到我的行程</button><p class="demo-note">基于本地景点资料生成；交通为直线距离粗估，时间与开放情况请出发前核实。</p></div></div>`; }
+  function atlas() { const count=order.filter(id=>s.daily[id]?.result).length; return `<div class="page">${head('目的地图鉴','today')}<div class="pad"><h2>已点亮 ${count} / ${order.length} 座城</h2></div><div class="atlas-grid">${order.map((id,i)=>{const c=C.cities.find(x=>x.id===id),done=!!s.daily[id]?.result;return `<button class="atlas-item" data-city="${id}">${img(c.scenes[0].id,done?c.name:'未揭晓目的地')}<div><strong>${done?esc(c.name):`第 ${i+1} 个目的地`}</strong><small>${done?`${s.daily[id].result.score} 分 · ${esc(c.region)}`:'尚未揭晓'}</small></div></button>`;}).join('')}</div></div>`; }
+  function ranking() { const done=order.filter(id=>s.daily[id]?.result),total=done.reduce((n,id)=>n+s.daily[id].result.score,0); const entries=s.rank==='今日'?done.map(id=>[C.cities.find(c=>c.id===id).name,s.daily[id].result.score]):[['小野（演示）',420],['景行（演示）',370],['我',total],['山间来信（演示）',290]]; return `<div class="page">${head('探索榜单','today')}<div class="pad"><h2>今日累计 ${total} 分</h2><p class="muted tiny">已完成 ${done.length} / 5 座城；每城满分 100（地图定位 40 + 三题 60）。好友数据为演示。</p></div><div class="route-tabs">${['今日','演示好友榜'].map(t=>`<button data-rank="${t}" class="${s.rank===t?'active':''}">${t}</button>`).join('')}</div><div class="content-card">${entries.length?entries.sort((a,b)=>b[1]-a[1]).map(([name,score],i)=>`<div class="ranking-row"><strong>${i+1}</strong><div class="avatar">${esc(name[0])}</div><span>${esc(name)}</span><b>${score} 分</b></div>`).join(''):'<p class="muted">完成第一个挑战后，成绩会显示在这里。</p>'}</div></div>`; }
+  function itinerary() { const items=Object.entries(s.itineraries); return `<div class="page">${head('我的行程','home')}<div class="pad"><h2>${items.length?`${items.length} 份已保存路线`:'还没有行程'}</h2></div>${items.length?items.map(([id,it])=>`<section class="content-card itinerary-card"><strong>${esc(it.city)} ${it.days} 日</strong><p>${esc(it.date || '日期待定')} · ${it.route.flat().length} 处停留 · ${esc(it.pace)}节奏</p><button class="secondary" data-itinerary="${id}">查看并调整</button></section>`).join(''):`<div class="pad"><button class="primary" data-go="today">去发现目的地</button></div>`}</div>`; }
+  function profile() { const tags={}; for(const item of Object.values(s.daily))for(const tag of item.result?.tags||[])tags[tag]=(tags[tag]||0)+1; return `<div class="page">${head('我的旅行','home')}<div class="pad"><h2>我的发现</h2><p class="muted tiny">今日完成 ${order.filter(id=>s.daily[id]?.result).length} / 5 座城</p><div class="tag-row">${Object.entries(tags).sort((a,b)=>b[1]-a[1]).map(([tag,n])=>`<span class="pill">${esc(tag)} · ${n}</span>`).join('')}</div></div><div class="content-card"><button class="answer-line" data-go="atlas" style="width:100%">${icon('book')}<span>目的地图鉴</span>${icon('next')}</button><button class="answer-line" data-go="ranking" style="width:100%">${icon('spark')}<span>今日成绩</span>${icon('next')}</button><button class="answer-line" data-go="itinerary" style="width:100%">${icon('bag')}<span>我的行程</span>${icon('next')}</button></div></div>`; }
+  function empty(title,body) { return `<div class="page">${head(title)}<div class="empty"><p>${body}</p><button class="primary" data-go="today">探索今日目的地</button></div></div>`; }
 
-function cancelPending(){transition++;pendingCleanup?.();pendingCleanup=null;clearTimeout(prefetchTimer)}
-async function loadView(view,index,commit){
- cancelPending();const ticket=transition,p=photo(SCENES[index].id);
- const current=app.querySelector('.photo-plane>img,.cover-hero>img');
- SceneMedia.retain([SceneMedia.source(p,true).src,...(current?[current.getAttribute('src')]:[])]);
- const buttons=[...document.querySelectorAll('[data-action="start"],[data-action="restart"],[data-action="next-scene"]')];
- const previous=buttons.map(b=>[b,b.textContent,b.disabled]);
- buttons.forEach(b=>{b.disabled=true;b.setAttribute('aria-busy','true');b.textContent='载入中…'});
- pendingCleanup=()=>previous.forEach(([b,text,disabled])=>{if(b.isConnected){b.textContent=text;b.disabled=disabled;b.removeAttribute('aria-busy')}});
- try{const image=await SceneMedia.prepare(p);if(ticket!==transition)return;commit?.();s.view=view;render(image)}
- catch(error){if(ticket===transition&&error.name!=='AbortError')toast('照片暂未载入，请重试。当前画面已保留。')}
- finally{if(ticket===transition){pendingCleanup?.();pendingCleanup=null}}
-}
-function toast(t){const el=document.querySelector('#toast');el.textContent=t;el.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('show'),3200)}
-function head(title,back='cover',right=''){return `<header class="page-head"><button class="icon-btn" data-go="${back}" aria-label="返回">${icon('back')}</button><strong>${title}</strong>${right||'<span style="width:36px"></span>'}</header>`}
-function nav(active='home'){return `<nav class="bottom-nav" aria-label="携程导航">${[['home','首页','home'],['message','消息','notice'],['people','社区','community'],['bag','行程','itinerary'],['user','我的','profile']].map(([i,t,v])=>`<button class="${active===v?'active':''}" data-go="${v}">${icon(i)}${t}</button>`).join('')}</nav>`}
-function home(){return `<div class="page white"><div class="top-brand"><span class="brand">Trip<span>.</span>com</span><div class="row"><span class="silver"><b>⬟</b> Silver</span><span class="coin">T</span></div></div><section class="services"><div class="service-row">${[['bed','酒店'],['plane','机票'],['building','机票 + 酒店'],['train','火车票']].map(([i,t])=>`<button class="service" data-service="${t}"><span class="bubble">${icon(i)}</span>${t}</button>`).join('')}</div><div class="service-row small">${[['home','民宿·短租'],['spark','景点·玩乐'],['car','租车'],['palm','旅游度假'],['down','更多']].map(([i,t])=>`<button class="service" data-service="${t}">${icon(i)}${t}</button>`).join('')}</div></section><div class="quick-apps">${[['pin','TripGuessr','cover'],['music','演出·赛事','events'],['route','Trip.Planner','itinerary'],['trend','旅行热点','trending']].map(([i,t,v])=>`<button class="${v==='cover'?'entry':''}" data-go="${v}"><span class="quick-icon">${icon(i)}${v==='cover'?'<span class="new-dot">NEW</span>':''}</span>${t}</button>`).join('')}</div><div class="home-body"><div class="search-box"><button class="search-line" data-action="search">${icon('search')}<span>下一站，想去哪里？</span>${icon('mic')}</button><div class="chips"><span>上海</span><span>曼谷</span><span>北京</span><span>悉尼</span><span style="color:var(--blue)">探索地图</span></div></div><section class="offer"><div class="row"><strong>🎁 新人专享 · 旅行好礼</strong><button class="claim" data-action="home-coupon">一键领取</button></div><div class="tickets"><div class="ticket">${icon('bed')}<span>酒店优惠<strong>9 折起</strong></span></div><div class="ticket">${icon('train')}<span>境外火车票<strong>95 折</strong></span></div></div></section><div class="home-section-head"><strong>最近浏览</strong><span class="tiny muted">继续发现美好</span></div><button class="recent" data-go="cover" style="width:100%;text-align:left">${img('huayan','古建风景')}<div style="flex:1"><strong>你的下一站，藏在风景里</strong><small>TripGuessr <span style="color:var(--blue)"> | 拾景漫游</span></small></div>${icon('next')}</button><button class="home-banner" data-go="cover">${img('yungang','石窟造像')}<span class="pill">每日灵感</span><p>打开世界的另一种方式</p><strong>先猜一景，再赴一城</strong></button></div>${nav()}</div>`}
-function cover(){return `<div class="page cover-page"><div class="cover-hero">${img('yungang','待探索的石窟造像')}</div><header class="immersive-top"><button class="glass round" data-go="home" aria-label="返回首页">${icon('back')}</button><span class="cover-name">TripGuessr</span><button class="glass" data-action="rules" aria-haspopup="dialog" aria-expanded="false">玩法</button></header><div class="cover-footer"><button class="primary" data-action="start">${s.deadline&&!s.result?'继续探索':'进入探索'}</button><div class="cover-links"><button class="glass" data-go="atlas">图鉴</button><button class="glass" data-go="ranking">排行榜</button><button class="glass" data-action="skip">跳过</button></div></div></div>`}
-function explore(){const a=SCENES[s.scene];return `<div class="page explore-page"><div class="photo-viewport" tabindex="0" role="region" aria-label="可缩放和拖动的景点照片，支持双指缩放、拖动、鼠标滚轮及方向键"><div class="photo-plane">${img(a.id,`第${s.scene+1}处风景`,'draggable="false"')}${a.hotspots.map((h,i)=>`<button class="hotspot ${s.clues.has(`${s.scene}-${i}`)?'read':''}" data-clue="${i}" aria-label="查看线索 ${i+1}" aria-haspopup="dialog" style="left:${h.x}%;top:${h.y}%;--pulse-delay:${i*-.8}s"><span class="hotspot-dot" aria-hidden="true"></span></button>`).join('')}</div></div><header class="immersive-top"><button class="glass round" data-action="leave" aria-label="退出探索">${icon('back')}</button><span class="scene-counter">${s.scene+1} / 3</span><span class="timer"><b id="timer">03:00</b></span></header><div class="zoom-controls"><button data-action="zoom-in" aria-label="放大照片">+</button><button data-action="zoom-reset" aria-label="重置照片位置和缩放">115%</button><button data-action="zoom-out" aria-label="缩小照片">−</button></div><div class="explore-bottom"><div class="viewer-tools"><button class="glass" data-action="notebook">线索 ${s.clues.size}</button><button class="glass" data-action="language">${s.lang==='zh'?'中 / EN':'EN / 中'}</button><button class="glass" data-action="early-quiz">答题</button></div><button class="primary" data-action="next-scene">${s.scene===2?'开始答题':'下一处'}</button></div></div>`}
-function quiz(){const q=s.questions[s.q];if(!q)return '';const correct=s.selected===q.answer;return `<div class="page">${head('线索挑战','cover',`<span class="pill">${s.q+1} / 3</span>`)}<div class="quiz-top"><div class="row"><span class="eyebrow">${['观察 · 发现细节','理解 · 读懂文化','推理 · 连接线索'][s.q]}</span><span class="pill">${q.points} 分</span></div><div class="quiz-progress"><span style="width:${(s.q+(s.revealed?1:0))/3*100}%"></span></div><h2>${q.q}</h2></div><div class="question-card">${q.options.map((o,i)=>`<button class="option ${s.selected===i?'selected':''} ${s.revealed&&i===q.answer?'correct':''} ${s.revealed&&i===s.selected&&!correct?'wrong':''}" data-option="${i}" ${s.revealed?'disabled':''}><b>${String.fromCharCode(65+i)}</b><span style="flex:1">${o}</span>${s.revealed&&i===q.answer?icon('check'):''}</button>`).join('')}${s.revealed?`<div class="answer-feedback ${correct?'':'wrong'}"><strong>${correct?`回答正确，+${q.points} 分`:'差一点，这条线索值得记住'}</strong>${q.explain}<small>线索来源：${q.source}</small></div>`:''}</div><div class="quiz-submit"><button class="primary" data-action="${s.revealed?'next-question':'submit'}" ${s.selected===null?'disabled':''}>${s.revealed?(s.q===2?'揭晓目的地':'下一题'):'提交答案'} ${icon('next')}</button><p class="quiz-foot">${s.revealed?'每一次发现，都是旅行的开始。':'不计探索速度，只为每一次认真观察加分。'}</p></div></div>`}
-function empty(title,desc,button='开始拾景',target='cover'){return `<div class="page white">${head(title,'home')}<div class="empty">${icon('pin')}<h2>${title}</h2><p>${desc}</p><button class="primary" data-go="${target}">${button}</button></div></div>`}
-function result(){const r=s.result;if(!r)return empty('风景还没有揭晓','先完成三道线索题，<br>再打开属于你的城市发现报告。');return `<div class="page">${head('我的发现','cover',`<button class="icon-btn" data-action="share" aria-label="分享成绩">${icon('share')}</button>`)}<div class="result-hero"><div class="eyebrow">每一眼好奇，都有回响</div><div class="score">${r.score}<small> / 100</small></div><h2>${r.score===100?'你是古建发现家！':r.score>=60?'你发现了风景里的故事':'好奇心，是最好的旅行指南'}</h2><p>本次目的地已完成 · ${r.correct} / 3 题答对 · ${r.clues} 条线索</p><div class="tag-row">${r.tags.map(t=>`<span class="pill">${icon('spark')} ${t}爱好者</span>`).join('')}</div></div><section class="destination-card">${img('xuankong','大同悬空寺')}<div><span class="pill">目的地已揭晓</span><h3>你好，大同。</h3><p>山西 · 大同<br>在石窟与古建之间，遇见时光。</p></div></section><section class="content-card"><h3>这一次，你读懂了什么</h3>${r.answers.map((a,i)=>`<button class="answer-line" style="width:100%;text-align:left" data-review="${i}">${icon(a.correct?'check':'book')}<span>${a.source.split(' · ')[1]}</span><b>${a.correct?'+'+a.points:'查看解析'}</b>${icon('next')}</button>`).join('')}</section><section class="content-card benefit"><div class="row"><div><strong>${r.score===100?'满分探索礼，已解锁':'下一次，向满分出发'}</strong><p>${r.score===100?'大同旅行体验券 · 示例权益':'再看看线索，即可重新挑战。'}</p></div><button data-action="${r.score===100?'claim':'restart'}">${r.score===100?(s.claimed?'已领取':'领取权益'):'再试一次'}</button></div><div class="tiny muted">原型演示权益，无实际抵扣或兑换效力</div></section><div class="result-actions"><button class="primary" data-go="route">${icon('route')} 为我规划大同之旅 ${icon('next')}</button><div class="split-actions"><button class="secondary" data-action="bookmark">${icon('heart')} ${s.bookmarked?'已收藏大同':'收藏目的地'}</button><button class="secondary" data-action="share">${icon('share')} 邀好友挑战</button></div></div><p class="demo-note">今日示例进度 1 / 1 · 总分 ${r.score} / 100</p></div>`}
-const plans={1:[[['09:00','云冈石窟','上午慢慢观察造像与石壁细节。'],['14:30','华严寺','午后回到古城，读懂寺院建筑。'],['17:00','大同古城漫步','留出自由散步与晚餐时间。']]],2:[[['09:00','云冈石窟','在石窟造像前，再找一次画面里的微笑。'],['14:30','华严寺','从层叠屋檐看见古建之美。'],['17:00','大同古城漫步','在街巷里慢下来，住古城附近。']],[['08:30','前往浑源','单独留出城际交通时间，建议提前安排用车。'],['10:30','悬空寺','沿崖壁观察楼阁布局；登临需核对预约条件。'],['15:00','返回大同','预留返程与休息时间。']]],3:[[['09:30','云冈石窟','为石窟艺术留出半天的慢游时间。'],['15:00','大同古城漫步','自由用餐，拍摄街巷。']],[['09:30','华严寺','从庭院到殿宇，细看建筑层次。'],['14:00','古城自由探索','按兴趣安排休息、摄影与街区散步。']],[['08:30','前往浑源','提前安排交通，留足路程时间。'],['10:30','悬空寺','带着线上发现的线索，重新观察悬崖建筑。'],['15:00','返回大同','为离城交通留出余量。']]]};
-function route(){if(!s.result)return empty('先发现，再出发','完成探索后，为你打开大同旅行路线。');return `<div class="page">${head('我的灵感路线','result',`<button class="head-action" data-go="itinerary">行程单</button>`)}<div class="route-hero">${img('xuankong','悬空寺')}<div><span class="pill">${icon('spark')} AI 路线 · 示例</span><h2>把刚才的心动，走一遍</h2><p>大同 ${s.days} 日 · 为${s.result.tags[0]}爱好者准备</p></div></div><div class="route-tabs">${[1,2,3].map(d=>`<button class="${s.days===d?'active':''}" data-days="${d}">${d} 日${d===1?'轻游':d===2?'精选':'慢游'}</button>`).join('')}</div><p class="route-intro">${s.days===1?'一天聚焦云冈与古城，给每一处发现留足时间。':'将古城与浑源分日安排，让每一段探索都从容一点。'}<br>根据本次线索兴趣展示预设路线，可切换旅行天数。</p>${plans[s.days].map((day,i)=>`<section class="day-card"><div class="day-label">DAY ${String(i+1).padStart(2,'0')} <span class="muted" style="font-weight:400;margin-left:9px">${day.some(d=>d[1]==='悬空寺')?'赴一场山间之约':'在古建与时光之间'}</span></div>${day.map(([time,name,desc])=>`<div class="route-stop"><div class="row"><strong>${name}</strong><span class="time">${time}</span></div><p>${desc}</p></div>`).join('')}</section>`).join('')}<section class="content-card"><h3>准备出发，还需要这些</h3><div class="travel-products">${[['bed','附近酒店'],['ticket','景点门票'],['train','往返交通']].map(([i,t])=>`<button data-product="${t}">${icon(i)}${t}</button>`).join('')}</div></section><div class="route-bottom"><button class="primary" data-action="save-trip">${icon('bag')} ${s.itinerary?.days===s.days?'更新到我的行程':'加入我的行程'}</button><p class="demo-note">示例时间仅用于行程编排 · 出发前请核对交通与景区开放信息</p></div></div>`}
-function atlas(){return `<div class="page">${head('我的拾景图鉴','cover')}<div class="pad"><span class="pill">古建中国</span><h2 style="font-size:25px;margin-bottom:8px">让世界，一景一景点亮</h2><p class="muted tiny">${s.result?'已点亮 1 座城 · 大同':'完成探索，收藏你发现的第一座城。'}</p></div>${s.result?`<div class="atlas-grid">${SCENES.map(a=>`<div class="atlas-item">${img(a.id,photo(a.id).name)}<div><strong>${photo(a.id).name}</strong><small>大同 · ${a.type}</small></div></div>`).join('')}</div><div class="pad"><button class="primary" data-go="result">查看大同发现报告</button></div>`:`<div class="empty" style="padding-top:35px">${icon('book')}<p>第一枚城市记忆，正在等你。</p><button class="primary" data-go="cover">开始探索</button></div>`}</div>`}
-function ranking(){const entries=[['景行','景',100],['山间来信','山',90],['小野','野',70]];if(s.result)entries.push(['我','我',s.result.score]);entries.sort((a,b)=>b[2]-a[2]);const list=s.rank==='好友榜'?entries.filter(e=>['我','小野'].includes(e[0])):entries;return `<div class="page">${head('探索排行榜','cover')}<div class="pad"><span class="pill">${icon('trophy')} 大同 · 单城挑战</span><h2 style="font-size:24px">和同样好奇的人，一起发现</h2><p class="muted tiny">榜单其他用户为演示数据，不代表真实排名。</p></div><div class="route-tabs">${['日榜','好友榜','主题榜'].map(t=>`<button data-rank="${t}" class="${s.rank===t?'active':''}">${t}</button>`).join('')}</div><div class="content-card">${s.rank==='主题榜'?'<h3>古建中国 · 大同</h3>':''}${list.map(([n,a,p],i)=>`<div class="ranking-row"><strong>${String(i+1).padStart(2,'0')}</strong><div class="avatar">${a}</div><span>${n}</span><b>${p} <small>分</small></b></div>`).join('')}</div><div class="pad"><button class="primary" data-go="${s.result?'result':'cover'}">${s.result?'我的发现报告':'开始我的挑战'}</button></div></div>`}
-function itinerary(){if(!s.itinerary)return empty('我的行程','还没有加入行程。<br>从一次小小的发现开始，计划下一次出发。','去拾景漫游');const it=s.itinerary;return `<div class="page">${head('我的行程','home')}<div class="pad"><span class="pill">已保存在此浏览器</span><h2>大同 ${it.days} 日古建之旅</h2><p class="muted tiny">${it.days} 天 · ${it.stops.length} 个行程安排</p></div><div class="content-card">${it.stops.map((n,i)=>`<div class="answer-line"><span class="pill">${i+1}</span><span>${n}</span>${icon('check')}</div>`).join('')}</div><div class="pad"><button class="primary" data-go="route">调整旅行路线</button><button class="text-btn" data-action="delete-trip" style="display:block;margin:15px auto">移除此行程</button></div></div>`}
-function render(ready){cancelPending();closeModal();clearInterval(timer);sceneVideo?.destroy();sceneVideo=null;viewer?.destroy();viewer=null;document.querySelector("#phone").classList.toggle("immersive",["cover","explore"].includes(s.view));const views={home,cover,explore,quiz,result,route,atlas,ranking,itinerary,profile:()=>`<div class="page">${head('我的旅行','home')}<div class="pad"><h2>你好，旅行发现家</h2><p class="muted">每一次好奇，都让世界离你更近。</p></div><div class="content-card"><button class="answer-line" data-go="atlas" style="width:100%">${icon('book')}<span>我的拾景图鉴</span>${icon('next')}</button><button class="answer-line" data-go="itinerary" style="width:100%">${icon('bag')}<span>我的行程</span>${icon('next')}</button><button class="answer-line" data-go="result" style="width:100%">${icon('heart')}<span>${s.bookmarked?'已收藏：大同':'我的发现报告'}</span>${icon('next')}</button></div></div>`};const frame=document.createElement('div');frame.innerHTML=(views[s.view]||cover)();
-if(ready){const placeholder=frame.querySelector('.photo-plane>img,.cover-hero>img');ready.alt=placeholder.alt;placeholder.replaceWith(ready)}
-const existing=app.querySelector('.explore-page');
-if(existing&&s.view==='explore'){
- existing.querySelector('.photo-viewport').replaceChildren(frame.querySelector('.photo-plane'));
- existing.querySelector('.scene-counter').textContent=`${s.scene+1} / 3`;
- existing.querySelector('[data-action="next-scene"]').textContent=s.scene===2?'开始答题':'下一处';
- existing.querySelector('[data-action="notebook"]').textContent=`线索 ${s.clues.size}`;
-}else app.replaceChildren(...frame.childNodes);
-app.scrollTop=0;document.querySelectorAll('.flow button').forEach(b=>b.classList.toggle('active',b.dataset.go===s.view||(b.dataset.go==='cover'&&['explore','quiz','atlas','ranking'].includes(s.view))));app.querySelectorAll('img').forEach(el=>el.addEventListener('error',()=>{el.insertAdjacentHTML('afterend','<span class="error-image">照片未能载入，请检查照片库文件是否完整。</span>')},{once:true}));if(s.view==='explore'){viewer=new PhotoViewer(document.querySelector('.photo-viewport'),photo(SCENES[s.scene].id));tick();if(s.view==='explore')timer=setInterval(tick,500)}if(s.view==='cover')showRules();
-if(['cover','explore'].includes(s.view)){
- const current=photo(s.view==='cover'?'yungang':SCENES[s.scene].id);
- SceneMedia.retain([SceneMedia.source(current,true).src]);
- if(s.view==='explore'){
-  const scene=SCENES[s.scene];if(scene.video)sceneVideo=new SceneMedia.Video(app.querySelector('.photo-plane'),scene.video);
-  const next=SCENES[s.scene+1];prefetchTimer=setTimeout(()=>SceneMedia.prefetch(current,next&&photo(next.id)),200);
- }
-}else SceneMedia.retain([]);
-}
-function go(view){if(['notice','community','events','trending'].includes(view)){sheet('继续发现世界',`<p>这里是携程${{notice:'消息',community:'社区',events:'演出赛事',trending:'旅行热点'}[view]}入口。本原型聚焦 TripGuessr 的大同探索体验。</p><button class="primary" data-go="cover">去拾景漫游</button>`);return}if(view==='quiz'&&!s.questions.length)view='cover';if(view==='cover'||view==='explore'){loadView(view,view==='cover'?0:s.scene);return}s.view=view;render()}
-function sheet(title,content){closeModal();const previous=document.activeElement;modalRoot.innerHTML=`<div class="modal-overlay"><section class="sheet" role="dialog" aria-modal="true" aria-label="${esc(title)}" tabindex="-1"><div class="sheet-handle"></div><div class="sheet-heading"><h2>${title}</h2><button class="icon-btn sheet-close" data-action="close" aria-label="关闭">${icon('close')}</button></div>${content}</section></div>`;modalRoot._previous=previous;modalRoot.querySelector('.sheet').focus({preventScroll:true})}
-function closeModal(){modalRoot._rulesCleanup?.();modalRoot._rulesCleanup=null;app.inert=false;document.querySelector('[data-action="rules"]')?.setAttribute('aria-expanded','false');if('speechSynthesis'in window)window.speechSynthesis.cancel();modalRoot.innerHTML='';if(modalRoot._previous?.isConnected)modalRoot._previous.focus({preventScroll:true});modalRoot._previous=null}
+  function cancelPending() { transition++; pendingCleanup?.(); pendingCleanup=null; clearTimeout(prefetchTimer); }
+  async function loadView(view,index,commit) {
+    cancelPending(); const ticket=transition, p=city().scenes[index].photo;
+    const existing=app.querySelector('.photo-plane>img,.cover-hero>img');
+    SceneMedia.retain([SceneMedia.source(p,true).src,...(existing?[existing.src]:[])]);
+    const buttons=[...document.querySelectorAll('[data-action="start"],[data-action="next-scene"],[data-action="prev-scene"]')];
+    const old=buttons.map(b=>[b,b.innerHTML,b.disabled]);
+    buttons.forEach(b=>{b.disabled=true;b.setAttribute('aria-busy','true');if(b.dataset.action!=='prev-scene')b.textContent='载入中…';});
+    pendingCleanup=()=>old.forEach(([b,label,disabled])=>{if(b.isConnected){b.innerHTML=label;b.disabled=disabled;b.removeAttribute('aria-busy');}});
+    try { const ready=await SceneMedia.prepare(p); if(ticket!==transition)return; commit?.();s.view=view;render(ready); }
+    catch(error) { if(ticket===transition && error.name!=='AbortError')toast('照片暂未载入，请重试'); }
+    finally { if(ticket===transition){pendingCleanup?.();pendingCleanup=null;} }
+  }
+  function render(ready) {
+    cancelPending(); closeModal(); clearInterval(timer); viewer?.destroy(); viewer=null; mapView?.destroy(); mapView=null;
+    document.querySelector('#phone').classList.toggle('immersive',['cover','explore'].includes(s.view));
+    const views={home,cover,explore,quiz,guess,result,route,atlas,ranking,itinerary,profile};
+    const frame=document.createElement('div');frame.innerHTML=(views[s.view]||home)();
+    if(ready){const placeholder=frame.querySelector('.photo-plane>img,.cover-hero>img'); if(placeholder){ready.alt=placeholder.alt;placeholder.replaceWith(ready);}}
+    app.replaceChildren(...frame.childNodes);app.scrollTop=0;showOpeningWarnings();showFriendComparison();
+    document.querySelectorAll('.flow button').forEach(b=>b.classList.toggle('active',b.dataset.go===s.view || (b.dataset.go==='today'&&['cover','explore','quiz','guess','result','route','atlas','ranking'].includes(s.view))));
+    app.querySelectorAll('img').forEach(el=>el.addEventListener('error',()=>{el.insertAdjacentHTML('afterend','<span class="error-image">照片未能载入</span>');},{once:true}));
+    if(s.view==='explore') { const root=app.querySelector('.photo-viewport'),config=window.IMMERSIVE_SCENES?.[activePhoto().id];viewer=config&&window.ImmersivePhotoViewer?new ImmersivePhotoViewer(root,activePhoto(),config):new PhotoViewer(root,activePhoto());tick();if(s.view==='explore')timer=setInterval(tick,500); const next=city().scenes[s.scene+1];prefetchTimer=setTimeout(()=>SceneMedia.prefetch(activePhoto(),next?.photo),200); }
+    if(s.view==='guess')mountGuess();
+    if(s.view==='cover' && s.cityId===order[0] && !s.rulesSeen){s.rulesSeen=true;showRules();}
+    if(['cover','explore'].includes(s.view))SceneMedia.retain([SceneMedia.source(s.view==='cover'?city().scenes[0].photo:activePhoto(),true).src]);else SceneMedia.retain([]);
+  }
+  function selectCity(id) { if(!C.cities.some(c=>c.id===id))return;if(s.cityId!==id){s.deadline=0;s.scene=0;s.clues.clear();s.visited=new Set([0]);}s.cityId=id;s.result=s.daily[id]?.result||null;s.route=null;s.days=2;s.pace='舒适';s.theme='自动';s.date='';go(s.result?'result':'cover'); }
+  function go(view) { if(view==='today'){openToday();return;} if(['notice','community','events','trending'].includes(view)){sheet('携程服务入口','<p>当前原型聚焦 TripWonder 目的地探索。</p>');return;} if(view==='quiz'&&!s.questions.length)view='cover';if(view==='guess'&&s.answers.length<3)view='cover';if(view==='result')s.result=current().result||s.result;if(view==='cover'||view==='explore'){loadView(view,view==='cover'?0:s.scene);return;}s.view=view;render(); }
+  function sheet(title,content) { closeModal();previousFocus=document.activeElement;modalRoot.innerHTML=`<div class="modal-overlay"><section class="sheet" role="dialog" aria-modal="true" aria-label="${esc(title)}" tabindex="-1"><div class="sheet-handle"></div><div class="sheet-heading"><h2>${esc(title)}</h2><button class="icon-btn sheet-close" data-action="close" aria-label="关闭">${icon('close')}</button></div>${content}</section></div>`;modalRoot.querySelector('.sheet').focus({preventScroll:true}); }
+  function closeModal() { rulesCleanup?.();rulesCleanup=null;app.inert=false;document.querySelector('[data-action="rules"]')?.setAttribute('aria-expanded','false');window.speechSynthesis?.cancel?.();modalRoot.innerHTML='';if(previousFocus?.isConnected)previousFocus.focus({preventScroll:true});previousFocus=null; }
+  function showRules() {
+    closeModal(); const anchor=app.querySelector('[data-action="rules"]');if(!anchor)return;
+    previousFocus=anchor;anchor.setAttribute('aria-expanded','true');
+    modalRoot.innerHTML=`<div class="rules-overlay"><section class="rules-popover" role="dialog" aria-modal="true" aria-labelledby="rules-title" tabindex="-1"><div class="rules-heading"><div><span class="rules-eyebrow">玩法说明</span><h2 id="rules-title">看实景，猜出今日目的地</h2></div><button class="icon-btn" data-action="close" aria-label="关闭玩法">${icon('close')}</button></div><p class="rules-intro">每天 5 个神秘目的地，城市名先保密。每一站按下面 4 步完成，想换一个可以直接跳过。</p><ol class="rules-steps"><li><span>看</span><div><strong>探索 3 处实景 · 限时 3 分钟</strong><p>拖动、双指缩放，点开发光圆点收集线索</p></div></li><li><span>答</span><div><strong>回答 3 道线索题 · 每题 20 分</strong><p>观察、文化、推理各一题，对错先不公布</p></div></li><li><span>定</span><div><strong>在地图上标出位置 · 最高 40 分</strong><p>越近分越高，25 公里内满分；确认前可调整</p></div></li><li><span>揭</span><div><strong>揭晓城市、距离与总分</strong><p>查看解析，规划行程，凭成绩领旅行好礼</p></div></li></ol><div class="rules-score" aria-label="计分方式"><b>满分 100</b><span>地图定位 40</span><i>+</i><span>三题 60</span></div><button class="primary rules-cta" data-action="rules-start">开始探索</button></section></div>`;
+    const panel=modalRoot.querySelector('.rules-popover'),phone=document.querySelector('#phone');
+    const position=()=>{const a=anchor.getBoundingClientRect(),p=phone.getBoundingClientRect(),top=a.bottom-p.top-phone.clientTop+12,right=Math.max(12,phone.clientWidth-(a.right-p.left-phone.clientLeft));panel.style.top=top+'px';panel.style.right=right+'px';panel.style.maxHeight=Math.max(80,phone.clientHeight-top-16)+'px';};
+    position();const observer=new ResizeObserver(position);observer.observe(phone);rulesCleanup=()=>observer.disconnect();app.inert=true;panel.focus({preventScroll:true});
+  }
+  function dismissModal(after) { const overlay=modalRoot.querySelector('.rules-overlay');if(!overlay){closeModal();after?.();return;}if(overlay.classList.contains('closing'))return;overlay.classList.add('closing');const panel=overlay.querySelector('.rules-popover'),reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;panel.animate([{opacity:1,transform:'translateY(0) scale(1)'},{opacity:0,transform:'translateY(-8px) scale(.94)'}],{duration:reduced?0:170,easing:'cubic-bezier(.4,0,1,1)',fill:'forwards'}).finished.then(()=>{if(modalRoot.contains(overlay)){closeModal();after?.();}}).catch(()=>{}); }
+  // The rules only explain the game; entering stays an explicit tap on the cover CTA.
+  function cueStart() { const cta=app.querySelector('.cover-actions>.primary');if(!cta)return;cta.focus({preventScroll:true});cta.classList.remove('cue');void cta.offsetWidth;cta.classList.add('cue'); }
+  function start() { const resume=s.deadline>Date.now();loadView('explore',resume?s.scene:0,()=>{if(!resume){s.scene=0;s.deadline=Date.now()+180000;s.clues.clear();s.visited=new Set([0]);s.answers=[];s.questions=[];s.q=0;s.selected=null;}}); }
+  function tick() { const remain=Math.max(0,Math.ceil((s.deadline-Date.now())/1000)),el=app.querySelector('#timer');if(el){el.textContent=`${String(Math.floor(remain/60)).padStart(2,'0')}:${String(remain%60).padStart(2,'0')}`;el.parentElement.classList.toggle('urgent',remain<=30);}if(remain===0){beginQuiz();toast('探索时间到，开始线索挑战');} }
+  function beginQuiz() { clearInterval(timer);s.deadline=0;s.questions=city().questions.slice(0,3).map((q,i)=>({...q,points:QUIZ_POINTS[i]}));s.q=0;s.selected=null;s.answers=[];go('quiz'); }
+  function clue(index) { const h=city().scenes[s.scene].hotspots[index];if(!h)return;s.clues.add(`${s.scene}-${index}`);app.querySelector(`[data-clue="${index}"]`)?.classList.add('read');const source=h.source?.startsWith('http')?`<a href="${esc(h.source)}" target="_blank" rel="noopener noreferrer">资料出处 ↗</a>`:'';sheet(h.title,`<p id="clue-text">${esc(h.text)}</p><div class="clue-footer"><button data-action="speak">朗读</button>${source}</div>`); }
+  function answerSource(answer) { if(answer.source?.startsWith('http'))return answer.source;const match=answer.source?.match(/第\s*(\d+)\s*处\s*·\s*(.+)/);if(!match)return null;return city().scenes[Number(match[1])-1]?.hotspots.find(h=>h.title===match[2])?.source||null; }
+  function finish() { const counts={};for(const key of s.clues){const [i,j]=key.split('-').map(Number),tag=city().scenes[i].hotspots[j]?.tag;if(tag)counts[tag]=(counts[tag]||0)+1;}const tags=Object.keys(counts).sort((a,b)=>counts[b]-counts[a]).slice(0,2);const quiz=s.answers.reduce((n,a)=>n+(a.correct?a.points:0),0),r={score:quiz+(s.guess?.points||0),quiz,guess:s.guess?{...s.guess}:null,correct:s.answers.filter(a=>a.correct).length,answers:s.answers,clues:s.clues.size,tags:tags.length?tags:['旅行发现'],date:day};s.result=r;const previous=current().result;s.daily[s.cityId]={...current(),result:!previous||r.score>previous.score?r:previous,skipped:false}; }
+  function inviteUrl() { const r=s.result||current().result,token=btoa(JSON.stringify({cityId:s.cityId,score:r.score,day})).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');const url=new URL('index.html',location.href);url.searchParams.set('challenge',token);return url.href; }
+  function share() {
+    const r=s.result||current().result,c=city(),url=inviteUrl(),link=new URL(url),local=link.protocol==='file:';
+    // The friend will guess the place, so the card shows a heavily blurred scene as mood, never a name.
+    const art=SceneMedia.source(photo(c.scenes[0].id)).src,count=c.scenes.length;
+    const shown=local?'本地预览链接 · 仅本机可打开':`${link.host}${link.pathname.replace(/index\.html$/,'')}?challenge=…`;
+    const linkIcon='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 14a4.5 4.5 0 0 0 6.4 0l3-3a4.5 4.5 0 0 0-6.4-6.4l-1.2 1.2M14 10a4.5 4.5 0 0 0-6.4 0l-3 3a4.5 4.5 0 0 0 6.4 6.4l1.2-1.2"/></svg>';
+    const saveIcon='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M5 21h14"/></svg>';
+    sheet('分享挑战',`<div class="share-sheet">
+      <figure class="share-ticket">
+        <div class="share-ticket-art"><img src="${esc(art)}" alt="" aria-hidden="true">
+          <div class="share-ticket-top"><span class="brand">Trip<span>.</span>com</span><span class="share-kicker">TRIPWONDER · 奇境挑战</span></div>
+          <div class="share-score"><b>${r.score}</b><small>/ 100</small></div>
+          <p class="share-dare">猜猜我去了哪里？<br>你能超过这个分数吗？</p>
+        </div>
+        <figcaption class="share-ticket-stub">
+          <div><b>${r.guess?.points??0}</b><small>地图定位</small></div>
+          <div><b>${r.quiz??r.score}</b><small>线索答题</small></div>
+          <div><b>${count}</b><small>处实景</small></div>
+        </figcaption>
+      </figure>
+      <label class="share-link" for="invite-link"><span class="share-link-icon">${linkIcon}</span><span class="share-link-text"><strong>好友挑战链接</strong><small>${esc(shown)}</small></span>
+        <input class="invite-link" id="invite-link" readonly value="${esc(url)}" aria-label="好友挑战链接"></label>
+      <div class="share-actions"><button class="primary" data-action="copy-invite">${linkIcon}复制链接</button><button class="secondary" data-action="download-share">${saveIcon}保存挑战卡</button></div>
+      ${navigator.share?`<button class="share-more" data-action="system-share">${icon('share')}更多分享方式</button>`:''}
+      <p class="share-note">${local?'当前是本地预览：链接只能在这台电脑上打开，发布到网页后好友才能接受挑战。':'好友打开链接会进入同一个目的地；成绩只在各自的浏览器里比对。'}</p>
+    </div>`); }
 
-function showRules(){
- closeModal();
- const anchor=document.querySelector('[data-action="rules"]');if(!anchor)return;
- modalRoot._previous=anchor;anchor.setAttribute('aria-expanded','true');
- modalRoot.innerHTML=`<div class="rules-overlay"><section class="rules-popover" role="dialog" aria-modal="true" aria-labelledby="rules-title" tabindex="-1"><div class="rules-heading"><h2 id="rules-title">探索风景，赢旅行好礼</h2><button class="icon-btn" data-action="close" aria-label="关闭玩法">${icon('close')}</button></div><p class="rules-intro">循着线索完成挑战，解锁丰厚探索奖励，还有机会领取酒店、门票等旅行优惠券。</p><ol class="rules-steps"><li><span>1</span><p>用 3 分钟探索 3 处风景，<br>拖动、放大照片，点击发光圆点查看线索。</p></li><li><span>2</span><p>根据发现回答 3 道题，<br>每题 30、30、40 分，满分 100 分。</p></li><li><span>3</span><p>揭晓目的地，领取探索好礼，<br>把喜欢的风景加入旅行计划。</p></li></ol><button class="primary" data-action="rules-start">${s.deadline&&!s.result?'继续探索':'开始探索'}</button><p class="rules-note">本次示例满分解锁奖励，优惠券仅作演示。</p></section></div>`;
- const panel=modalRoot.querySelector('.rules-popover'),phone=document.querySelector('#phone');
- const position=()=>{const a=anchor.getBoundingClientRect(),p=phone.getBoundingClientRect();const top=a.bottom-p.top-phone.clientTop+12;const right=Math.max(12,phone.clientWidth-(a.right-p.left-phone.clientLeft));panel.style.top=top+'px';panel.style.right=right+'px';panel.style.maxHeight=Math.max(80,phone.clientHeight-top-16)+'px';};
- position();const observer=new ResizeObserver(position);observer.observe(phone);modalRoot._rulesCleanup=()=>observer.disconnect();
- app.inert=true;panel.focus({preventScroll:true});
-}
-function dismissModal(after){
- const overlay=modalRoot.querySelector('.rules-overlay');
- if(!overlay){closeModal();after?.();return}
- if(overlay.classList.contains('closing'))return;
- overlay.classList.add('closing');
- const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
- const panel=overlay.querySelector('.rules-popover');
- const animation=panel.animate([{opacity:1,transform:'translateY(0) scale(1)'},{opacity:0,transform:'translateY(-8px) scale(.94)'}],{duration:reduced?0:170,easing:'cubic-bezier(.4,0,1,1)',fill:'forwards'});
- animation.finished.then(()=>{if(modalRoot.contains(overlay)){closeModal();after?.()}}).catch(()=>{});
-}
+  // Fireworks over the whole phone for a moment of reward. Canvas, pointer-transparent, removes itself.
+  function celebrate(origin) {
+    const host=document.querySelector('#phone')||document.body,box=host.getBoundingClientRect(),dpr=Math.min(devicePixelRatio||1,2);
+    if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+    host.querySelector('.celebrate-canvas')?.remove();
+    const canvas=document.createElement('canvas');canvas.className='celebrate-canvas';canvas.setAttribute('aria-hidden','true');
+    canvas.width=Math.round(box.width*dpr);canvas.height=Math.round(box.height*dpr);host.append(canvas);
+    const ctx=canvas.getContext('2d');ctx.scale(dpr,dpr);
+    const W=box.width,H=box.height,colors=['#ffd166','#ff8a5b','#3264ff','#7dd3fc','#f472b6','#ffe7a3'],parts=[],rockets=[];
+    const burst=(x,y,n,speed,palette)=>{for(let i=0;i<n;i++){const a=Math.PI*2*i/n+Math.random()*.3,v=speed*(.55+Math.random()*.6);parts.push({x,y,px:x,py:y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,life:1,decay:.011+Math.random()*.012,color:palette[i%palette.length],size:1.4+Math.random()*1.8});}};
+    const o=origin?.getBoundingClientRect?.();
+    if(o)burst(o.left-box.left+o.width/2,o.top-box.top+o.height/2,34,4.2,colors);
+    [[.28,.26,0],[.72,.2,220],[.5,.14,430],[.2,.36,650],[.8,.34,820]].forEach(([fx,fy,delay])=>setTimeout(()=>{if(canvas.isConnected)rockets.push({x:W*fx+(Math.random()-.5)*30,y:H*.96,ty:H*fy,vy:-(H*.96-H*fy)/38,color:colors[Math.floor(Math.random()*colors.length)]});},delay));
+    const start=performance.now();
+    const step=now=>{
+      if(!canvas.isConnected)return;
+      ctx.globalCompositeOperation='destination-out';ctx.fillStyle='rgba(0,0,0,.28)';ctx.fillRect(0,0,W,H);
+      ctx.globalCompositeOperation='lighter';
+      for(let i=rockets.length-1;i>=0;i--){const k=rockets[i];k.y+=k.vy;k.vy*=.985;ctx.fillStyle=k.color;ctx.beginPath();ctx.arc(k.x,k.y,2.2,0,Math.PI*2);ctx.fill();
+        if(k.y<=k.ty){rockets.splice(i,1);burst(k.x,k.y,64,5.2,[k.color,'#fff4d6',colors[(colors.indexOf(k.color)+2)%colors.length]]);}}
+      for(let i=parts.length-1;i>=0;i--){const q=parts[i];q.px=q.x;q.py=q.y;q.vx*=.972;q.vy=q.vy*.972+.075;q.x+=q.vx;q.y+=q.vy;q.life-=q.decay;
+        if(q.life<=0){parts.splice(i,1);continue;}
+        ctx.globalAlpha=Math.max(0,q.life);ctx.strokeStyle=q.color;ctx.lineWidth=q.size;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(q.px,q.py);ctx.lineTo(q.x,q.y);ctx.stroke();}
+      ctx.globalAlpha=1;
+      if(now-start<900||parts.length||rockets.length)requestAnimationFrame(step);else canvas.remove();
+    };
+    requestAnimationFrame(step);
+  }
 
-function start(reset=false){const fresh=reset||!s.deadline||s.result;loadView('explore',fresh?0:s.scene,()=>{if(fresh){s.scene=0;s.deadline=Date.now()+180000;s.clues.clear();s.visited=new Set([0]);s.answers=[];s.result=null;s.questions=[];s.q=0;s.selected=null;s.revealed=false;persist()}})}
-function tick(){const remain=Math.max(0,Math.ceil((s.deadline-Date.now())/1000));const t=document.querySelector('#timer');if(t){t.textContent=`${String(Math.floor(remain/60)).padStart(2,'0')}:${String(remain%60).padStart(2,'0')}`;t.parentElement.classList.toggle('urgent',remain<=30)}if(remain===0){beginQuiz();toast('探索时间到，来看看你发现了什么')}}
-function beginQuiz(){clearInterval(timer);s.deadline=0;s.questions=[QUESTION_BANK[0][0],s.visited.has(1)?QUESTION_BANK[1][0]:QUESTION_BANK[0][1],s.visited.has(2)?QUESTION_BANK[2][0]:QUESTION_BANK[0][2]];s.q=0;s.selected=null;s.revealed=false;s.answers=[];go('quiz')}
-function clue(i){const h=SCENES[s.scene].hotspots[i];s.clues.add(`${s.scene}-${i}`);document.querySelector(`[data-clue="${i}"]`)?.classList.add('read');const count=document.querySelector('[data-action="notebook"]');if(count)count.textContent=`线索 ${s.clues.size}`;sheet(h.title,`<p id="clue-text">${s.lang==='zh'?h.text:h.en}</p><div class="clue-footer"><button data-action="speak">朗读</button><a href="${h.source}" target="_blank" rel="noopener noreferrer">资料出处 ↗</a></div>`)}
-function finish(){const tags={艺术:0,历史:0,建筑:0};s.clues.forEach(k=>{const [i,j]=k.split('-').map(Number);tags[SCENES[i].hotspots[j].tag]++});const sorted=Object.keys(tags).sort((a,b)=>tags[b]-tags[a]);s.result={score:s.answers.reduce((a,b)=>a+(b.correct?b.points:0),0),correct:s.answers.filter(a=>a.correct).length,answers:s.answers,clues:s.clues.size,tags:s.clues.size?sorted.slice(0,2):['文化探索'],date:new Date().toISOString()};persist();go('result')}
-function share(){sheet('把发现，分享给同样好奇的人',`<div class="share-card"><span class="brand">Trip<span>.</span>com</span><h3>我在拾景漫游中<br>遇见了一座千年古城</h3><div class="score">${s.result.score}<small> 分</small></div><p>悬崖上的楼阁，藏着怎样的故事？<br>来 TripGuessr，发现你的答案。</p><span class="pill">${s.result.tags.join(' · ')}爱好者</span></div><button class="primary" style="margin-top:18px" data-action="download-share">${icon('share')} 保存挑战卡</button><p class="tiny muted">保存后可自行分享给好友。</p>`)}
-function downloadShare(){const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1440" viewBox="0 0 1080 1440"><defs><linearGradient id="b" x2="1" y2="1"><stop stop-color="#e5efff"/><stop offset="1" stop-color="#ffffff"/></linearGradient></defs><rect width="1080" height="1440" fill="url(#b)"/><circle cx="950" cy="70" r="280" fill="#d5e5ff"/><g font-family="Microsoft YaHei, sans-serif" text-anchor="middle"><text x="540" y="150" fill="#3264ff" font-size="65" font-weight="bold">Trip.com</text><text x="540" y="250" fill="#6280b1" font-size="29">TRIPGUESSR · 拾景漫游</text><text x="540" y="415" fill="#193253" font-size="50">我遇见了一座千年古城</text><text x="540" y="740" fill="#3264ff" font-size="240" font-weight="bold">${s.result.score}</text><text x="540" y="820" fill="#6280b1" font-size="32">本次挑战得分 / 100</text><text x="540" y="1000" fill="#193253" font-size="39">悬崖上的楼阁，藏着怎样的故事？</text><text x="540" y="1080" fill="#6280b1" font-size="30">带着好奇心，来发现你的答案。</text><rect x="230" y="1200" width="620" height="85" rx="42" fill="#3264ff"/><text x="540" y="1256" fill="white" font-size="30">下一站，藏在风景里</text><text x="540" y="1370" fill="#8ea1bc" font-size="23">TripGuessr 交互原型 · 好友挑战卡</text></g></svg>`;const url=URL.createObjectURL(new Blob([svg],{type:'image/svg+xml;charset=utf-8'}));const a=document.createElement('a');a.href=url;a.download='TripGuessr-挑战卡.svg';a.click();setTimeout(()=>URL.revokeObjectURL(url),2000);toast('挑战卡已生成，正在保存')}
-document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
- if(b.dataset.go){go(b.dataset.go);return}
- if(b.dataset.service||b.dataset.product){const title=b.dataset.service||b.dataset.product;sheet(title,`<p>${b.dataset.product?'已带入目的地：大同。可在携程继续查看相关旅行产品。':'此处保留携程原有服务入口的视觉位置。'}</p><p class="tiny muted">这是产品承接示例，未接入库存、报价或下单接口。</p><a class="primary" href="https://www.ctrip.com/" target="_blank" rel="noopener noreferrer">打开携程官网 ↗</a>`);return}
- if(b.dataset.clue!==undefined){clue(Number(b.dataset.clue));return}
- if(b.dataset.option!==undefined&&!s.revealed){s.selected=Number(b.dataset.option);const y=app.scrollTop;render();app.scrollTop=y;return}
- if(b.dataset.days){s.days=Number(b.dataset.days);render();return}
- if(b.dataset.rank){s.rank=b.dataset.rank;render();return}
- if(b.dataset.review!==undefined){const a=s.result.answers[Number(b.dataset.review)];sheet('这道题的发现',`<p><b>${a.q}</b></p><p>正确答案：${a.options[a.answer]}</p><div class="clue-quote">${a.explain}<br>来源：${a.source}</div><button class="primary" data-action="close" style="margin-top:20px">记住了</button>`);return}
- const action=b.dataset.action;
- if(action==='close')dismissModal();
- else if(action==='start')start();
- else if(action==='restart')start(true);
- else if(action==='skip'){sheet('今天先把好奇心收藏',`<p>这次只准备了一个目的地示例。你可以稍后回来，继续发现这片风景。</p><button class="primary" data-go="home">返回携程首页</button><button class="text-btn" style="display:block;margin:10px auto" data-action="close">还是想看看</button>`)}
- else if(action==='rules')showRules();
- else if(action==='rules-start')dismissModal(()=>start());
- else if(action==='next-scene'){if(s.scene<2){const next=s.scene+1;loadView('explore',next,()=>{s.scene=next;s.visited.add(next)})}else beginQuiz()}
- else if(action==='early-quiz')sheet('准备好挑战了吗？',`<p>提前结束后，将根据你已经看过的风景组织三道题。</p><button class="primary" data-action="confirm-quiz">开始答题</button><button class="text-btn" style="display:block;margin:10px auto" data-action="close">再看看风景</button>`);
- else if(action==='confirm-quiz')beginQuiz();
- else if(action==='leave')sheet('暂时离开风景？',`<p>当前线索会在本页面保留，探索倒计时继续。回来后可以继续。</p><button class="primary" data-go="cover">暂时离开</button><button class="text-btn" style="display:block;margin:10px auto" data-action="close">继续探索</button>`);
- else if(action==='language'){s.lang=s.lang==='zh'?'en':'zh';b.textContent=s.lang==='zh'?'中 / EN':'EN / 中'}
- else if(action==='zoom-in')viewer?.scaleTo(viewer.zoom*1.2);
- else if(action==='zoom-out')viewer?.scaleTo(viewer.zoom/1.2);
- else if(action==='zoom-reset')viewer?.reset();
- else if(action==='notebook'){sheet('拾起的线索',s.clues.size?[...s.clues].map(k=>{const[i,j]=k.split('-').map(Number),h=SCENES[i].hotspots[j];return `<p><b>${h.title}</b><br>${s.lang==='zh'?h.text:h.en}</p>`}).join(''):'<p>还没有收集线索。轻点照片上的按钮，把你的发现放进这里。</p>')}
- else if(action==='speak'){if(!('speechSynthesis'in window)){toast('此浏览器暂不支持语音讲解，可以直接阅读文字');return}const u=new SpeechSynthesisUtterance(document.querySelector('#clue-text').textContent);u.lang=s.lang==='zh'?'zh-CN':'en-US';u.rate=.92;u.onerror=()=>toast('语音暂不可用，可以直接阅读线索');speechSynthesis.cancel();speechSynthesis.speak(u);b.textContent='正在朗读';u.onend=()=>{if(b.isConnected)b.textContent='朗读'}}
- else if(action==='submit'&&s.selected!==null&&!s.revealed){const q=s.questions[s.q];s.answers.push({...q,selected:s.selected,correct:q.answer===s.selected});s.revealed=true;render()}
- else if(action==='next-question'){if(s.q===2)finish();else{s.q++;s.selected=null;s.revealed=false;render()}}
- else if(action==='bookmark'){s.bookmarked=!s.bookmarked;persist();render();toast(s.bookmarked?'已收藏大同，可在「我的」中查看':'已取消收藏')}
- else if(action==='claim'){s.claimed=true;persist();render();toast('已领取示例权益，无实际兑换效力')}
- else if(action==='share')share();
- else if(action==='download-share')downloadShare();
- else if(action==='save-trip'){s.itinerary={days:s.days,stops:plans[s.days].flat().map(x=>x[1])};persist();sheet('已加入我的行程',`<p>大同 ${s.days} 日行程已保存在当前浏览器。<br>下一次出发，让线上发现变成真实相遇。</p><button class="primary" data-go="itinerary">查看我的行程</button>`)}
- else if(action==='delete-trip'){sheet('移除这份行程？','<p>仅删除当前浏览器里的示例行程，之后可以重新生成。</p><button class="primary" data-action="confirm-delete">确认移除</button>')}
- else if(action==='confirm-delete'){s.itinerary=null;persist();render()}
- else if(action==='search')sheet('下一站，从一份好奇开始','<p>还没决定目的地？不如先看一片风景，答案可能就在其中。</p><button class="primary" data-go="cover">进入 TripGuessr</button>');
- else if(action==='home-coupon')sheet('旅行好礼','<p>首页新人优惠为携程界面样式示例。完成拾景挑战，还可以解锁大同探索礼。</p><button class="primary" data-go="cover">去发现目的地</button>');
-});
-document.addEventListener('keydown',e=>{if(!modalRoot.innerHTML)return;if(e.key==='Escape')dismissModal();if(e.key==='Tab'){const f=[...modalRoot.querySelectorAll('button,a[href],[tabindex="0"]')];if(!f.length)return;if(e.shiftKey&&(document.activeElement===f[0]||document.activeElement===modalRoot.querySelector('[role="dialog"]'))){e.preventDefault();f.at(-1).focus()}else if(!e.shiftKey&&document.activeElement===f.at(-1)){e.preventDefault();f[0].focus()}}});
-modalRoot.addEventListener('click',e=>{if(e.target.classList.contains('modal-overlay')||e.target.classList.contains('rules-overlay'))dismissModal()});
-window.addEventListener('pagehide',()=>{cancelPending();SceneMedia.retain([]);sceneVideo?.destroy();sceneVideo=null;if('speechSynthesis'in window)speechSynthesis.cancel()});
-window.addEventListener('pageshow',e=>{if(e.persisted&&s.view==='explore'){tick();if(s.view==='explore'&&SCENES[s.scene].video)sceneVideo=new SceneMedia.Video(app.querySelector('.photo-plane'),SCENES[s.scene].video)}});
-
-render();
+  function downloadShare() { const r=s.result||current().result,svg=`<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1440"><rect width="1080" height="1440" fill="#edf4ff"/><g font-family="Microsoft YaHei,sans-serif" text-anchor="middle"><text x="540" y="180" fill="#3264ff" font-size="70" font-weight="bold">Trip.com</text><text x="540" y="290" fill="#3264ff" font-size="38">TRIPWONDER · 奇境挑战</text><text x="540" y="480" fill="#193253" font-size="60">我发现了${esc(city().name)}</text><text x="540" y="800" fill="#3264ff" font-size="250" font-weight="bold">${r.score}</text><text x="540" y="885" fill="#6280b1" font-size="40">综合得分 / 100 · 定位 ${r.guess?.points??0} + 答题 ${r.quiz??r.score}</text><text x="540" y="1160" fill="#193253" font-size="38">下一站，等你发现</text><text x="540" y="1320" fill="#8ea1bc" font-size="28">TripWonder 原型 · ${day}</text></g></svg>`;const url=URL.createObjectURL(new Blob([svg],{type:'image/svg+xml;charset=utf-8'}));const a=document.createElement('a');a.href=url;a.download=`TripWonder-${city().id}-${day}.svg`;a.click();setTimeout(()=>URL.revokeObjectURL(url),2000);toast('挑战卡已保存'); }
+  function product(name) { const earned=s.benefits[s.cityId],active=benefitStatus(s.cityId)==='active';sheet(name,`<p>已带入目的地：${esc(city().name)}。此入口展示旅行产品承接方式，暂未接入实时库存、报价或下单。</p>${active?`<div class="clue-quote">已领取：${esc(earned.detail)}<br>${esc(earned.threshold)} · 有效至 ${esc(earned.expires)} · 仅适用于${esc(city().name)}相关产品。示例权益，无真实券码。</div>`:''}<a class="primary" href="https://www.ctrip.com/" target="_blank" rel="noopener noreferrer">打开携程官网</a>`); }
+  document.addEventListener('click',event=>{
+    const b=event.target.closest('button');if(!b)return;
+    if(b.dataset.city){selectCity(b.dataset.city);return;} if(b.dataset.go){go(b.dataset.go);return;}
+    if(b.dataset.service){product(b.dataset.service);return;}if(b.dataset.product){product(b.dataset.product);return;}
+    if(b.dataset.clue!==undefined){clue(Number(b.dataset.clue));return;}
+    if(b.dataset.recall!==undefined){recall(Number(b.dataset.recall));return;}
+    if(b.dataset.option!==undefined){s.selected=Number(b.dataset.option);const y=app.scrollTop;render();app.scrollTop=y;return;}
+    if(b.dataset.days){s.days=Number(b.dataset.days);makeRoute();render();return;}
+    if(b.dataset.rank){s.rank=b.dataset.rank;render();return;}
+    if(b.dataset.review!==undefined){const a=(s.result||current().result).answers[Number(b.dataset.review)],url=answerSource(a),source=url?`<a href="${esc(url)}" target="_blank" rel="noopener noreferrer">资料出处 ↗</a>`:esc(a.source);sheet(`第 ${Number(b.dataset.review)+1} 题`, `<p><b>${esc(a.q)}</b></p><p>你的答案：${esc(a.options[a.selected])}<br>正确答案：${esc(a.options[a.answer])}</p><div class="clue-quote">${esc(a.explain)}<br>${source}</div>`);return;}
+    if(b.dataset.itinerary){selectCity(b.dataset.itinerary);const it=s.itineraries[b.dataset.itinerary];s.days=it.days;s.pace=it.pace;s.theme=it.theme;s.date=it.date;s.route=it.route.map(d=>[...d]);go('route');return;}
+    if(b.dataset.swap){const [di,si]=b.dataset.swap.split('-').map(Number),used=s.route.flat(),other=city().stops.filter(x=>!used.includes(x.name));sheet('替换停留地点',`<div class="swap-list">${other.length?other.map(x=>`<button class="answer-line" data-replace="${di}-${si}" data-stop="${esc(x.name)}"><span>${esc(x.name)}</span><small>${esc(x.theme||'景点')}</small></button>`).join(''):'<p>此目的地的其他景点已全部排入路线。可先缩短天数，再进行替换。</p>'}</div>`);return;}
+    if(b.dataset.replace){const [di,si]=b.dataset.replace.split('-').map(Number);s.route[di][si]=b.dataset.stop;render();return;}
+    if(b.dataset.move){const [di,si,direction]=b.dataset.move.split('-'),list=s.route[Number(di)],from=Number(si),to=from+(direction==='up'?-1:1);if(to>=0&&to<list.length){[list[from],list[to]]=[list[to],list[from]];render();}return;}
+    const action=b.dataset.action;
+    if(action==='close')dismissModal();
+    else if(action==='rules')showRules();
+    else if(action==='rules-start')dismissModal(cueStart);
+    else if(action==='start')start();
+    else if(action==='show-result')go('result');
+    else if(action==='prev-city'){const prev=previousDestination(s.cityId);if(prev)selectCity(prev);}
+    else if(action==='next-city'){const next=nextDestination(s.cityId,true);if(next)selectCity(next);else go('home');}
+    else if(action==='skip'){s.daily[s.cityId]={...current(),skipped:true};const next=nextDestination(s.cityId);if(next)selectCity(next);else{go('home');toast('今日目的地已浏览，可从首页重新探索');}}
+    else if(action==='leave')sheet('暂时离开？','<p>探索倒计时仍会继续。</p><button class="primary" data-go="cover">返回目的地封面</button>');
+    else if(action==='prev-scene'){if(s.scene>0){const prev=s.scene-1;loadView('explore',prev,()=>{s.scene=prev;});}}
+    else if(action==='fav'){const on=!s.bookmarks[s.cityId];s.bookmarks[s.cityId]=on;b.setAttribute('aria-pressed',String(on));b.setAttribute('aria-label',on?'取消收藏':'收藏这个目的地');toast(on?'已收藏，揭晓目的地后可在结果页查看':'已取消收藏');}
+    else if(action==='next-scene'){if(s.scene<city().scenes.length-1){const next=s.scene+1;loadView('explore',next,()=>{s.scene=next;s.visited.add(next);});}else beginQuiz();}
+    else if(action==='speak'){if(!('speechSynthesis' in window)){toast('当前浏览器不支持朗读');return;}const u=new SpeechSynthesisUtterance(modalRoot.querySelector('#clue-text').textContent);u.lang='zh-CN';u.rate=.92;u.onerror=()=>toast('朗读暂不可用');speechSynthesis.cancel();speechSynthesis.speak(u);}
+    else if(action==='submit'&&s.selected!==null){const q=s.questions[s.q];s.answers.push({...q,selected:s.selected,correct:q.answer===s.selected});if(s.q===2){s.guess=null;s.guessDone=false;go('guess');}else{s.q++;s.selected=null;render();}}
+    else if(action==='guess-submit')submitGuess();
+    else if(action==='guess-back'){if(!s.guessDone&&s.answers.length===3){const last=s.answers.pop();s.q=2;s.selected=last.selected;go('quiz');}}
+    else if(action==='zoom-in')mapView?.zoomBy(1.7);
+    else if(action==='zoom-out')mapView?.zoomBy(1/1.7);
+    else if(action==='bookmark'){s.bookmarks[s.cityId]=!s.bookmarks[s.cityId];render();}
+    else if(action==='claim'&&current().result){const benefit=benefitFor(current().result);s.benefits[s.cityId]={date:day,expires:datePlusDays(7),detail:benefit.detail,threshold:benefit.threshold};render();const card=app.querySelector('.benefit');card?.classList.add('just-claimed');celebrate(card?.querySelector('[data-action="claim"]'));toast('已领取示例权益，可在路线页查看使用范围');}
+    else if(action==='share')share();else if(action==='system-share'){navigator.share?.({title:'TripWonder 奇境挑战',text:`我在 TripWonder 拿到了 ${(s.result||current().result).score} 分，猜猜我去了哪里？`,url:inviteUrl()}).catch(()=>{});}else if(action==='download-share')downloadShare();
+    else if(action==='copy-invite'){const input=modalRoot.querySelector('#invite-link'),copy=navigator.clipboard?.writeText(input.value);if(copy)copy.then(()=>toast('挑战链接已复制')).catch(()=>{input.focus();input.select();toast('已选中挑战链接，请手动复制');});else{input.focus();input.select();toast('已选中挑战链接，请手动复制');}}
+    else if(action==='save-trip'){s.itineraries[s.cityId]={city:city().name,days:s.days,pace:s.pace,theme:s.theme,date:s.date,route:s.route.map(d=>[...d])};sheet('路线已保存',`<p>${esc(city().name)} ${s.days} 日路线已保存在本次体验中，刷新页面后会重新开始。</p><button class="primary" data-go="itinerary">查看我的行程</button>`);}
+    else if(action==='search')go('today');
+    else if(action==='home-coupon')sheet('旅行好礼','<p>首页优惠为携程界面示例。完成 TripWonder 挑战可领取原型示例权益。</p><button class="primary" data-go="today">去探索</button>');
+  });
+  document.addEventListener('change',event=>{const el=event.target;if(el.id==='route-pace'){s.pace=el.value;makeRoute();render();}else if(el.id==='route-theme'){s.theme=el.value;makeRoute();render();}else if(el.id==='route-date'){s.date=el.value;s.route=reorderDaysForOpenings(s.route);render();}});
+  document.addEventListener('keydown',event=>{if(!modalRoot.innerHTML)return;if(event.key==='Escape')dismissModal();if(event.key==='Tab'){const f=[...modalRoot.querySelectorAll('button,a[href],[tabindex="0"]')];if(!f.length)return;if(event.shiftKey&&(document.activeElement===f[0]||document.activeElement===modalRoot.querySelector('[role="dialog"]'))){event.preventDefault();f.at(-1).focus();}else if(!event.shiftKey&&document.activeElement===f.at(-1)){event.preventDefault();f[0].focus();}}});
+  modalRoot.addEventListener('click',event=>{if(event.target.classList.contains('modal-overlay')||event.target.classList.contains('rules-overlay'))dismissModal();});
+  window.addEventListener('pagehide',()=>{cancelPending();SceneMedia.retain([]);viewer?.destroy();window.speechSynthesis?.cancel?.();});
+  if(invitation)loadView('cover',0);else render();
 })();
-
-

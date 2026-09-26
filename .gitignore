@@ -1,0 +1,3 @@
+# Local image generation and visual review artifacts.
+/photo-library/**/immersive-blur/check-*/
+/photo-library/**/immersive/

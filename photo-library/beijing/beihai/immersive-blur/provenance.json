@@ -1,0 +1,15 @@
+{
+  "scene": "bj-beihai",
+  "city": "beijing",
+  "source": "../original.jpg",
+  "sourceSha256": "7721d65f08b97de964853ef57a622b9faf383771f61e5c308e115ee7d0ff2146",
+  "displayPhoto": "photo.jpg",
+  "displaySize": [
+    2400,
+    1600
+  ],
+  "displaySha256": "28ffecdc5178aec57e9869e5ebfda88ffdcfbb4654e04f04be2efaf913fc9ed7",
+  "sourceAspect": 1.5,
+  "periphery": "blurred projection of the original photo, rendered at runtime (no AI content)",
+  "preparedAt": "2026-09-26T04:02:45.267Z"
+}

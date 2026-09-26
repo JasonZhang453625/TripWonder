@@ -1,0 +1,161 @@
+/* Location guess: full-bleed China map, Liquid Glass chrome, result-page snapshot. */
+.guess-page{position:relative;height:100%;min-height:0;padding:0;overflow:hidden;
+  background:radial-gradient(#b9cde633 1.2px,transparent 1.3px) 0 0/16px 16px,
+    radial-gradient(120% 90% at 75% 20%,#eef5fd 0%,#dce9f7 55%,#cfdff2 100%)}
+.mobile-device #app>.page.guess-page{padding:0}
+
+/* ---------- Map surface ---------- */
+.gm{position:absolute;inset:0;overflow:hidden;touch-action:none;user-select:none;-webkit-user-select:none;cursor:crosshair;contain:strict}
+.gm.dragging{cursor:grabbing}
+.gm.revealed{cursor:default}
+.gm-plane{position:absolute;left:0;top:0;transform-origin:0 0;will-change:transform}
+.gm-svg{display:block;overflow:visible}
+/* Soft white coastal glow, then a crisp national outline drawn over the provinces. */
+.gm-glow{fill:none;stroke:#ffffffcc;stroke-width:7;stroke-linejoin:round;vector-effect:non-scaling-stroke}
+.gm-outline{fill:none;stroke:#7d95bb;stroke-width:1.4;stroke-linejoin:round;vector-effect:non-scaling-stroke;pointer-events:none}
+.gm-land path{stroke:#fff;stroke-width:1.3;stroke-linejoin:round;vector-effect:non-scaling-stroke;transition:fill .25s}
+.gm-land .c0{fill:#fdeccb}
+.gm-land .c1{fill:#dcf1dc}
+.gm-land .c2{fill:#fde2de}
+.gm-land .c3{fill:#e7e1f8}
+.gm-land path.picked{fill:#c7d7ff}
+.gm.revealed .gm-land path.picked{fill:#dce6ff}
+.gm-pick{fill:none;stroke:#2855f7;stroke-width:1.8;stroke-linejoin:round;vector-effect:non-scaling-stroke;pointer-events:none}
+.gm.revealed .gm-pick{stroke-opacity:.45}
+/* City boundaries: fetched on demand, drawn only when zoomed in. Transparent fill keeps them tappable. */
+.gm-cities path{fill:transparent;stroke:#ffffffd9;stroke-width:.7;vector-effect:non-scaling-stroke}
+.gm:not(.cities) .gm-cities{display:none}
+.gm-dash{fill:none;stroke:#6f86ad;stroke-width:1.3;vector-effect:non-scaling-stroke}
+.gm-inset-bg{fill:#e7f0fae6;stroke:#9fb4d4;stroke-width:1;vector-effect:non-scaling-stroke}
+.gm-inset-land{fill:#fdeccb;stroke:#fff;stroke-width:.6;vector-effect:non-scaling-stroke}
+.gm-inset text{font-size:46px;fill:#6f82a3;font-family:inherit}
+.gm .gm-line{fill:none;stroke:#2855f7;stroke-width:2.6;stroke-linecap:round;stroke-dasharray:1 7;vector-effect:non-scaling-stroke}
+.gm:not(.revealed) .gm-line{display:none}
+
+.gm-overlay{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.gm-marks{position:absolute;left:0;top:0;width:0;height:0;pointer-events:none}
+/* Province names: atlas-style, faint, letter-spaced. */
+.gm-prov{position:absolute;left:0;top:0;translate:-50% -50%;font-size:11px;font-weight:600;letter-spacing:.18em;color:#8a7760b3;white-space:nowrap;
+  text-shadow:0 0 3px #fff,0 0 2px #fff;transition:opacity .2s}
+.gm-prov.small{display:none}
+.gm.detail .gm-prov.small{display:block;font-size:10px}
+.gm.named .gm-prov{opacity:.55}
+.gm.cities .gm-prov{opacity:.3;font-size:13px}
+.gm-prov.clash{visibility:hidden}
+.gm-prov.secret,.gm-cap.secret{display:none!important}
+/* Provincial capitals: dot always, name once zoomed in (Beijing always, as a star). */
+.gm-cap{position:absolute;left:0;top:0;width:0;height:0}
+.gm-cap::before{content:'';position:absolute;left:-2.5px;top:-2.5px;width:5px;height:5px;border-radius:50%;background:#56688a;box-shadow:0 0 0 1.6px #fff}
+.gm-cap.national::before{content:'★';left:-6px;top:-8px;width:auto;height:auto;border-radius:0;background:none;box-shadow:none;color:#e0483a;font-size:12px;line-height:1;text-shadow:0 0 2px #fff,0 0 2px #fff}
+.gm-cap b{position:absolute;left:6px;top:-8px;display:none;font-size:10.5px;line-height:16px;font-weight:600;color:#34435d;white-space:nowrap;text-shadow:0 0 2px #fff,0 0 3px #fff,0 0 3px #fff}
+.gm.named .gm-cap b,.gm-cap.national b{display:block}
+.gm.named .gm-cap::before{left:-3px;top:-3px;width:6px;height:6px}
+.gm.revealed .gm-prov,.gm.revealed .gm-cap{opacity:.45}
+
+.gm-pin{position:absolute;left:0;top:0;width:0;height:0;z-index:2}
+.gm-pin::before{content:'';position:absolute;left:-7px;top:-3px;width:14px;height:6px;border-radius:50%;background:#0b1a3a40}
+.gm-pin::after{content:'';position:absolute;left:-18px;top:-18px;width:36px;height:36px;border-radius:50%;border:2px solid #2855f7;opacity:0;pointer-events:none}
+.gm-pin.answer::after{border-color:#ef4b2a}
+.gm-pin i{position:absolute;left:-13px;top:-31.4px;width:26px;height:26px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);
+  background:linear-gradient(135deg,#5a86ff,#2350f0);border:2px solid #fff;box-shadow:0 4px 10px #1a3ea84d}
+.gm-pin i::after{content:'';position:absolute;inset:6px;border-radius:50%;background:#fff}
+.gm-pin.answer i{background:linear-gradient(135deg,#ff8a4c,#ef4b2a);box-shadow:0 4px 12px #c2381a59}
+.gm-pin.answer i::after{inset:5.5px;background:#fff;box-shadow:inset 0 0 0 3px #ffd9c9}
+.gm-pin.drop i{animation:pin-drop .42s cubic-bezier(.3,1.5,.5,1)}
+.gm-pin.drop::before{animation:pin-shadow .42s ease-out}
+.gm-pin.drop::after{animation:pin-ripple .7s ease-out .12s}
+@keyframes pin-drop{0%{translate:0 -22px;opacity:0}60%{opacity:1}100%{translate:0 0}}
+@keyframes pin-shadow{0%{opacity:0;scale:.4}100%{opacity:1;scale:1}}
+@keyframes pin-ripple{0%{opacity:.7;scale:.2}100%{opacity:0;scale:1.6}}
+/* Reveal chips: the destination's name on its pin, the distance on the line. */
+.gm-tag{position:absolute;left:0;top:-64px;translate:-50% 0;padding:4px 9px;border-radius:10px;font-style:normal;font-size:12px;font-weight:700;color:#fff;white-space:nowrap;
+  background:linear-gradient(180deg,#ff8a4cf2,#ef4b2af2);border:1px solid #ffd3c2b3;box-shadow:inset 0 1px #ffffff66,0 4px 12px #c2381a40}
+.gm-tag:empty{display:none}
+.gm-dist{position:absolute;left:0;top:0;translate:-50% -50%;padding:3px 9px;border-radius:10px;font-size:11.5px;font-weight:700;color:#2350f0;white-space:nowrap;
+  background:linear-gradient(160deg,#ffffffeb,#ffffffb8);border:1px solid #fff;box-shadow:inset 0 1px #fff,0 0 0 1px #2855f726,0 4px 12px #0b152526;
+  -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);animation:chip-in .3s ease-out}
+.gm-dist[hidden],.gm-dist.tight{display:none}
+@keyframes chip-in{from{opacity:0;scale:.8}to{opacity:1;scale:1}}
+/* Live scale bar. */
+.gm-scale{position:absolute;left:0;top:0;display:flex;align-items:center;gap:6px;font-size:10.5px;font-weight:600;color:#4b5b77}
+.gm-scale i{display:block;height:6px;border:2px solid #4b5b77;border-top:0;border-radius:0 0 2px 2px;transition:width .15s}
+.gm-scale small{font-size:inherit;text-shadow:0 0 2px #fff,0 0 3px #fff}
+
+/* ---------- Chrome ---------- */
+.guess-top{position:absolute;z-index:3;top:0;left:0;right:0;display:flex;align-items:center;gap:12px;padding:12px 16px 26px;pointer-events:none;
+  background:linear-gradient(#eef5fdf2 0%,#eef5fdcc 55%,#eef5fd00 100%)}
+.guess-top>*{pointer-events:auto}
+.guess-top .round{flex:none;height:40px;width:40px;border-radius:50%}
+.guess-top h2{margin:0;font-size:19px;font-weight:750;letter-spacing:-.02em;color:#0f1d33;line-height:1.3}
+.guess-page.done .guess-top .round{visibility:hidden}
+
+.guess-zoom{position:absolute;z-index:3;right:14px;top:96px;display:grid;gap:8px}
+.guess-zoom{transition:opacity .25s}
+.guess-page.done .guess-zoom{opacity:0;pointer-events:none}
+.guess-zoom button{width:40px;height:40px;border-radius:13px;font-size:21px;font-weight:500;line-height:1;display:grid;place-items:center;padding:0}
+
+.guess-card{position:absolute;z-index:3;left:12px;right:12px;bottom:14px;padding:14px;border-radius:26px;color:#0f1d33;
+  border:1px solid #ffffffb3;border-top-color:#ffffffeb;
+  background:linear-gradient(155deg,#ffffffd1 0%,#ffffffa3 50%,#f3f7ffb8 100%);
+  -webkit-backdrop-filter:blur(24px) saturate(180%);backdrop-filter:blur(24px) saturate(180%);
+  box-shadow:inset 0 1px 0 #ffffffe6,inset 0 0 20px #ffffff4d,0 16px 40px #16305f2e,0 2px 8px #16305f14}
+html:not(.mobile-device) .guess-card{bottom:24px}
+/* While the map is moving, a live backdrop blur would be recomputed every frame: swap in an equivalent frosted fill. */
+.guess-page.moving .guess-card,.guess-page.moving .guess-zoom button{-webkit-backdrop-filter:none;backdrop-filter:none;background:linear-gradient(155deg,#fffffff5 0%,#f8faffef 50%,#f3f7fff2 100%)}
+.mobile-device .guess-card{bottom:calc(10px + var(--safe-bottom))}
+.guess-status{display:flex;align-items:center;gap:11px;min-height:42px;padding:0 4px}
+.guess-status>.icon{width:22px;height:22px;color:#2855f7;flex:none}
+.guess-status strong{display:block;font-size:15px;font-weight:650;line-height:1.35}
+.guess-status small{display:block;font-size:11.5px;color:#5c6a80;margin-top:2px}
+.guess-hint-dot{position:relative;flex:none;width:12px;height:12px;margin:0 5px;border-radius:50%;background:#2855f7}
+.guess-hint-dot::after{content:'';position:absolute;inset:0;border-radius:50%;background:#2855f7;animation:hint-ring 1.8s ease-out infinite}
+@keyframes hint-ring{0%{transform:scale(1);opacity:.5}100%{transform:scale(3);opacity:0}}
+.guess-actions{display:flex;align-items:center;gap:10px;margin-top:12px}
+.guess-recall{display:flex;gap:6px;flex:none}
+.guess-recall button{width:46px;height:46px;padding:0;border-radius:12px;overflow:hidden;box-shadow:0 0 0 1px #ffffffcc,0 2px 6px #16305f26}
+.guess-recall img{width:100%;height:100%;object-fit:cover;display:block}
+.guess-card .primary{flex:1;min-height:48px;border-radius:15px;font-size:15px;font-weight:650;letter-spacing:.03em;color:#fff;
+  border:1px solid #9fb8ff8c;border-top-color:#dfe8ffcc;
+  background:linear-gradient(180deg,#5a86fff2 0%,#2f60fbe6 52%,#2350f0f2 100%);
+  box-shadow:inset 0 1px 0 #ffffff80,inset 0 -2px 6px #1238b84d,0 8px 20px #2855f74d;text-shadow:0 1px 2px #0d2c8a59}
+.guess-card .primary:disabled{opacity:1;color:#ffffffb3;background:linear-gradient(180deg,#a9bdf4,#90a8ec);box-shadow:inset 0 1px 0 #ffffff66}
+.guess-card .primary .icon{width:18px;height:18px}
+
+.guess-result{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;padding:2px 4px 14px}
+.guess-verdict{display:inline-block;font-size:11px;font-weight:650;color:#c2381a;background:#fff0ea;border-radius:8px;padding:4px 8px;margin-bottom:6px}
+.guess-km{display:block;font-size:15px;font-weight:650;color:#0f1d33}
+.guess-km b,.guess-points b{font-size:34px;font-weight:800;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.guess-result small{display:block;font-size:11.5px;color:#5c6a80;margin-top:2px}
+.guess-points{text-align:right}
+.guess-points b{color:#2855f7}
+.guess-points b::before{content:'+'}
+.guess-card .guess-result+.primary{width:100%}
+
+.recall-photo img{display:block;width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:16px}
+.recall-note{margin:14px 0 0}
+.recall-tags{justify-content:flex-start;margin-top:10px}
+
+/* ---------- Result page ---------- */
+.score-split{display:flex;justify-content:center;gap:8px;margin:-2px 0 10px}
+.score-split span{font-size:12px;color:#51627e;background:#fff;border:1px solid #e0eaff;border-radius:20px;padding:5px 11px}
+.score-split b{color:var(--blue);font-weight:700}
+.guess-summary .row{margin-bottom:12px}
+.guess-summary h3{margin:0}
+.guess-summary .pill{background:#fff0ea;color:#c2381a}
+.guess-mini{position:relative;aspect-ratio:1.6;border-radius:14px;overflow:hidden;background:linear-gradient(160deg,#eef5fd,#d3e2f3)}
+.guess-mini .gm-svg{width:100%;height:100%}
+.gm-line.static{fill:none;stroke:#2855f7;stroke-linecap:round}
+.gm-dot{stroke:#fff}
+.gm-ring{fill:#ef4b2a26;stroke:none}
+.gm-mini-city{fill:#a3b2cc}
+.gm-mini-label{fill:#6b7a94;font-family:inherit;paint-order:stroke;stroke:#fff;stroke-width:3px;stroke-linejoin:round;vector-effect:non-scaling-stroke}
+.guess-mini .gm-land path.picked{fill:#c7d7ff}
+.gm-dot.guess{fill:#2855f7}
+.gm-dot.answer{fill:#ef4b2a}
+.guess-legend{position:absolute;left:8px;bottom:8px;display:flex;gap:6px}
+.guess-legend span{display:flex;align-items:center;gap:5px;font-size:10.5px;color:#34435c;background:#ffffffd9;border-radius:10px;padding:3px 8px 3px 6px}
+.guess-legend span::before{content:'';width:8px;height:8px;border-radius:50%;background:#2855f7}
+.guess-legend .target::before{background:#ef4b2a}
+.guess-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px;text-align:center}
+.guess-stats b{display:block;font-size:16px;color:#15223b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.guess-stats small{display:block;font-size:10.5px;color:#8a94a6;margin-top:3px}

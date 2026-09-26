@@ -1,0 +1,66 @@
+/* One Liquid Glass button language for the whole TripWonder flow.
+   Blue glass = the main action on a screen; light glass = everything secondary.
+   Loaded last so it wins over the older per-page button colours. */
+:root {
+  --glass-blue: linear-gradient(180deg,#5a86fff2 0%,#2f60fbe6 52%,#2350f0f2 100%);
+  --glass-blue-hover: linear-gradient(180deg,#6690fff7 0%,#3868fdeb 52%,#2855f7f7 100%);
+  --glass-blue-shadow: inset 0 1px 0 #ffffff80,inset 0 -2px 6px #1238b84d,inset 0 0 14px #ffffff26,0 8px 22px #2855f740;
+  --glass-light: linear-gradient(160deg,#ffffffd9,#ffffff73 55%,#eef3ffa6);
+  --glass-light-hover: linear-gradient(160deg,#ffffffeb,#ffffff8c 55%,#eaf0ffb8);
+  --glass-light-shadow: inset 0 1px #fff,inset 0 -1px #3264ff12,0 0 0 1px #3264ff14,0 5px 18px #0b152514;
+}
+
+/* ---------- Blue glass: primary actions (also on the photo pages) ---------- */
+#app .primary,#modal-root .primary {
+  color:#fff;font-weight:650;letter-spacing:.02em;
+  border:1px solid #9fb8ff8c;border-top-color:#dfe8ffcc;
+  background:var(--glass-blue);box-shadow:var(--glass-blue-shadow);text-shadow:0 1px 2px #0d2c8a59;
+  -webkit-backdrop-filter:none;backdrop-filter:none; /* the fill is ~95% opaque; skip the blur cost */
+}
+@media (hover:hover) {#app .primary:hover,#modal-root .primary:hover {background:var(--glass-blue-hover)}}
+#app .primary:active,#modal-root .primary:active {box-shadow:inset 0 1px 4px #12368f40,0 3px 10px #2855f733}
+#app .primary:disabled,#modal-root .primary:disabled {
+  opacity:1;color:#ffffffc7;text-shadow:none;border-color:#c4d2fa99;
+  background:linear-gradient(180deg,#aec1f5,#93abed);box-shadow:inset 0 1px 0 #ffffff66;
+}
+#app .primary[aria-busy=true] {color:#ffffffe0;background:var(--glass-blue)}
+#app .primary .icon,#modal-root .primary .icon {width:18px;height:18px}
+
+/* ---------- Light glass: secondary actions on light pages ---------- */
+#app .secondary,#modal-root .secondary,
+#app .page-head .icon-btn,#modal-root .sheet .icon-btn,
+#app .head-action,#modal-root .clue-footer button,
+#app .stop-actions button,#app .travel-products button,
+#app .route-tabs button {
+  color:var(--brand-blue,#2855f7);border:1px solid #ffffffe6;
+  background:var(--glass-light);box-shadow:var(--glass-light-shadow);
+  -webkit-backdrop-filter:blur(14px) saturate(140%);backdrop-filter:blur(14px) saturate(140%);
+}
+@media (hover:hover) {
+  #app .secondary:hover,#modal-root .secondary:hover,#app .page-head .icon-btn:hover,#modal-root .sheet .icon-btn:hover,
+  #app .head-action:hover,#app .stop-actions button:hover,#app .travel-products button:hover,#app .route-tabs button:not(.active):hover {background:var(--glass-light-hover)}
+}
+#app .secondary {font-weight:600}
+#app .page-head .icon-btn,#modal-root .sheet .icon-btn {width:36px;height:36px;color:#26344d}
+#app .page-head .icon-btn .icon,#modal-root .sheet .icon-btn .icon {width:20px;height:20px}
+#app .head-action {padding:7px 12px;border-radius:16px;font-size:12px;font-weight:600}
+#modal-root .clue-footer button {padding:8px 16px;border-radius:18px;min-height:36px}
+#app .stop-actions button {border-radius:10px;padding:6px 12px;min-height:30px}
+#app .stop-actions button:disabled {opacity:.4}
+#app .travel-products button {border-radius:14px;font-weight:600}
+
+/* Segmented tabs: light glass track items, the active one turns blue glass. */
+#app .route-tabs button {border-radius:12px;font-weight:600;color:#51627e}
+#app .route-tabs button.active {color:#fff;border-color:#9fb8ff8c;background:var(--glass-blue);box-shadow:var(--glass-blue-shadow);text-shadow:0 1px 2px #0d2c8a59;-webkit-backdrop-filter:none;backdrop-filter:none}
+
+/* Benefit claim keeps its warm tone, in glass. */
+#app .benefit button {
+  color:#7a4f12;font-weight:650;border:1px solid #fff4dce6;border-radius:11px;
+  background:linear-gradient(180deg,#ffe7b8f2 0%,#ffd48ae6 55%,#ffc86ff2 100%);
+  box-shadow:inset 0 1px #fffbeecc,inset 0 -2px 5px #d9962a33,0 5px 14px #d9962a33;
+}
+#app .benefit button:disabled {opacity:.6;box-shadow:inset 0 1px #fffbeecc}
+
+/* Quiz choices read as glass cards too. */
+#app .option {border-color:#ffffffe6;background:linear-gradient(160deg,#ffffffeb,#ffffffb3 60%,#f4f7ffcc);box-shadow:inset 0 1px #fff,0 0 0 1px #3264ff12,0 4px 14px #0b15250d}
+#app .option.selected {border-color:#7d9cff;background:linear-gradient(160deg,#f3f7ffeb,#e6eeffcc);box-shadow:inset 0 1px #fff,0 0 0 1px #3264ff47,0 6px 16px #2855f71f}
