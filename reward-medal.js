@@ -61,17 +61,79 @@ window.RewardMedal = (() => {
       <g clip-path="url(#${id}-clip)"><rect class="reward-metal-sheen" x="-260" y="-60" width="220" height="420" fill="url(#${id}-shine)" transform="rotate(-20 150 150)"/></g>
     </svg>`;
   }
-  function markup({city,score=0,benefit={}}={}) {
-    const destination = typeof city==='string' ? {id:city,name:city} : city || {id:'',name:'目的地'};
+  const rewardTerms = '领取后 30 日内有效。优惠券具体可用范围请查看活动规则。';
+  const positiveNumber = (value, fallbackValue) => Number.isFinite(Number(value)) && Number(value)>0 ? Number(value) : fallbackValue;
+
+  function certificate(city, benefit) {
+    const id=`reward-certificate-${++instance}`;
+    const amount=positiveNumber(benefit.amount,20), minimum=positiveNumber(benefit.minimumSpend,100);
+    const ticks=Array.from({length:96},(_,i)=>`<path d="M150 15V21" transform="rotate(${i*3.75} 150 150)"/>`).join('');
+    return `<svg class="reward-medal-art reward-certificate-art" viewBox="0 0 300 300" role="img" aria-label="${escape(city.name)}优惠权益证明：景点门票优惠 ${amount} 元，满 ${minimum} 元可用，领取后 30 日内有效，使用范围详见活动规则${benefit.expires ? `，有效至 ${escape(benefit.expires)}` : ''}">
+      <defs>
+        <linearGradient id="${id}-edge" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff4c8"/><stop offset=".2" stop-color="#d9aa53"/><stop offset=".4" stop-color="#9b6723"/><stop offset=".6" stop-color="#ffe9af"/><stop offset=".82" stop-color="#ae762c"/><stop offset="1" stop-color="#e9c274"/></linearGradient>
+        <linearGradient id="${id}-face" x1=".15" y1="0" x2=".8" y2="1"><stop stop-color="#fff2c8"/><stop offset=".36" stop-color="#f0d393"/><stop offset=".67" stop-color="#d4aa5d"/><stop offset="1" stop-color="#f4dca3"/></linearGradient>
+        <radialGradient id="${id}-light" cx=".32" cy=".2" r=".8"><stop stop-color="#fffbed" stop-opacity=".75"/><stop offset="1" stop-color="#e5bd6c" stop-opacity="0"/></radialGradient>
+        <filter id="${id}-engrave" x="-10%" y="-10%" width="120%" height="120%"><feDropShadow dx="0" dy=".8" stdDeviation=".15" flood-color="#fff6d6" flood-opacity=".85"/></filter>
+        <clipPath id="${id}-clip"><circle cx="150" cy="150" r="119"/></clipPath>
+        <path id="${id}-arc" d="M65 79A112 112 0 0 1 235 79"/>
+      </defs>
+      <circle cx="150" cy="153" r="139" fill="#80551d"/>
+      <circle cx="150" cy="150" r="139" fill="url(#${id}-edge)" stroke="#fce5a9" stroke-width=".8"/>
+      <g stroke="#80541b" stroke-width=".75" opacity=".56">${ticks}</g>
+      <circle cx="150" cy="150" r="128" fill="url(#${id}-face)" stroke="#7f561f" stroke-width="1.2"/>
+      <circle cx="150" cy="150" r="124.5" fill="url(#${id}-light)" stroke="#fff3cd" stroke-width=".8"/>
+      <circle cx="150" cy="150" r="119" fill="none" stroke="#a77731" stroke-width=".5"/>
+      <g clip-path="url(#${id}-clip)" fill="none" stroke="#8d5d22" stroke-width=".45" opacity=".11">${Array.from({length:14},(_,i)=>`<path d="M27 ${100+i*8}Q88 ${60+i*8} 150 ${100+i*8}T273 ${100+i*8}"/>`).join('')}</g>
+      <text fill="#76501e" font-family="Arial,sans-serif" font-size="7.1" font-weight="600" letter-spacing="2.1"><textPath href="#${id}-arc" startOffset="50%" text-anchor="middle">TRIPWONDER · PRIVILEGE</textPath></text>
+      <g fill="none" stroke="#986c2c" stroke-width=".85" opacity=".7"><path d="M65 188Q47 146 66 110M235 188Q253 146 234 110M60 168L48 160M59 153L47 144M60 138L49 130M63 123L55 115M240 168L252 160M241 153L253 144M240 138L251 130M237 123L245 115"/><path d="M58 166L70 156M58 150L71 141M60 135L73 127M242 166L230 156M242 150L229 141M240 135L227 127"/></g>
+      <g fill="#745020" text-anchor="middle" filter="url(#${id}-engrave)">
+        <text x="150" y="82" font-family="'Songti SC','SimSun','Noto Serif CJK SC',serif" font-size="15" font-weight="700" letter-spacing="1.6">优惠权益证明</text>
+        <text x="150" y="113" font-family="inherit" font-size="10.5" letter-spacing="1">景点门票优惠</text>
+        <text x="150" y="160" font-family="Arial,'Microsoft YaHei',sans-serif" font-weight="700"><tspan font-size="49" letter-spacing="-2">${amount}</tspan><tspan dx="5" font-size="15" font-weight="500">元</tspan></text>
+        <text x="150" y="190" font-family="inherit" font-size="11.5" font-weight="600">满 ${minimum} 元可用</text>
+        <text x="150" y="214" font-family="inherit" font-size="11" letter-spacing=".7">目的地 · ${escape(city.name)}</text>
+        <text x="150" y="235" font-family="inherit" font-size="9.5">领取后 30 日内有效</text>
+        <text x="150" y="252" font-family="inherit" font-size="7.7" letter-spacing=".5">使用范围详见活动规则</text>
+      </g>
+      <g fill="none" stroke="#a77b36" stroke-width=".65"><path d="M97 95H141M159 95H203M96 171H204M104 222H196"/><path d="m150 91 4 4-4 4-4-4Z"/></g>
+      <g fill="#8c612a"><path d="m49 147 2 5 5 2-5 2-2 5-2-5-5-2 5-2Z"/><path d="m251 147 2 5 5 2-5 2-2 5-2-5-5-2 5-2Z"/></g>
+    </svg>`;
+  }
+
+  function markup({city,score=0,benefit={},percentile}={}) {
+    const destination=typeof city==='string' ? {id:city,name:city} : city || {id:'',name:'目的地'};
     const points=Math.max(0,Math.min(100,Number(score)||0));
-    const terms=benefit.terms || `${benefit.threshold || '无需消费'} · ${benefit.expires ? `有效至 ${benefit.expires}` : '领取后 7 日内有效'} · 仅限${destination.name}相关产品 · 原型示例，无真实券码或抵扣效力`;
+    // 原型缺省按得分估算百分位；没有真实全站排名数据，接入后由调用方传入 percentile。
+    const fallbackPercentile=Math.min(99.9,points*.97+2.5);
+    const suppliedPercentile=percentile!==null && percentile!=='' && Number.isFinite(Number(percentile));
+    const surpassed=Math.max(0,Math.min(99.9,suppliedPercentile ? Number(percentile) : fallbackPercentile)).toFixed(1);
+    const amount=positiveNumber(benefit.amount,20), minimum=positiveNumber(benefit.minimumSpend,100);
+    const widget=`reward-widget-${++instance}`;
     return `<div class="reward-celebration">
-      <div class="reward-intro"><span class="reward-eyebrow">探索奖励 · 已领取</span><h3>这一站，值得珍藏</h3><p>${escape(destination.name)}，留下了你的探索足迹</p></div>
-      <div class="reward-medal-stage"><div class="reward-medal-halo" aria-hidden="true"></div><div class="reward-medal-coin">${medal(destination)}</div><div class="reward-sparks" aria-hidden="true">${Array.from({length:8},(_,i)=>`<i style="--spark:${i}"></i>`).join('')}</div></div>
-      <div class="reward-caption"><span class="reward-score">本次探索 <strong>${points}</strong> / 100</span><h4>${escape(benefit.name || '探索纪念徽章')}</h4><p>${escape(benefit.detail || '完成本次挑战的发现记录')}</p></div>
-      <button class="reward-continue" data-action="close">珍藏这次发现<svg aria-hidden="true" viewBox="0 0 24 24"><path d="M5 12H19M13 6L19 12L13 18"/></svg></button>
-      <p class="reward-terms">${escape(terms)}</p>
+      <div class="reward-intro"><h3>奇境挑战徽章 · ${escape(destination.name)}</h3><p>让这一程的发现，成为值得珍藏的纪念</p></div>
+      <div class="reward-medal-stage">
+        <div class="reward-medal-halo" aria-hidden="true"></div>
+        <div class="reward-medal-object"><button type="button" class="reward-medal-toggle" data-action="reward-flip" aria-pressed="false" aria-label="翻到徽章背面，停留查看优惠权益证明" aria-describedby="${widget}-hint">
+          <span class="reward-medal-coin"><span class="reward-medal-face reward-medal-face--front" aria-hidden="true">${medal(destination)}</span><span class="reward-medal-face reward-medal-face--back" aria-hidden="true">${certificate(destination,benefit)}</span></span>
+        </button></div>
+        <div class="reward-sparks" aria-hidden="true">${Array.from({length:8},(_,i)=>`<i style="--spark:${i}"></i>`).join('')}</div>
+      </div>
+      <p class="reward-medal-hint" id="${widget}-hint">点击徽章，停留查看背面</p>
+      <div class="reward-caption"><span class="reward-score">超越了<strong class="reward-percentile">${surpassed}%</strong>的驴友</span><h4>${amount} 元门票优惠</h4><p>满 ${minimum} 元可用 · ${escape(destination.name)}专属权益</p></div>
+      <section class="reward-accessible-benefit" aria-label="优惠权益证明"><strong>优惠权益证明</strong><p>${escape(destination.name)} · 景点门票优惠 ${amount} 元</p><p>满 ${minimum} 元可用 · 领取后 30 日内有效</p>${benefit.expires ? `<small>有效至 ${escape(benefit.expires)}</small>` : ''}</section>
+      <button class="reward-continue" data-action="close">收下权益并珍藏徽章<svg aria-hidden="true" viewBox="0 0 24 24"><path d="M5 12H19M13 6L19 12L13 18"/></svg></button>
+      <p class="reward-terms">${rewardTerms}</p>
     </div>`;
   }
-  return {markup};
+
+  function toggle(button) {
+    if(!button?.classList?.contains('reward-medal-toggle'))return;
+    const inspecting=button.classList.toggle('is-inspecting');
+    button.setAttribute('aria-pressed',String(inspecting));
+    button.setAttribute('aria-label',inspecting ? '回到徽章正面，继续欣赏徽章' : '翻到徽章背面，停留查看优惠权益证明');
+    const hint=button.closest('.reward-celebration')?.querySelector('.reward-medal-hint');
+    if(hint)hint.textContent=inspecting ? '已停留在权益面 · 点击回到正面' : '点击徽章，停留查看背面';
+  }
+
+  return {markup, medal, toggle};
 })();

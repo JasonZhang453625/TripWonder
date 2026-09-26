@@ -6,34 +6,77 @@
     datong: '50% 62%', shenzhen: '54% 50%', suzhou: '50% 28%',
     guilin: '50% 50%', hongkong: '50% 50%', beijing: '50% 45%', shanghai: '50% 50%'
   };
-  const photoRatios = ['4 / 5', '3 / 4', '1 / 1', '4 / 5', '3 / 4', '1 / 1', '4 / 5'];
-  const check = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="m3 8 3.2 3.2L13 4.5"/></svg>';
   const arrow = '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h12m-5-5 5 5-5 5"/></svg>';
   const finiteScore = value => Number.isFinite(Number(value)) ? Number(value) : 0;
 
-  function atlas({order, cities, daily, img, head, esc, back='today'}) {
-    const lookup = new Map(cities.map(city => [city.id, city]));
-    const destinations = order.filter(id => lookup.has(id));
-    const completed = destinations.filter(id => daily[id]?.result).length;
-    const cards = destinations.map((id, index) => {
-      const city = lookup.get(id), result = daily[id]?.result, done = !!result;
-      const title = done ? city.name : `第 ${index + 1} 个目的地`;
-      return `<button class="collection-destination${done ? ' is-lit' : ''}" data-city="${esc(id)}" aria-label="${esc(title)}，${done ? `${finiteScore(result.score)} 分，${esc(city.region)}` : '尚未揭晓'}">
-        <span class="collection-photo" style="--collection-photo-ratio:${photoRatios[index % photoRatios.length]};--collection-photo-position:${photoPositions[id] || '50% 50%'}">
-          ${img(city.scenes[0].id, done ? city.name : '未揭晓目的地')}
-          <span class="collection-photo-status${done ? ' is-lit' : ''}">${done ? `${check}已点亮` : String(index + 1).padStart(2, '0')}</span>
+  // Atlas: only unlocked (completed) destinations, counted against the whole library.
+  const lock = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10.5" width="14" height="10" rx="2.5"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5"/></svg>';
+  // The medal comes with the result-page reward, which can only be claimed at 80+ points.
+  const MEDAL_SCORE = 80;
+  function atlas({cities, daily, benefits = {}, img, head, esc, back='today'}) {
+    const unlocked = cities.filter(city => daily[city.id]?.result);
+    const total = cities.length, count = unlocked.length, remaining = total - count;
+    const sum = unlocked.reduce((n, city) => n + finiteScore(daily[city.id].result.score), 0);
+    const ratio = total ? count / total : 0, ring = 2 * Math.PI * 30;
+    const medal = city => window.RewardMedal?.medal ? window.RewardMedal.medal(city) : '';
+    const earned = city => !!daily[city.id]?.result && !!benefits[city.id];
+    const medals = unlocked.filter(earned).length;
+    const slots = cities.map(city => {
+      const done = !!daily[city.id]?.result;
+      const won = done && earned(city);
+      return `<li class="atlas-slot${won ? ' is-lit' : done ? ' is-pending' : ''}" aria-label="${won ? `${esc(city.name)}纪念徽章，已获得` : done ? `${esc(city.name)}，已解锁，徽章未领取` : '未解锁目的地'}">${done ? medal(city) : lock}</li>`;
+    }).join('');
+    const cards = unlocked.map((city, index) => {
+      const r = daily[city.id].result, score = finiteScore(r.score);
+      const guess = r.guess ? `${finiteScore(r.guess.points)}<small>/40</small>` : '—';
+      const quiz = `${finiteScore(r.correct ?? r.answers?.filter(a => a.correct).length)}<small>/3</small>`;
+      return `<button class="atlas-card" data-city="${esc(city.id)}" style="--atlas-delay:${index * 60}ms" aria-label="${esc(city.name)}，${esc(city.region)}，${score} 分，查看探索结果">
+        <span class="atlas-photo" style="--atlas-position:${photoPositions[city.id] || '50% 50%'}">
+          ${img(city.scenes[0].id, city.name)}
+          <span class="atlas-photo-copy">${city.region && city.region !== city.name ? `<small>${esc(city.region)}</small>` : ''}<strong>${esc(city.name)}</strong></span>
+          ${earned(city) ? `<span class="atlas-medal">${medal(city)}</span>` : score >= MEDAL_SCORE ? `<span class="atlas-medal is-pending is-claimable" aria-hidden="true"><b>待领取</b><small>点击领取徽章</small></span>` : `<span class="atlas-medal is-pending" aria-hidden="true">${lock}<b>${MEDAL_SCORE} 分</b><small>解锁徽章</small></span>`}
         </span>
-        <span class="collection-destination-copy"><strong>${esc(title)}</strong><span class="collection-destination-meta">${done ? `<span>${esc(city.region)}</span><b>${finiteScore(result.score)}<small> 分</small></b>` : '<span>尚未揭晓</span>'}</span></span>
+        <span class="atlas-info">
+          <span class="atlas-score"><b>${score}</b><small>分</small></span>
+          <span class="atlas-stats"><span><em>地图定位</em><b>${guess}</b></span><span><em>答对</em><b>${quiz}</b></span></span>
+        </span>
+        ${r.tags?.length ? `<span class="atlas-tags">${r.tags.map(tag => `<i>${esc(tag)}</i>`).join('')}</span>` : ''}
       </button>`;
-    });
+    }).join('');
+    const skeleton = `<div class="atlas-list"><div class="atlas-card atlas-skeleton">
+        <span class="atlas-photo"><span class="atlas-skeleton-lock">${lock}<b>尚未解锁</b></span><span class="atlas-medal is-pending" aria-hidden="true">${lock}</span></span>
+        <span class="atlas-info"><i class="atlas-bone w1"></i><i class="atlas-bone w2"></i></span>
+        <span class="atlas-skeleton-copy"><strong>还没有解锁的目的地</strong><span>完成一次挑战即可点亮第一座城市</span><button data-go="today">去探索 ${arrow}</button></span>
+      </div></div>`;
+    const more = !count ? ''
+      : remaining > 0
+      ? `<section class="atlas-more">
+          <span class="atlas-more-icon">${lock}</span>
+          <strong>还有 ${remaining} 座目的地待解锁</strong>
+          <p>完成挑战即可解锁城市<br>得分达到 ${MEDAL_SCORE} 分可领取徽章与优惠权益</p>
+          <button data-go="today">去探索 ${arrow}</button>
+        </section>`
+      : `<section class="atlas-more is-complete"><strong>全部 ${total} 座目的地已解锁</strong><p>徽章已集齐，旅行灵感满格</p></section>`;
     return `<div class="page collection-page atlas-page">
       ${head('目的地图鉴', back)}
-      <section class="collection-intro" aria-label="图鉴进度">
-        <p class="collection-kicker">我的探索足迹</p>
-        <h1>已点亮 <b>${completed}</b><span> / ${destinations.length} 座城</span></h1>
-        <div class="collection-progress" role="progressbar" aria-label="已点亮目的地" aria-valuemin="0" aria-valuemax="${destinations.length}" aria-valuenow="${completed}"><span style="width:${destinations.length ? completed / destinations.length * 100 : 0}%"></span></div>
+      <section class="atlas-summary" aria-label="图鉴进度">
+        <div class="atlas-summary-top">
+          <div>
+            <p>已解锁目的地</p>
+            <h1><b>${count}</b><span>/ ${total}</span></h1>
+            <small>${count ? `累计探索 ${sum} 分` : '尚未解锁任何目的地'}</small>
+          </div>
+          <div class="atlas-ring" role="progressbar" aria-label="图鉴完成度" aria-valuemin="0" aria-valuemax="${total}" aria-valuenow="${count}">
+            <svg viewBox="0 0 72 72" aria-hidden="true"><circle cx="36" cy="36" r="30"/><circle class="atlas-ring-value" cx="36" cy="36" r="30" stroke-dasharray="${ring}" stroke-dashoffset="${ring * (1 - ratio)}"/></svg>
+            <span>${Math.round(ratio * 100)}<small>%</small></span>
+          </div>
+        </div>
+        <div class="atlas-slots-head"><span>纪念徽章 · ${MEDAL_SCORE} 分可领取</span><span>${medals} / ${total}</span></div>
+        <ol class="atlas-slots" style="--slots:${total}">${slots}</ol>
       </section>
-      <div class="collection-masonry" aria-label="目的地列表">${[0, 1].map(column => `<div class="collection-column">${cards.filter((_, index) => index % 2 === column).join('')}</div>`).join('')}</div>
+      <h2 class="atlas-section-title">我的目的地<span>${count}</span></h2>
+      ${count ? `<div class="atlas-list">${cards}</div>` : skeleton}
+      ${more}
     </div>`;
   }
 

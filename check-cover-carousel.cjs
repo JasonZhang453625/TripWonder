@@ -5,6 +5,7 @@ const token=id=>Buffer.from(JSON.stringify({cityId:id,score:72})).toString('base
 const current=page=>page.locator('.cover-page').getAttribute('data-cover-city');
 async function closeRules(page){
   await page.locator('.cover-page').waitFor();
+  await page.waitForFunction(()=>!ChallengeMotion.busy);
   if(await page.locator('.rules-popover').count()){
     await page.locator('[data-action="close"]').click();
     await page.locator('.rules-popover').waitFor({state:'detached'});
@@ -77,11 +78,18 @@ async function complete(page){
     await page.reload();await page.locator('.trip-home').waitFor();await page.keyboard.press('Escape');await page.locator('.th-wonder').click();await closeRules(page);assert.equal(await current(page),initial);
     console.log('PASS dock styling, five unique cities, wrap in both directions, small/vertical gestures, keyboard, collections, refresh');
 
-    // Save a reference screenshot on the chosen pagoda, with the normal CTA.
+    // Save the live cover, using the reference pagoda when it is in today's draw.
     if(seen.includes('suzhou')){
       while(await current(page)!=='suzhou')await swipe(page,1);
-      if(process.env.TRIPWONDER_COVER_SCREENSHOT)await page.locator('.phone').screenshot({path:process.env.TRIPWONDER_COVER_SCREENSHOT});
     }
+    if(process.env.TRIPWONDER_COVER_SCREENSHOT)await page.locator('.phone').screenshot({path:process.env.TRIPWONDER_COVER_SCREENSHOT});
+    const beforeFailure=await current(page);
+    await page.evaluate(()=>{window.savedPrepare=SceneMedia.prepare;SceneMedia.prepare=(...args)=>args[1]?savedPrepare(...args):Promise.reject(new Error('Test unavailable photo'));});
+    await page.locator('.cover-hero').focus();await page.keyboard.press('ArrowRight');
+    await page.locator('#toast.show').filter({hasText:'照片暂未载入'}).waitFor();
+    assert.equal(await current(page),beforeFailure);assert.equal(await page.locator('.cover-enter').isEnabled(),true);
+    await page.evaluate(()=>{SceneMedia.prepare=savedPrepare;delete window.savedPrepare;});await swipe(page,1);
+    console.log('PASS failed photo stays on current destination and allows retry');
     // Resume a partially explored city after browsing away and back.
     await open(page,base+'?challenge='+token('shenzhen'));
     await page.locator('.cover-enter').click();await page.locator('.scene-counter').waitFor();await idle(page);

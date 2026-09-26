@@ -98,7 +98,10 @@ window.CoverCarousel=(()=>{
       if(canInteract()&&(distance>=Math.min(70,width()*.17)||(distance>22&&velocity>.45)))change(previous.dx<0?1:-1);
       else settleBack();
     });
-    on(page,'pointercancel',cancelGesture);on(page,'lostpointercapture',cancelGesture);
+    on(page,'pointercancel',cancelGesture);
+    // Touch begins with implicit capture on the photograph. Its transfer to the
+    // page emits a bubbling loss event from the image, not a cancelled gesture.
+    on(page,'lostpointercapture',event=>{if(event.target===page&&event.pointerId===gesture?.id)cancelGesture();});
     on(window,'blur',cancelGesture);on(window,'resize',()=>{if(!busy)cancelGesture();});
     on(page,'dragstart',event=>event.preventDefault());
     on(page,'wheel',event=>{

@@ -1,0 +1,97 @@
+/* Destination atlas: unlocked destinations only, each with its reward medal. */
+.atlas-page{background:#f6f8fc!important;padding-bottom:56px!important}
+.atlas-page .page-head{position:sticky;top:0;z-index:3}
+
+/* Progress summary */
+.atlas-summary{position:relative;margin:16px 16px 0;padding:20px 18px 16px;border-radius:22px;overflow:hidden;color:#fff;
+  background:radial-gradient(140px 110px at 100% 0,#8aa6ff66,#8aa6ff00),linear-gradient(150deg,#2a55f5,#3f6dff 55%,#5b7dff);
+  box-shadow:0 14px 30px -14px #2855f799}
+.atlas-summary::before{content:'';position:absolute;right:-40px;bottom:-60px;width:170px;height:170px;border-radius:50%;border:26px solid #ffffff10}
+.atlas-summary-top{position:relative;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.atlas-summary p{margin:0;font-size:12px;font-weight:600;letter-spacing:.4px;opacity:.82}
+.atlas-summary h1{display:flex;align-items:baseline;gap:6px;margin:4px 0 2px;line-height:1}
+.atlas-summary h1 b{font-size:46px;font-weight:800;letter-spacing:-1.5px}
+.atlas-summary h1 span{font-size:19px;font-weight:600;opacity:.72}
+.atlas-summary-top small{display:block;margin-top:6px;font-size:12px;opacity:.86}
+.atlas-ring{position:relative;flex-shrink:0;width:74px;height:74px}
+.atlas-ring svg{width:100%;height:100%;transform:rotate(-90deg);fill:none;stroke-width:7}
+.atlas-ring circle{stroke:#ffffff2e}
+.atlas-ring .atlas-ring-value{stroke:#ffd45c;stroke-linecap:round;transition:stroke-dashoffset .8s cubic-bezier(.22,1,.36,1)}
+.atlas-ring>span{position:absolute;inset:0;font-size:18px;font-weight:800;letter-spacing:-.5px}
+.atlas-ring small{font-size:10px;font-weight:700;margin-left:1px}
+.atlas-ring>span{display:flex;align-items:center;justify-content:center}
+.atlas-slots-head{position:relative;display:flex;justify-content:space-between;margin-top:18px;font-size:11px;font-weight:600;opacity:.82}
+.atlas-slots{position:relative;display:grid;grid-template-columns:repeat(var(--slots,8),minmax(0,38px));justify-content:space-between;gap:5px;margin:9px 0 0;padding:0;list-style:none}
+.atlas-slot{aspect-ratio:1;border-radius:50%;display:grid;place-items:center;background:#ffffff1a;box-shadow:inset 0 0 0 1px #ffffff40}
+.atlas-slot svg{width:14px;height:14px;fill:none;stroke:#ffffffa6;stroke-width:1.8;stroke-linecap:round}
+.atlas-slot.is-lit{background:none;box-shadow:none;filter:drop-shadow(0 3px 5px #0b1f7a66)}
+.atlas-slot.is-lit svg{width:100%;height:100%;stroke:initial;stroke-width:initial}
+
+/* Unlocked destination cards */
+.atlas-section-title{display:flex;align-items:center;gap:8px;margin:26px 20px 12px;font-size:18px;font-weight:750;letter-spacing:-.3px;color:#171d28}
+.atlas-section-title span{min-width:22px;height:22px;padding:0 7px;border-radius:11px;background:#e8eeff;color:#2855f7;font-size:12px;font-weight:700;display:grid;place-items:center}
+.atlas-list{display:grid;gap:18px;padding:0 16px}
+.atlas-card{display:block;width:100%;padding:0;text-align:left;border-radius:20px;background:#fff;border:1px solid #e9edf3;box-shadow:0 10px 26px -16px #1b2a5238;animation:atlas-in .5s cubic-bezier(.22,1,.36,1) var(--atlas-delay,0ms) both}
+.atlas-card:active{transform:scale(.99)}
+.atlas-photo{position:relative;display:block;aspect-ratio:16/10}
+.atlas-photo>img{display:block;width:100%;height:100%;object-fit:cover;object-position:var(--atlas-position,50% 50%);border-radius:19px 19px 0 0}
+.atlas-photo::after{content:'';position:absolute;inset:0;border-radius:19px 19px 0 0;background:linear-gradient(180deg,#0b153000 42%,#0b1530b3);pointer-events:none}
+.atlas-photo-copy{position:absolute;left:16px;bottom:14px;right:112px;z-index:1;color:#fff;text-shadow:0 1px 8px #0006}
+.atlas-photo-copy small{display:block;font-size:11.5px;font-weight:600;opacity:.88}
+.atlas-photo-copy strong{display:block;margin-top:2px;font-size:25px;line-height:1.15;font-weight:800;letter-spacing:.5px}
+.atlas-medal{position:absolute;right:14px;bottom:-36px;z-index:2;width:88px;height:88px;transform:rotate(-8deg);filter:drop-shadow(0 8px 12px #5a3c0d59)}
+.atlas-medal svg{display:block;width:100%;height:100%}
+.atlas-info{display:flex;align-items:center;gap:16px;padding:14px 112px 4px 16px}
+.atlas-score{display:flex;align-items:baseline;gap:2px;color:#2855f7}
+.atlas-score b{font-size:30px;line-height:1;font-weight:800;letter-spacing:-1px}
+.atlas-score small{font-size:12px;font-weight:700}
+.atlas-stats{display:flex;gap:14px;padding-left:16px;border-left:1px solid #edf0f5}
+.atlas-stats>span{display:flex;flex-direction:column;gap:3px}
+.atlas-stats em{font-style:normal;font-size:10.5px;color:#8a93a3}
+.atlas-stats b{font-size:15px;font-weight:700;color:#171d28}
+.atlas-stats small{font-size:11px;font-weight:600;color:#9aa3b2}
+.atlas-tags{display:flex;flex-wrap:wrap;gap:6px;padding:8px 16px 16px}
+.atlas-tags i{font-style:normal;font-size:11px;font-weight:600;color:#3a5fd8;background:#f0f4ff;padding:4px 9px;border-radius:999px}
+.atlas-card:not(:has(.atlas-tags)) .atlas-info{padding-bottom:18px}
+
+/* Locked remainder / empty / complete */
+.atlas-more{margin:22px 16px 0;padding:22px 18px;border:1.5px dashed #d3dbea;border-radius:20px;background:#fff;text-align:center}
+.atlas-more-icon{width:46px;height:46px;margin:0 auto 10px;border-radius:50%;background:#eef2ff;display:grid;place-items:center}
+.atlas-more-icon svg{width:22px;height:22px;fill:none;stroke:#3264ff;stroke-width:1.8;stroke-linecap:round}
+.atlas-more strong{display:block;font-size:15.5px;font-weight:750;color:#171d28}
+.atlas-more p{margin:6px 0 14px;font-size:12px;line-height:1.7;color:#7d8798}
+.atlas-more button{display:inline-flex;align-items:center;gap:6px;height:38px;padding:0 18px;border-radius:19px;background:#3264ff;color:#fff;font-size:13px;font-weight:650}
+.atlas-more button svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.atlas-more.is-complete{border:0;background:linear-gradient(135deg,#fff6dc,#ffeec2);color:#7a4d0e}
+.atlas-more.is-complete strong{color:#7a4d0e}
+.atlas-more.is-complete p{margin-bottom:0;color:#9a6a24}
+@keyframes atlas-in{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+
+/* Unlocked below the medal score: medal shown as a faded placeholder. */
+.atlas-slot.is-pending{background:none;box-shadow:none}
+.atlas-slot.is-pending svg{width:100%;height:100%;stroke:initial;stroke-width:initial;filter:grayscale(1) brightness(1.6);opacity:.4}
+.atlas-medal.is-pending{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;border-radius:50%;transform:rotate(-8deg);filter:none;
+  background:radial-gradient(circle at 50% 38%,#ffffff,#eef1f6);border:2px dashed #c5cddb;box-shadow:0 6px 14px -6px #1b2a5240;color:#7d8798}
+.atlas-medal.is-pending svg{width:18px;height:18px;fill:none;stroke:#9aa4b5;stroke-width:1.8;stroke-linecap:round}
+.atlas-medal.is-pending b{font-size:14px;line-height:1.1;font-weight:800;color:#3264ff}
+.atlas-medal.is-pending small{font-size:9.5px;font-weight:600}
+.atlas-medal.is-claimable{border-color:#f0c35a;background:radial-gradient(circle at 50% 38%,#fffaf0,#ffefc8);color:#9a6a1a}
+.atlas-medal.is-claimable b{color:#c2410c}
+
+/* Empty atlas: a single skeleton card in the shape of a destination card. */
+.atlas-skeleton{cursor:default;animation:none}
+.atlas-skeleton:active{transform:none}
+.atlas-skeleton .atlas-photo{border-radius:19px 19px 0 0;background:linear-gradient(100deg,#e9edf4 30%,#f5f7fb 50%,#e9edf4 70%) 0 0/300% 100%;animation:atlas-shimmer 1.8s ease-in-out infinite}
+.atlas-skeleton .atlas-photo::after{display:none}
+.atlas-skeleton-lock{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:#8a94a6}
+.atlas-skeleton-lock svg{width:34px;height:34px;fill:none;stroke:#a5afc0;stroke-width:1.6;stroke-linecap:round}
+.atlas-skeleton-lock b{font-size:14px;font-weight:700;letter-spacing:.5px}
+.atlas-skeleton .atlas-medal.is-pending svg{width:22px;height:22px}
+.atlas-bone{display:block;height:12px;border-radius:6px;background:linear-gradient(100deg,#edf0f5 30%,#f7f8fb 50%,#edf0f5 70%) 0 0/300% 100%;animation:atlas-shimmer 1.8s ease-in-out infinite}
+.atlas-bone.w1{width:64px;height:26px;border-radius:8px}.atlas-bone.w2{width:110px}
+.atlas-skeleton-copy{display:flex;flex-direction:column;align-items:flex-start;gap:4px;padding:12px 16px 18px}
+.atlas-skeleton-copy strong{font-size:15.5px;font-weight:750;color:#171d28}
+.atlas-skeleton-copy>span{font-size:12px;color:#7d8798}
+.atlas-skeleton-copy button{display:inline-flex;align-items:center;gap:6px;height:36px;margin-top:10px;padding:0 16px;border-radius:18px;background:#3264ff;color:#fff;font-size:13px;font-weight:650}
+.atlas-skeleton-copy button svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+@keyframes atlas-shimmer{from{background-position:100% 0}to{background-position:0 0}}
