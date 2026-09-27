@@ -38,7 +38,7 @@ window.QuizScene = (() => {
     if(!box.width||!box.height)return;
     canvas.width=width;canvas.height=height;
     ctx.fillStyle='#f8faff';ctx.fillRect(0,0,width,height);
-    const targets=[page.querySelector('.quiz-meta'),page.querySelector('.quiz-header strong'),...status].filter(element=>element?.getClientRects().length);
+    const targets=[page.querySelector('.quiz-question'),page.querySelector('.quiz-header strong'),...status].filter(element=>element?.getClientRects().length);
     try {
       // Reproduce cover cropping, the crossfade and the gradient before sampling
       // each text region. No filters alter the original photograph or text hue.
@@ -49,10 +49,8 @@ window.QuizScene = (() => {
         ctx.drawImage(image,(width-w)*.5,(height-h)*.4,w,h);
       }
       ctx.globalAlpha=1;
-      const landscape=document.documentElement.classList.contains('mobile-device')&&matchMedia('(orientation: landscape) and (min-width: 601px) and (max-height: 600px)').matches;
-      if(landscape){const horizontal=ctx.createLinearGradient(0,0,width,0);horizontal.addColorStop(0,'#f8faff00');horizontal.addColorStop(.65,'#f8faff');ctx.fillStyle=horizontal;ctx.fillRect(0,0,width,height);}
       const shade=ctx.createLinearGradient(0,0,0,height);
-      const stops=landscape?[[0,'#ffffffc9'],[.45,'#f8faffc9'],[1,'#f8faff']]:[[0,'#f8faff00'],[.26,'#f8faff00'],[.48,'#f8faffdb'],[.72,'#f8fafff5'],[1,'#f8faff']];
+      const stops=[[0,'#f8faff00'],[.22,'#f8faff0d'],[.45,'#f8faff66'],[.72,'#f8faff80'],[1,'#f8faff99']];
       stops.forEach(([offset,color])=>shade.addColorStop(offset,color));ctx.fillStyle=shade;ctx.fillRect(0,0,width,height);
       const pixels=ctx.getImageData(0,0,width,height).data;
       for(const element of targets){
