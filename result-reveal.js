@@ -1,14 +1,14 @@
 /* Keep the photograph at full size while the white details panel rises over it. */
 window.ResultReveal = (() => {
   const destinations = {
-    datong: {scene:'yungang', position:'50% 65%', description:'石窟与古寺之间，时间留下了自己的笔迹。沿着古城的街巷，走进山西的千年故事。'},
-    shenzhen: {scene:'sz-qianhai', position:'50% 50%', description:'海湾盛下晚风，天际线点亮夜色。在山海与城市之间，发现深圳的另一种节奏。'},
-    suzhou: {scene:'suzhou-huqiu', position:'50% 28%', description:'一座塔，一条河，一段慢下来的时光。穿过园林与街巷，听见江南的温柔回响。'},
-    guilin: {scene:'gl-xingping', position:'50% 50%', description:'山峰在江水里写下倒影，竹筏从画中轻轻划过。下一程，把自己交给山水。'},
-    hongkong: {scene:'hk-peak', position:'50% 50%', description:'从山顶的万家灯火，到街角的人间烟火。沿着海港与街巷，读懂香港的层次。'},
-    beijing: {scene:'bj-zhengyangmen', position:'50% 45%', description:'城门收藏着岁月，胡同延续着日常。在古都的街巷里，遇见鲜活的北京。'},
-    shanghai: {scene:'sh-lujiazui', position:'50% 50%', description:'江风吹过两岸，旧时光与新天际线相望。沿着黄浦江，收藏上海的一刻。'},
-    zhangjiajie: {scene:'zjj-tianzishan', position:'48% 50%', description:'石峰从云雾里升起，山路沿绝壁盘旋。从武陵源的峰林到天门山的洞门，把下一段旅程交给群山。'}
+    datong: {scene:'yungang', position:'50% 65%', description:'石窟与古寺之间，时间留下了自己的笔迹。沿着古城的街巷，走进山西的千年故事。', descriptionEn:"Between grottoes and ancient temples, time has left its own handwriting. Follow the old town's lanes into Shanxi's thousand-year story."},
+    shenzhen: {scene:'sz-qianhai', position:'50% 50%', description:'海湾盛下晚风，天际线点亮夜色。在山海与城市之间，发现深圳的另一种节奏。', descriptionEn:"The bay holds the evening breeze and the skyline lights up the night. Between mountains, sea and city, discover Shenzhen's other rhythm."},
+    suzhou: {scene:'suzhou-huqiu', position:'50% 28%', description:'一座塔，一条河，一段慢下来的时光。穿过园林与街巷，听见江南的温柔回响。', descriptionEn:"A pagoda, a river, and time that slows down. Through gardens and lanes, hear the gentle echoes of Jiangnan."},
+    guilin: {scene:'gl-xingping', position:'50% 50%', description:'山峰在江水里写下倒影，竹筏从画中轻轻划过。下一程，把自己交给山水。', descriptionEn:"Peaks write their reflections in the river as bamboo rafts glide through the painting. On your next trip, give yourself to the landscape."},
+    hongkong: {scene:'hk-peak', position:'50% 50%', description:'从山顶的万家灯火，到街角的人间烟火。沿着海港与街巷，读懂香港的层次。', descriptionEn:"From the lights seen from the Peak to the bustle of street corners. Follow the harbour and the lanes to read Hong Kong's many layers."},
+    beijing: {scene:'bj-zhengyangmen', position:'50% 45%', description:'城门收藏着岁月，胡同延续着日常。在古都的街巷里，遇见鲜活的北京。', descriptionEn:"City gates keep the years, hutongs carry on everyday life. In the old capital's streets, meet a living Beijing."},
+    shanghai: {scene:'sh-lujiazui', position:'50% 50%', description:'江风吹过两岸，旧时光与新天际线相望。沿着黄浦江，收藏上海的一刻。', descriptionEn:"River breezes cross both banks as old times face the new skyline. Along the Huangpu, keep a moment of Shanghai."},
+    zhangjiajie: {scene:'zjj-tianzishan', position:'48% 50%', description:'石峰从云雾里升起，山路沿绝壁盘旋。从武陵源的峰林到天门山的洞门，把下一段旅程交给群山。', descriptionEn:"Stone peaks rise from the clouds and mountain roads coil along the cliffs. From Wulingyuan's peak forest to Tianmen's great arch, hand your next journey to the mountains."}
   };
   function destination(city) {
     const story=destinations[city.id] || {};
@@ -18,9 +18,9 @@ window.ResultReveal = (() => {
     const page=app.querySelector('.result-page');
     if(!page)return;
     const hero=page.querySelector('.result-hero'),intro=page.querySelector('.result-intro'),phone=app.closest('.phone'),topbar=page.querySelector('.result-topbar');
-    let frame=0,snapFrame=0,height=0,width=0,compact=0,toolbarBottom=0,reveal=0,paintedReveal=-1;
+    let frame=0,snapFrame=0,height=0,width=0,compact=0,toolbarBottom=0,reveal=0,paintedReveal=-1,paintedPhoto=null,paintedBar=-1;
     let wheelTimer=0,nativeWheelTimer=0,touch=null,wheel=null,nativeWheel=false,wheelLockedUntil=0,snapTarget=0,destroyed=false;
-    const reduced=matchMedia('(prefers-reduced-motion: reduce)');
+    const reduced=matchMedia('(prefers-reduced-motion: reduce)'),BAR_FADE=64;
     const mix=(from,to,p)=>from+(to-from)*p;
     const range=()=>Math.max(1,height-compact);
     const blocked=()=>app.inert||!!phone.querySelector('#modal-root')?.childElementCount;
@@ -28,7 +28,12 @@ window.ResultReveal = (() => {
     function paint() {
       if(destroyed)return;
       const distance=range(),p=Math.min(1,reveal/distance),short=height<480;
-      phone.classList.toggle('result-on-photo',height-reveal-Math.max(0,app.scrollTop)-24*p>toolbarBottom);
+      // Top edge of the white panel; the bar fades in over the last BAR_FADE px before it reaches the toolbar.
+      const panelTop=height-reveal-Math.max(0,app.scrollTop)-24*p;
+      const onPhoto=panelTop>toolbarBottom;
+      if(onPhoto!==paintedPhoto){phone.classList.toggle('result-on-photo',onPhoto);paintedPhoto=onPhoto;}
+      const barOpacity=Math.max(0,Math.min(1,(toolbarBottom+BAR_FADE-panelTop)/BAR_FADE));
+      if(barOpacity!==paintedBar){topbar.style.setProperty('--bar-opacity',barOpacity.toFixed(3));paintedBar=barOpacity;}
       // Native scrolling only moves the details. It never changes the reveal stage.
       if(paintedReveal===reveal)return;
       paintedReveal=reveal;

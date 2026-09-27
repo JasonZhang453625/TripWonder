@@ -3,7 +3,8 @@ const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
 
-const context = vm.createContext({window: {}});
+// Chinese i18n stub: the pages read their copy through window.I18N.
+const context = vm.createContext({window: {I18N: {lang: 'zh', isEn: () => false, t: zh => zh, f: (item, key) => item?.[key], term: value => value, place: value => value}}});
 vm.runInContext(fs.readFileSync(path.join(__dirname, 'collection-pages.js'), 'utf8'), context);
 const cities = Array.from({length: 5}, (_, i) => ({
   id: `secret-city-${i}`, name: `隐藏城市${i}`, region: `隐藏省份${i}`,

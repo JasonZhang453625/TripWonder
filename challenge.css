@@ -117,6 +117,7 @@
 .rules-steps{display:grid;gap:16px;margin:18px 0 22px;padding:0;border:0}
 .rules-steps li{margin:0;gap:12px;align-items:flex-start;padding:0;border:0;border-radius:0;background:none;box-shadow:none}
 .rules-steps li>span{width:22px;height:auto;margin:0;border:0;border-radius:0;font-size:15px;font-weight:700;line-height:22.4px;color:#2855f7;background:none;box-shadow:none}
+.rules-steps li>span.rules-step-en{width:44px;font-size:14px}
 .rules-steps strong{display:block;font-size:14px;font-weight:650;line-height:1.4;color:#0f1d33}
 .rules-steps p{flex:1;font-size:14px;line-height:1.6;margin:0;color:#0f1d33;text-wrap:pretty}
 
@@ -133,3 +134,8 @@
 /* After closing the rules, point at the cover's explicit start button. */
 .cover-actions>.primary.cue{animation:cta-cue 1.2s ease-out 2}
 @keyframes cta-cue{0%{box-shadow:0 0 0 0 #5a86ffb3}70%{box-shadow:0 0 0 12px #5a86ff00}100%{box-shadow:0 0 0 0 #5a86ff00}}
+/* English: the wide tracking tuned for CJK labels makes Latin words collide. */
+:root:lang(en) .gm-prov,:root:lang(en) .gm-nation{letter-spacing:.02em}
+:root:lang(en) .gm-mini-nation{letter-spacing:.02em}
+:root:lang(en) .rules-eyebrow{letter-spacing:.04em}
+:root:lang(en) .quiz-page .quiz-header>strong{letter-spacing:.01em}

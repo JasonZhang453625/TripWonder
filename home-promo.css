@@ -25,6 +25,9 @@
 .hp-ticket-face{flex:1;display:grid;place-content:center;border:1.5px solid #e9a33a;border-radius:8px;font-weight:800;line-height:1.1}
 .hp-ticket-face b{font-weight:inherit;font-size:15px;letter-spacing:1px}
 .hp-ticket-face b+b{font-size:23px;letter-spacing:2px}
+/* English: the rounded CJK display face has no Latin set, so the promo switches to a bold italic sans. */
+.hp-en .hp-ticket-face b{font-size:9px;letter-spacing:.6px}
+.hp-en .hp-ticket-face b+b{font-size:17px;letter-spacing:1px}
 .hp-ticket-stub{width:44px;display:grid;place-items:center;border-left:2px dashed #d9892466;margin-left:8px}
 .hp-ticket-stub svg{width:24px;height:24px;transform:rotate(90deg)}
 .hp-mark{position:absolute;display:block;filter:drop-shadow(0 4px 5px #1e3a8a4d)}
@@ -54,3 +57,6 @@
 @keyframes hp-float{50%{translate:0 -5px}}
 @keyframes hp-twinkle{0%,100%{opacity:.35;scale:.7}50%{opacity:1;scale:1.1}}
 @media(prefers-reduced-motion:reduce){.hp-jet,.hp-ticket,.hp-mark,.hp-spark{animation:none!important}}
+.hp-en .hp-title{font-family:'Segoe UI',Roboto,Arial,sans-serif;font-weight:800;font-style:italic}
+.hp-en .hp-line1{font-size:19px;letter-spacing:0}
+.hp-en .hp-line2{font-size:40px;letter-spacing:0}

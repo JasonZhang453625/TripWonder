@@ -24,6 +24,8 @@ function boot(url, oldRecord, replaceFails = false) {
   ]}};
   const context = {
     window, location, URL,
+    // Chinese i18n stub; the language preference lives in i18n.js, not app state.
+    I18N: {lang: 'zh', isEn: () => false, t: zh => zh, f: (item, key) => item?.[key], term: value => value, place: value => value},
     document: {querySelector: () => ({addEventListener: () => {}}), addEventListener: () => {}},
     localStorage: {
       getItem: () => { calls.read++; return oldRecord; },

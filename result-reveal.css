@@ -11,14 +11,15 @@
 .result-visual{position:absolute;inset:0;overflow:hidden;background:#16343e;z-index:-1}
 .result-visual>img{display:block;width:100%;height:var(--intro-height,100dvh);object-fit:cover;object-position:var(--result-position,50% 50%);transform:translateY(var(--photo-pan,0px))}
 .result-shade{position:absolute;inset:0;background:linear-gradient(180deg,#06131e7a 0%,#0718270a 24%,#0718270a 36%,#081a2f78 58%,#07182ce0 83%,#091a2ff5 100%)}
-.result-topbar{position:sticky;top:calc(var(--statusbar-h,54px) + 8px);height:44px;margin:0 22px -44px;display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:8px;z-index:26;color:white}
+.result-topbar{--bar-top:calc(var(--statusbar-h,54px) + 8px);--bar-side:22px;position:sticky;top:var(--bar-top);height:44px;margin:0 22px -44px;display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:8px;z-index:26;color:white}
 .result-topbar>.result-tool{justify-self:start}
 .result-top-actions{display:flex;justify-self:end;gap:8px}
-.result-topbar::before{content:'';position:absolute;inset:-8px -22px;z-index:-1;background:#fff;border-bottom:1px solid #e5e7eb;opacity:0;pointer-events:none}
+/* White bar reaches the top of the scroller (status bar / safe area included); result-reveal.js drives --bar-opacity from scroll. */
+.result-topbar::before{content:'';position:absolute;top:calc(-1 * var(--bar-top));bottom:-8px;left:calc(-1 * var(--bar-side));right:calc(-1 * var(--bar-side));z-index:-1;background:#fff;border-bottom:1px solid #e5e7eb;opacity:var(--bar-opacity,0);pointer-events:none}
 [data-slide-layer="outgoing"] .result-topbar::before{opacity:var(--slide-bar-opacity,0)!important}
-.mobile-device .result-topbar{top:calc(14px + var(--safe-top,0px));margin-left:calc(22px + var(--safe-left,0px));margin-right:calc(22px + var(--safe-right,0px))}
+.mobile-device .result-topbar{--bar-top:calc(14px + var(--safe-top,0px));--bar-side:calc(22px + max(var(--safe-left,0px),var(--safe-right,0px)));margin-left:calc(22px + var(--safe-left,0px));margin-right:calc(22px + var(--safe-right,0px))}
 .phone:not(.result-on-photo) .result-topbar{color:#233451}
-.phone:not(.result-on-photo) .result-topbar::before{opacity:1}
+.phone:not(.result-on-photo) .result-topbar::before{opacity:var(--bar-opacity,1)}
 .phone:not(.result-on-photo) .result-tool{color:#171e2b;background:#f4f5f7}
 .result-topbar>span{font-size:13px;letter-spacing:.12em;font-weight:500}
 .result-tool{display:grid;place-items:center;width:44px;height:44px;flex:none;padding:0;border-radius:50%;color:white;border:0;background:#0b162b80;backdrop-filter:none;-webkit-backdrop-filter:none;box-shadow:none}
@@ -101,3 +102,12 @@
 .result-short .result-arrival>strong{font-size:82px}
 .result-short .result-region{margin-bottom:8px}
 @media(prefers-reduced-motion:reduce){.result-visual>img{transform:none}}
+/* English greeting: the brush face is CJK-only; Latin names run longer, so they may wrap. */
+.result-arrival.is-en{font-family:Georgia,'Times New Roman',serif;font-style:italic}
+.result-arrival.is-en>span{font-size:clamp(26px,calc(var(--result-width,390px)*.08),36px)}
+.result-arrival.is-en>strong{font-size:clamp(44px,calc(var(--result-width,390px)*.14),60px);font-weight:700;white-space:normal;letter-spacing:-.01em}
+.result-short .result-arrival.is-en>strong{font-size:48px}
+/* English labels: wide CJK tracking reads as gaps in lowercase Latin, so small labels go to capitals. */
+:root:lang(en) .result-topbar>span{letter-spacing:.04em}
+:root:lang(en) .result-region,:root:lang(en) .result-score-label{text-transform:uppercase;letter-spacing:.1em}
+:root:lang(en) .result-scroll-cue{letter-spacing:.04em}

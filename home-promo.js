@@ -31,9 +31,10 @@
     <path d="M59 119 150 162.5 241 119" fill="none" stroke="#d6ebff" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/></svg>`;
   let active = null;
 
+  const {t, isEn} = window.I18N;
   function markup() {
     return `<div class="hp-backdrop"></div>
-      <button class="hp-card" type="button" aria-label="参加 TripWonder 挑战，赢得优惠券！点击开始">
+      <button class="hp-card${isEn() ? ' hp-en' : ''}" type="button" aria-label="${t('参加 TripWonder 挑战，赢得优惠券！点击开始', 'Join the TripWonder Challenge and win coupons! Tap to start')}">
         <div class="hp-content">
           <div class="hp-stage" aria-hidden="true">
             ${scene}
@@ -41,15 +42,15 @@
             <div class="hp-pop">
               ${envelopeBack}
               <span class="hp-ticket back"></span>
-              <span class="hp-ticket main"><span class="hp-ticket-face"><b>目的地</b><b>优惠券</b></span><span class="hp-ticket-stub">${plane('#f08a1c')}</span></span>
+              <span class="hp-ticket main"><span class="hp-ticket-face"><b>${t('目的地', 'DESTINATION')}</b><b>${t('优惠券', 'COUPON')}</b></span><span class="hp-ticket-stub">${plane('#f08a1c')}</span></span>
               ${envelopeFront}
               <span class="hp-mark yellow">${marker('#ffc83d','#fff4c7')}</span>
               <span class="hp-mark red">${marker('#ff5b4d','#ffe1dc')}</span>
             </div>
             <i class="hp-spark s1"></i><i class="hp-spark s2"></i><i class="hp-spark s3"></i>
           </div>
-          <span class="hp-kicker" aria-hidden="true">TRIPWONDER · 携程奇境挑战</span>
-          <p class="hp-title" aria-hidden="true"><span class="hp-line1">参加TripWonder挑战，</span><span class="hp-line2">赢得优惠券！</span></p>
+          <span class="hp-kicker" aria-hidden="true">${t('TRIPWONDER · 携程奇境挑战', 'TRIP.COM · TRIPWONDER')}</span>
+          <p class="hp-title" aria-hidden="true"><span class="hp-line1">${t('参加TripWonder挑战，', 'Join the TripWonder Challenge')}</span><span class="hp-line2">${t('赢得优惠券！', 'Win coupons!')}</span></p>
           <div class="hp-progress" aria-hidden="true"><i></i></div>
         </div>
       </button>`;
@@ -142,10 +143,10 @@
   async function show({phone, getTarget, onAccept}) {
     if (active || !phone) return;
     const layer = document.createElement('div');
-    layer.className = 'hp-layer'; layer.setAttribute('role', 'dialog'); layer.setAttribute('aria-label', 'TripWonder 挑战邀请');
+    layer.className = 'hp-layer'; layer.setAttribute('role', 'dialog'); layer.setAttribute('aria-label', t('TripWonder 挑战邀请', 'TripWonder Challenge invitation'));
     layer.innerHTML = markup();
     const state = active = {layer, getTarget, onAccept, closing:false, timer:0};
-    try { await Promise.race([document.fonts.load("48px 'TripWonder Promo'", '赢得优惠券'), new Promise(r => setTimeout(r, 600))]); } catch {}
+    try { if (!isEn()) await Promise.race([document.fonts.load("48px 'TripWonder Promo'", '赢得优惠券'), new Promise(r => setTimeout(r, 600))]); } catch {}
     if (active !== state) return;
     phone.append(layer);
     layer.querySelector('.hp-card').addEventListener('click', event => { event.stopPropagation(); accept(state); });

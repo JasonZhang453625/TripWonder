@@ -24,6 +24,26 @@
     guilin: [['自然','摄影'],['自然'],['摄影','文化'],['自然','摄影'],['美食','摄影'],['自然','摄影']],
     hongkong: [['摄影','自然'],['摄影','文化'],['文化','美食'],['摄影','文化'],['文化','建筑'],['自然','摄影']]
   };
+  // English overlay (content/en.js): fields become <key>En beside the Chinese, read through I18N.f().
+  for (const city of cities) {
+    const en = window.CONTENT_EN?.[city.id];
+    if (!en) continue;
+    city.nameEn = en.name; city.regionEn = en.region;
+    for (const scene of city.scenes) {
+      const s = en.scenes[scene.id];
+      if (!s) continue;
+      scene.nameEn = s.name; scene.typeEn = s.type;
+      scene.hotspots.forEach((hotspot, index) => { hotspot.titleEn = s.hotspots[index]; });
+    }
+    city.questions.forEach((question, index) => {
+      const q = en.questions[index];
+      if (q) Object.assign(question, {qEn:q.q, optionsEn:q.options, explainEn:q.explain});
+    });
+    for (const stop of city.stops) {
+      const s = en.stops[stop.name];
+      if (s) Object.assign(stop, {nameEn:s.name, noteEn:s.note, ...(s.hours ? {openingHoursEn:s.hours} : {})});
+    }
+  }
   const photoById = new Map();
   // The mountain challenge has four scenes but three questions; its first
   // question covers both peak views, followed by the cave and winding road.

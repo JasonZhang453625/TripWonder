@@ -16,19 +16,22 @@
     save: line('<path d="M16 4v16m-6-6 6 6 6-6M5 21v6h22v-6"/>'),
     more: icon('<g fill="currentColor"><circle cx="7" cy="16" r="2.5"/><circle cx="16" cy="16" r="2.5"/><circle cx="25" cy="16" r="2.5"/></g>')
   };
+  const {t} = window.I18N;
   const social = [
-    ['whatsapp', 'WhatsApp'], ['line', 'LINE'], ['wechat', '微信'],
+    ['whatsapp', 'WhatsApp'], ['line', 'LINE'], ['wechat', '微信', 'WeChat'],
     ['instagram', 'Instagram'], ['snapchat', 'Snapchat']
   ];
-  const actions = [['copy', '复制链接'], ['sms', '短信'], ['email', '邮件'], ['save', '保存图片'], ['more', '更多']];
-  const names = Object.fromEntries([...social, ...actions]);
-  const option = ([channel, label]) => `<button class="share-option share-option--${channel}" type="button" data-share-channel="${channel}" aria-label="${label}${social.some(item => item[0] === channel) ? '分享' : ''}"><span class="share-option-disc">${icons[channel]}</span><span class="share-option-label">${label}</span></button>`;
+  const actions = [['copy', '复制链接', 'Copy link'], ['sms', '短信', 'Messages'], ['email', '邮件', 'Email'], ['save', '保存图片', 'Save image'], ['more', '更多', 'More']];
+  // Labels are resolved per call so they follow the current language.
+  const names = Object.fromEntries([...social, ...actions].map(([channel, zh, en]) => [channel, [zh, en || zh]]));
+  const labelOf = channel => t(...names[channel]);
+  const option = ([channel]) => { const label = labelOf(channel), isSocial = social.some(item => item[0] === channel); return `<button class="share-option share-option--${channel}" type="button" data-share-channel="${channel}" aria-label="${isSocial ? t(`${label}分享`, `Share on ${label}`) : label}"><span class="share-option-disc">${icons[channel]}</span><span class="share-option-label">${label}</span></button>`; };
 
   function markup() {
-    return `<div class="share-options" aria-label="分享方式"><div class="share-options-row share-options-social" role="group" aria-label="社交应用">${social.map(option).join('')}</div><div class="share-options-row share-options-tools" role="group" aria-label="更多分享方式">${actions.map(option).join('')}</div></div>`;
+    return `<div class="share-options" aria-label="${t('分享方式', 'Share options')}"><div class="share-options-row share-options-social" role="group" aria-label="${t('社交应用', 'Social apps')}">${social.map(option).join('')}</div><div class="share-options-row share-options-tools" role="group" aria-label="${t('更多分享方式', 'More ways to share')}">${actions.map(option).join('')}</div></div>`;
   }
 
-  async function activate(channel, {title = 'TripWonder 奇境挑战', text = '', url, file, copy, save, more, toast = () => {}} = {}) {
+  async function activate(channel, {title = t('TripWonder 奇境挑战', 'TripWonder Challenge'), text = '', url, file, copy, save, more, toast = () => {}} = {}) {
     if (!names[channel] || !url) return;
     if (channel === 'copy') return copy?.();
     if (channel === 'save') return save?.();
@@ -43,7 +46,7 @@
       document.body.append(link);
       link.click();
       link.remove();
-      toast(channel === 'email' ? '请在邮件应用中选择收件人并发送' : '请在短信应用中选择收件人并发送');
+      toast(channel === 'email' ? t('请在邮件应用中选择收件人并发送', 'Choose a recipient in your email app and send') : t('请在短信应用中选择收件人并发送', 'Choose a recipient in your messaging app and send'));
       return;
     }
     // Browsers cannot select a specific installed social app. The user chooses it
@@ -60,7 +63,7 @@
     }
     const copied = await copy?.();
     if (copied === false) return;
-    toast(copied === true ? `链接已复制，请前往${names[channel]}分享` : `请前往${names[channel]}粘贴挑战链接`);
+    toast(copied === true ? t(`链接已复制，请前往${labelOf(channel)}分享`, `Link copied. Open ${labelOf(channel)} to share it.`) : t(`请前往${labelOf(channel)}粘贴挑战链接`, `Open ${labelOf(channel)} and paste the challenge link`));
   }
 
   window.ShareOptions = Object.freeze({markup, activate});
