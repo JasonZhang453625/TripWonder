@@ -21,14 +21,13 @@ const texture=x=>x.includes('/shenzhen/')&&x.includes('/immersive-blur/photo.jpg
         await page.locator('#app .cover-page').waitFor();
         assert.match(await page.locator('script[src^="immersive-viewer.js"]').getAttribute('src'),new RegExp(expected+'$'),'deployed bundle matches this change');
         // A first-time visitor starts the actual full-resolution image on the cover.
-        await page.waitForFunction(()=>performance.getEntriesByType('resource').some(r=>r.name.includes('/shenzhen/futian/immersive-blur/photo.jpg')));
-        assert.equal(await page.evaluate(()=>performance.getEntriesByType('resource').filter(r=>r.name.includes('/immersive-blur/photo.jpg')).length),1);
+        await page.waitForFunction(()=>ImmersiveSceneMedia.status().cachedFiles===1);
         if(await page.locator('.rules-popover').count())await page.locator('[data-action="rules-start"]').click();
         const entered=Date.now();await page.locator('#app [data-action="start"]').click();
         await page.locator('#app .photo-viewport[data-rendered="true"]').waitFor();
         await page.locator('.scene-transition').waitFor({state:'detached'});
         const firstRevealMs=Date.now()-entered;
-        await page.waitForFunction(()=>performance.getEntriesByType('resource').filter(r=>r.name.includes('/shenzhen/')&&r.name.includes('/immersive-blur/photo.jpg')).length===3);
+        await page.waitForFunction(()=>ImmersiveSceneMedia.status().cachedFiles===3);
         await page.waitForFunction(()=>ImmersiveSceneMedia.status().decodedScenes.includes('sz-houhai'));
         const clicked=Date.now();await page.locator('#app [data-action="next-scene"]').click();
         await page.locator('#app .scene-counter').filter({hasText:'2 / 3'}).waitFor();
@@ -37,11 +36,16 @@ const texture=x=>x.includes('/shenzhen/')&&x.includes('/immersive-blur/photo.jpg
         assert.equal(await page.locator('#app .photo-viewport').getAttribute('data-source-size'),'7002x4668');
         assert.equal(await page.locator('#app .photo-plane>img').count(),0);
         assert.equal(await page.locator('#app .photo-viewport').getAttribute('data-max-zoom'),'3');
-        assert.equal(headers.length,3);
+        if(round===0)assert.equal(headers.length,3);
         assert.ok(headers.every(h=>h.status===200&&h.cache?.includes('max-age=31536000')&&h.cache.includes('immutable')),'Vercel sends durable browser caching headers');
         const files=await page.evaluate(()=>performance.getEntriesByType('resource').filter(r=>r.name.includes('/shenzhen/')&&r.name.includes('/immersive-blur/photo.jpg')).map(r=>({file:r.name.split('/shenzhen/')[1],transferBytes:r.transferSize,encodedBytes:r.encodedBodySize,durationMs:Math.round(r.duration)})));
-        if(round===1)assert.ok(files.every(f=>f.transferBytes===0),'a new page visit reuses browser cache, without downloading scene bytes again');
-        rounds.push({visit:round?'return':'first',firstRevealMs,nextRevealMs,files,headers});
+        await page.waitForFunction(()=>ImmersiveSceneMedia.status().pendingWrites===0);
+        const storage=await page.evaluate(()=>ImmersiveSceneMedia.status());
+        if(round===1){
+          assert.equal(storage.persistentHits,3,'a new page reads all three full-resolution files from persistent storage');
+          assert.equal(files.reduce((sum,f)=>sum+f.transferBytes,0),0,'return visit does not transfer scene image bytes');
+        }
+        rounds.push({visit:round?'return':'first',firstRevealMs,nextRevealMs,files,headers,storage});
         if(out&&round===0){fs.mkdirSync(out,{recursive:true});await page.screenshot({path:path.join(out,`online-${name}.png`)});}
         await page.close();
       }

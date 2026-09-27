@@ -1,4 +1,5 @@
 import {decodeImage, blurredPeriphery} from './immersive-image-src.js';
+import {ImmersiveSceneStorage} from './immersive-storage-src.js';
 
 // Full-resolution encoded files survive destination changes within a bounded LRU.
 // Decoded pixels are limited to active viewers and, when memory permits, ONE next
@@ -58,7 +59,10 @@ function clear() {
 }
 
 function invalidate(config) {
-  [config.sourceUrl, config.atlasUrl].filter(Boolean).forEach(url => forgetFile(new URL(url, location.href).href));
+  [config.sourceUrl, config.atlasUrl].filter(Boolean).forEach(url => {
+    const key = new URL(url, location.href).href;
+    forgetFile(key); ImmersiveSceneStorage.remove(key);
+  });
   const entry = entries.get(config.id);
   if (entry) { entries.delete(config.id); dispose(entry); }
 }
@@ -96,11 +100,17 @@ function download(config, priority) {
     const key = new URL(url, location.href).href;
     let blob = cachedFile(key);
     if (!blob) {
+      blob = await ImmersiveSceneStorage.read(key);
+      signal.throwIfAborted();
+      if (blob) rememberFile(key, blob);
+    }
+    if (!blob) {
       const response = await fetch(url, {signal, priority});
       if (!response.ok) throw new Error(`Scene photo unavailable (${response.status})`);
       blob = await response.blob();
       signal.throwIfAborted();
       rememberFile(key, blob);
+      ImmersiveSceneStorage.write(key, blob);
     }
     signal.throwIfAborted();
     const objectUrl = URL.createObjectURL(blob);
@@ -239,7 +249,7 @@ export const ImmersiveSceneMedia = {
   },
   // Diagnostics expose counts only, not user data or image contents.
   status() {
-    return {cacheBytes, cacheLimit:CACHE_LIMIT, cachedFiles:fileCache.size,
+    return {...ImmersiveSceneStorage.status(),cacheBytes, cacheLimit:CACHE_LIMIT, cachedFiles:fileCache.size,
       decodedScenes:[...entries].filter(([,entry]) => entry.images).map(([id]) => id)};
   },
   invalidate,
