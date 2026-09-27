@@ -89,6 +89,8 @@
   gap: 7px;
   min-height: 40px;
   padding: 0 13px;
+  border-radius: 22px;
+  color: #fff;
   font-size: 13px;
   letter-spacing: .02em;
   font-variant-numeric: tabular-nums;
@@ -98,6 +100,7 @@
 #app .quiz-timer b { min-width: 37px; font-weight: 650; }
 #app .quiz-timer .quiz-clock { width: 15px; height: 15px; stroke-width: 1.7; }
 #app .quiz-timer.urgent { border-color: #ffb5a9cc; }
+.mobile-device #app .quiz-header .quiz-back { width: 44px; height: 44px; min-width: 44px; min-height: 44px; }
 .mobile-device #app .quiz-timer { min-height: 44px; }
 
 #app .quiz-body {
