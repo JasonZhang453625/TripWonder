@@ -358,7 +358,7 @@
     app.replaceChildren(...frame.childNodes);app.scrollTop=0;showOpeningWarnings();showFriendComparison();
     document.querySelectorAll('.flow button').forEach(b=>b.classList.toggle('active',b.dataset.go===s.view || (b.dataset.go==='today'&&['cover','explore','quiz','guess','result','route','atlas','ranking'].includes(s.view))));
     app.querySelectorAll('img').forEach(el=>el.addEventListener('error',()=>{el.insertAdjacentHTML('afterend','<span class="error-image">照片未能载入</span>');},{once:true}));
-    if(s.view==='explore') { const root=app.querySelector('.photo-viewport'),config=window.IMMERSIVE_SCENES?.[activePhoto().id];viewer=prepared?.viewer||(config&&window.ImmersivePhotoViewer?new ImmersivePhotoViewer(root,activePhoto(),config):new PhotoViewer(root,activePhoto())); }
+    if(s.view==='explore') { const root=app.querySelector('.photo-viewport'),config=window.IMMERSIVE_SCENES?.[activePhoto().id];viewer=prepared?.viewer||(config&&window.ImmersivePhotoViewer?new ImmersivePhotoViewer(root,activePhoto(),config):new PhotoViewer(root,activePhoto()));viewer.ready?.then(()=>{if(viewer?.root===root)viewer.present?.();},()=>{}); }
     if(s.view==='quiz')resumeQuizTimer();
     if(s.view==='guess'&&!mapView)mountGuess();
     if(s.view==='result')resultReveal=ResultReveal.mount(app);
@@ -386,6 +386,7 @@
     activateCity(id);return go(s.result?'result':'cover',{back});
   }
   function mountCover() {
+    if(!current().result&&!navigator.connection?.saveData){const configs=city().scenes.map(scene=>window.IMMERSIVE_SCENES?.[scene.id]).filter(Boolean),first=window.IMMERSIVE_SCENES?.[city().scenes[s.scene]?.id];if(first)window.ImmersiveSceneMedia?.prefetchCover(city().id,configs,first);}
     const index=order.indexOf(s.cityId),adjacent=step=>C.cities.find(c=>c.id===order[(index+step+order.length)%order.length]);
     const neighbors=[adjacent(-1),adjacent(1)].filter(c=>c&&c.id!==s.cityId);
     const economical=navigator.connection?.saveData||/(^|-)2g$/.test(navigator.connection?.effectiveType||'');

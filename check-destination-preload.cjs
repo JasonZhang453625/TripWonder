@@ -47,19 +47,24 @@ async function scene(page,n){
     page.on('pageerror',e=>errors.push(e.message));await instrument(page);
     const first=await gate(page,'futian'),second=await gate(page,'houhai');
     await cover(page);
-    assert.equal(await page.evaluate(()=>preloadAudit.files.length),0,'cover does not fetch all full-resolution scenes');
+    await page.waitForFunction(()=>preloadAudit.files.length===1);
+    assert.equal(await page.evaluate(()=>preloadAudit.files.length),1,'cover starts only the first full-resolution scene');
     await page.locator('#app [data-action="start"]').click();
     await page.waitForFunction(()=>preloadAudit.files.length===1);await page.waitForTimeout(150);
     assert.equal(await page.evaluate(()=>preloadAudit.files.length),1,'first image has priority over preloading');
     first();await scene(page,1);
     await page.waitForFunction(()=>preloadAudit.files.length===3);
     const pending=await page.evaluate(()=>preloadAudit.files);
-    assert.deepEqual(pending.map(x=>x.priority),['high','low','low']);
+    assert.deepEqual(pending.map(x=>x.priority),['low','low','low']);
     assert.ok(pending.every(x=>x.url.includes('/shenzhen/')),'only the selected destination preloads');
     assert.equal(pending.find(x=>x.url.includes('/houhai/')).done,false,'current scene is usable while a background download is blocked');
     assert.equal(await page.locator('.immersive-canvas').count(),1,'background loading does not create extra GPU viewers');
     second();await page.waitForFunction(()=>preloadAudit.files.length===3&&preloadAudit.files.every(x=>x.done)&&preloadAudit.created.length===3);
     report.allDownloadedBeforeNext=true;
+    await page.waitForFunction(()=>ImmersiveSceneMedia.status().decodedScenes.includes('sz-houhai'));
+    assert.deepEqual((await page.evaluate(()=>ImmersiveSceneMedia.status().decodedScenes)).sort(),['sz-futian','sz-houhai']);
+    assert.equal(await page.locator('.immersive-canvas').count(),1,'preparing next pixels does not allocate a background GPU viewer');
+    report.nextDecodedBeforeClick=true;
 
     // With every file cached, scene changes must work even when the image server becomes unavailable.
     let unexpectedRequests=0;
@@ -77,10 +82,12 @@ async function scene(page,n){
     await page.locator('#app [data-action="leave"]').click();await page.locator('#app .cover-page').waitFor();
     const released=await page.evaluate(()=>preloadAudit);
     assert.deepEqual([...released.revoked].sort(),[...released.created].sort(),'leaving releases every cached file');
-    await page.unroute('**/immersive-blur/photo.jpg*',noNetwork);
+    assert.deepEqual(await page.evaluate(()=>ImmersiveSceneMedia.status().decodedScenes),[],'leaving releases decoded images');
     await page.locator('#app [data-action="start"]').click();await scene(page,1);
-    await page.waitForFunction(()=>preloadAudit.files.length===6&&preloadAudit.files.every(x=>x.done));
-    report.reenter=true;await page.close();
+    await page.waitForFunction(()=>preloadAudit.created.length===6);
+    assert.equal(await page.evaluate(()=>preloadAudit.files.length),3,'re-entry reuses exact bytes even if server caching is disabled');
+    assert.equal(unexpectedRequests,0);
+    report.reenterWithoutNetwork=true;await page.close();
 
     // Cancel background downloads without first clicking Next; late responses must not restore exploration.
     const cancel=await browser.newPage({viewport:{width:390,height:844}});

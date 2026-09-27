@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import {ImmersiveSceneMedia} from './immersive-media-src.js';
+import {BLUR_PAD} from './immersive-image-src.js';
 
 const rad = THREE.MathUtils.degToRad;
 const deg = THREE.MathUtils.radToDeg;
@@ -26,28 +27,9 @@ window.ImmersivePhotoViewer = class {
 
   async init() {
     const cfg = this.config;
-    const assets = await this.loadAssets();
-    const load = src => new Promise((resolve, reject) => {
-      const image = new Image();
-      const signal = this.abort.signal;
-      const finish = error => {
-        clearTimeout(timeout);
-        signal.removeEventListener('abort', cancel);
-        image.onload = image.onerror = null;
-        if (error) { image.removeAttribute('src'); reject(error); }
-        else resolve(image);
-      };
-      const cancel = () => finish(new DOMException('Scene loading cancelled', 'AbortError'));
-      const timeout = setTimeout(() => finish(new Error('Scene photo load timed out')), 45000);
-      image.onload = () => finish();
-      image.onerror = () => { ImmersiveSceneMedia.invalidate(cfg); finish(new Error('Scene photo unavailable')); };
-      signal.addEventListener('abort', cancel, {once:true});
-      if (signal.aborted) { cancel(); return; }
-      image.src = src;
-    });
     const blur = cfg.periphery === 'blur';
-    const sourceImage = await load(assets.source);
-    const atlasImage = blur ? blurredPeriphery(sourceImage, BLUR_PAD) : await load(assets.atlas);
+    const {sourceImage, atlasImage} = await ImmersiveSceneMedia.prepare(cfg, this.abort.signal);
+    this.sourcePixels = sourceImage.width * sourceImage.height;
     delete window.IMMERSIVE_ASSETS?.[cfg.id];
     this.abort.signal.throwIfAborted();
     const canvas = document.createElement('canvas');
@@ -183,8 +165,8 @@ window.ImmersivePhotoViewer = class {
     this.abort.signal.throwIfAborted();
   }
 
-  loadAssets() {
-    return ImmersiveSceneMedia.load(this.config, this.abort.signal);
+  present() {
+    if (!this.destroyed) ImmersiveSceneMedia.present(this.config, this.sourcePixels);
   }
 
   attachControls() {
@@ -388,50 +370,3 @@ window.ImmersivePhotoViewer = class {
     this.renderer?.forceContextLoss();
   }
 };
-
-const BLUR_PAD = .3;
-
-// Soft periphery for scenes without an AI extension: mirror the photo's edges outward, then
-// blur, so colour and tone continue past the frame without inventing structure.
-function blurredPeriphery(image, pad) {
-  const width = 512, height = Math.round(width * image.height / image.width);
-  const W = Math.round(width * (1 + 2 * pad)), H = Math.round(height * (1 + 2 * pad));
-  const ox = Math.round(width * pad), oy = Math.round(height * pad);
-  const canvas = document.createElement('canvas');
-  canvas.width = W;
-  canvas.height = H;
-  const ctx = canvas.getContext('2d');
-  for (const i of [-1, 0, 1]) for (const j of [-1, 0, 1]) {
-    // Tile (i, j) occupies [ox + i*width, oy + j*height]; outer tiles are mirrored so edges meet.
-    ctx.save();
-    ctx.translate(ox + i * width + (i ? width : 0), oy + j * height + (j ? height : 0));
-    ctx.scale(i ? -1 : 1, j ? -1 : 1);
-    ctx.drawImage(image, 0, 0, width, height);
-    ctx.restore();
-  }
-  // Far layer only: the shader mirrors the full-resolution photo for the near zone.
-  return softened(canvas, 18);
-}
-
-function softened(canvas, radius) {
-  const out = document.createElement('canvas');
-  out.width = canvas.width;
-  out.height = canvas.height;
-  const ctx = out.getContext('2d');
-  ctx.filter = `blur(${radius}px)`;
-  if (ctx.filter === `blur(${radius}px)`) {
-    ctx.drawImage(canvas, 0, 0);
-    return out;
-  }
-  // No canvas filter (older Safari): downscale then upscale with smoothing.
-  const small = document.createElement('canvas');
-  small.width = Math.max(1, Math.round(canvas.width / radius * 1.5));
-  small.height = Math.max(1, Math.round(canvas.height / radius * 1.5));
-  const sctx = small.getContext('2d');
-  sctx.imageSmoothingQuality = 'high';
-  sctx.drawImage(canvas, 0, 0, small.width, small.height);
-  ctx.filter = 'none';
-  ctx.imageSmoothingQuality = 'high';
-  ctx.drawImage(small, 0, 0, out.width, out.height);
-  return out;
-}
