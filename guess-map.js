@@ -44,11 +44,28 @@
     return cityData;
   }
 
+  // Which province and prefecture-level city contain a map point, whatever the current zoom.
+  // Municipalities, SARs and Taiwan have no city breakdown: the province is the city.
+  let hitCtx, provincePaths, cityPaths;
+  async function locate({ x, y }) {
+    hitCtx ||= document.createElement('canvas').getContext('2d');
+    provincePaths ||= M.provinces.map(p => ({ name: p.name, path: new Path2D(p.d) }));
+    const province = provincePaths.find(p => hitCtx.isPointInPath(p.path, x, y))?.name || '';
+    if (!province) return { province: '', city: '' };
+    const data = await loadCities().catch(() => null);
+    const group = data?.find(p => p.p === province);
+    if (!group) return { province, city: data ? province : '' };
+    cityPaths ||= new Map();
+    if (!cityPaths.has(province)) cityPaths.set(province, group.cities.map(([name, d]) => ({ name, path: new Path2D(d) })));
+    return { province, city: cityPaths.get(province).find(c => hitCtx.isPointInPath(c.path, x, y))?.name || '' };
+  }
+
   // Static markup, shared by the interactive map and the small result map.
-  // Order: coastal glow → pastel provinces (white borders) → cities → crisp national outline.
+  // Order: grey neighbouring countries → coastal glow → pastel provinces (white borders) → cities → crisp national outline.
   function svgMarkup({ viewBox = `0 0 ${M.w} ${M.h}`, extra = '', inset = true } = {}) {
     const i = M.inset;
     return `<svg class="gm-svg" xmlns="${NS}" viewBox="${viewBox}" aria-hidden="true" focusable="false">`
+      + `<path class="gm-world" d="${M.world}"/>`
       + `<path class="gm-glow" d="${M.outline}"/>`
       + `<g class="gm-land">${M.provinces.map(p => `<path data-p="${p.name}" class="c${p.c}" d="${p.d}"/>`).join('')}</g>`
       + `<path class="gm-outline" d="${M.outline}"/>`
@@ -75,13 +92,15 @@
       const provinces = M.provinces.map(p => `<span class="gm-prov${SMALL_PROVINCES.has(p.name) ? ' small' : ''}${secret.has(p.name) ? ' secret' : ''}">${p.name}</span>`).join('');
       const capitals = M.labels.map(([name, x, y, level]) => `<span class="gm-cap${level === 0 ? ' national' : ''}${near(x, y) || secret.has(name) ? ' secret' : ''}"><b>${name}</b></span>`).join('');
       // Labels and pins live inside the plane, so a pan moves one composited layer and repaints nothing.
+      const nations = M.nations.map(([name, , , small]) => `<span class="gm-nation${small ? ' small' : ''}">${name}</span>`).join('');
       root.innerHTML = `<div class="gm-plane">${svgMarkup({ extra: '<line class="gm-line" x1="0" y1="0" x2="0" y2="0"/>' })}`
-        + `<div class="gm-marks">${capitals}${provinces}<span class="gm-dist" hidden></span>`
+        + `<div class="gm-marks">${nations}${capitals}${provinces}<span class="gm-dist" hidden></span>`
         + `<span class="gm-pin guess" hidden><i></i></span><span class="gm-pin answer" hidden><i></i><em class="gm-tag"></em></span></div></div>`
         + `<div class="gm-overlay"><span class="gm-scale"><i></i><small></small></span></div>`;
       this.plane = root.querySelector('.gm-plane'); this.svg = root.querySelector('svg');
       this.line = root.querySelector('.gm-line'); this.pick = root.querySelector('.gm-pick');
       this.provs = [...root.querySelectorAll('.gm-prov')].map((el, i) => ({ el, x: M.provinces[i].lx, y: M.provinces[i].ly, small: SMALL_PROVINCES.has(M.provinces[i].name), w: M.provinces[i].name.length * 14 + 8 }));
+      this.nations = [...root.querySelectorAll('.gm-nation')].map((el, i) => ({ el, x: M.nations[i][1], y: M.nations[i][2], small: !!M.nations[i][3], w: M.nations[i][0].length * 13.5 }));
       this.caps = [...root.querySelectorAll('.gm-cap')].map((el, i) => ({ el, x: M.labels[i][1], y: M.labels[i][2], w: M.labels[i][0].length * 11 + 10, secret: el.classList.contains('secret') }));
       this.guessEl = root.querySelector('.gm-pin.guess'); this.answerEl = root.querySelector('.gm-pin.answer');
       this.distEl = root.querySelector('.gm-dist'); this.scaleEl = root.querySelector('.gm-scale');
@@ -143,7 +162,9 @@
       this.root.classList.toggle('detail', this.z >= 2.2);
       this.root.classList.toggle('cities', cities && !!this.cityLayer);
       if (cities && !this.cityLayer) this.attachCities();
+      for (const n of this.nations) this.at(n.el, n.x, n.y);
       for (const c of this.caps) this.at(c.el, c.x, c.y);
+      const boxes = named ? this.declutter(s) : [];
       for (const p of this.provs) {
         if (p.small && this.z < 2.2) continue;
         this.at(p.el, p.x, p.y);
@@ -151,6 +172,14 @@
         const px = p.x * s, py = p.y * s;
         const clash = named && this.caps.some(c => { if (c.secret) return false; const cx = c.x * s; return Math.abs(c.y * s - py) < 16 && cx - 4 < px + p.w / 2 && cx + c.w > px - p.w / 2; });
         if (clash !== p.clash) { p.clash = clash; p.el.classList.toggle('clash', clash); }
+        if (!clash) boxes.push({ x0: px - p.w / 2, x1: px + p.w / 2, y0: py - 9, y1: py + 9 });
+      }
+      // Country names give way to any Chinese province or city name they would cover.
+      for (const n of this.nations) {
+        if (n.small && this.z < 2.2) continue;
+        const nx = n.x * s, ny = n.y * s;
+        const hush = boxes.some(b => nx - n.w / 2 < b.x1 && nx + n.w / 2 > b.x0 && ny - 9 < b.y1 && ny + 9 > b.y0);
+        if (hush !== n.hush) { n.hush = hush; n.el.classList.toggle('hush', hush); }
       }
       if (this.pin) this.at(this.guessEl, this.pin.x, this.pin.y);
       if (this.answer) {
@@ -159,6 +188,22 @@
         // Pins nearly on top of each other: the card already shows the distance.
         this.distEl.classList.toggle('tight', Math.hypot(this.answer.x - this.pin.x, this.answer.y - this.pin.y) * s < 80);
       }
+    }
+    // Capital names never overlap: in priority order each takes the right side, else the left, else hides.
+    declutter(s) {
+      const placed = [], hit = b => placed.some(o => b.x0 < o.x1 && b.x1 > o.x0 && b.y0 < o.y1 && b.y1 > o.y0);
+      for (const c of this.caps) if (!c.secret) placed.push({ x0: c.x * s - 4, x1: c.x * s + 4, y0: c.y * s - 4, y1: c.y * s + 4 });
+      for (const c of this.caps) {
+        if (c.secret) continue;
+        const cx = c.x * s, cy = c.y * s, w = c.w - 6, y0 = cy - 8, y1 = cy + 8;
+        const right = { x0: cx + 5, x1: cx + 5 + w, y0, y1 }, left = { x0: cx - 5 - w, x1: cx - 5, y0, y1 };
+        const side = !hit(right) ? right : !hit(left) ? left : null;
+        if (side) placed.push(side);
+        const flip = side === left, hush = !side;
+        if (flip !== c.flip) { c.flip = flip; c.el.classList.toggle('flip', flip); }
+        if (hush !== c.hush) { c.hush = hush; c.el.classList.toggle('hush', hush); }
+      }
+      return placed;
     }
     // Live scale bar: a round distance that spans 40–110px at the current zoom.
     updateScale() {
@@ -337,18 +382,37 @@
   function snapshot(guess, answer) {
     const a = toXY(answer.lat, answer.lng), g = guess ? toXY(guess.lat, guess.lng) : a;
     const span = Math.max(Math.abs(a.x - g.x) * 1.7, Math.abs(a.y - g.y) * 1.7 * 1.6, 560), w = span, h = span / 1.6;
-    const x = Math.max(-40, Math.min(M.w - w + 40, (a.x + g.x) / 2 - w / 2)), y = Math.max(-40, Math.min(M.h - h + 40, (a.y + g.y) / 2 - h / 2));
+    // Neighbouring countries fill the margins, so the crop may extend past the mainland's edge.
+    const x = Math.max(-240, Math.min(M.w - w + 240, (a.x + g.x) / 2 - w / 2)), y = Math.max(-200, Math.min(M.h - h + 200, (a.y + g.y) / 2 - h / 2));
     const r = w / 60, sw = w / 260;
     const extra = (guess ? `<line class="gm-line static" x1="${g.x}" y1="${g.y}" x2="${a.x}" y2="${a.y}" stroke-width="${sw}" stroke-dasharray="${sw * 3} ${sw * 2.4}"/>`
       + `<circle class="gm-dot guess" cx="${g.x}" cy="${g.y}" r="${r}" stroke-width="${sw * 1.3}"/>` : '')
       + `<circle class="gm-ring" cx="${a.x}" cy="${a.y}" r="${r * 2.2}"/><circle class="gm-dot answer" cx="${a.x}" cy="${a.y}" r="${r * 1.15}" stroke-width="${sw * 1.3}"/>`;
-    const labels = M.labels.filter(([, lx, ly]) => lx > x + w * .04 && lx < x + w * .9 && ly > y + h * .08 && ly < y + h * .96)
-      .map(([name, lx, ly]) => `<circle class="gm-mini-city" cx="${lx}" cy="${ly}" r="${r * .45}"/><text class="gm-mini-label" x="${lx + r * .9}" y="${ly + r * .55}" font-size="${(w / 30).toFixed(1)}">${name}</text>`).join('');
-    const svg = svgMarkup({ viewBox: `${x.toFixed(1)} ${y.toFixed(1)} ${w.toFixed(1)} ${h.toFixed(1)}`, extra: labels + extra, inset: false });
+    // Labels are placed greedily so none overlap each other, the two dots or the country names.
+    const fs = w / 34, gap = r * .9, inView = (lx, ly) => lx > x && lx < x + w && ly > y && ly < y + h;
+    const placed = [[g.x, g.y, r * 1.4], [a.x, a.y, r * 2.2]].map(([cx, cy, rr]) => ({ x0: cx - rr, x1: cx + rr, y0: cy - rr, y1: cy + rr }));
+    const hit = b => b.x0 < x || b.x1 > x + w || b.y0 < y || b.y1 > y + h || placed.some(o => b.x0 < o.x1 && b.x1 > o.x0 && b.y0 < o.y1 && b.y1 > o.y0);
+    const cities = M.labels.filter(([, lx, ly]) => inView(lx, ly) && Math.hypot(lx - a.x, ly - a.y) > r * 1.6 && Math.hypot(lx - g.x, ly - g.y) > r * 1.4);
+    for (const [, lx, ly] of cities) placed.push({ x0: lx - r * .6, x1: lx + r * .6, y0: ly - r * .6, y1: ly + r * .6 });
+    const labels = cities.map(([name, lx, ly]) => {
+      const tw = name.length * fs, y0 = ly - fs * .62, y1 = ly + fs * .5;
+      const right = { x0: lx + gap, x1: lx + gap + tw, y0, y1 }, left = { x0: lx - gap - tw, x1: lx - gap, y0, y1 };
+      const side = !hit(right) ? right : !hit(left) ? left : null;
+      if (side) placed.push(side);
+      return `<circle class="gm-mini-city" cx="${lx}" cy="${ly}" r="${r * .45}"/>`
+        + (side ? `<text class="gm-mini-label" x="${side.x0.toFixed(1)}" y="${(ly + fs * .36).toFixed(1)}" font-size="${fs.toFixed(1)}">${name}</text>` : '');
+    }).join('');
+    const nations = M.nations.filter(([, lx, ly]) => inView(lx, ly)).map(([name, lx, ly]) => {
+      const nw = name.length * fs * 1.1, b = { x0: lx - nw / 2, x1: lx + nw / 2, y0: ly - fs * .6, y1: ly + fs * .6 };
+      if (hit(b)) return ''; placed.push(b);
+      return `<text class="gm-mini-nation" x="${lx}" y="${(ly + fs * .35).toFixed(1)}" font-size="${fs.toFixed(1)}">${name}</text>`;
+    }).join('');
+    const svg = svgMarkup({ viewBox: `${x.toFixed(1)} ${y.toFixed(1)} ${w.toFixed(1)} ${h.toFixed(1)}`, extra: nations + labels + extra, inset: false });
     return guess?.province ? svg.replace(`data-p="${guess.province}" class="`, `data-p="${guess.province}" class="picked `) : svg;
   }
 
   window.GuessMap = GuessMap;
   window.GuessMap.snapshot = snapshot;
   window.GuessMap.toXY = toXY;
+  window.GuessMap.locate = locate;
 })();

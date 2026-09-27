@@ -1,0 +1,16 @@
+{
+  "appId": "com.tripwonder.app",
+  "appName": "TripWonder",
+  "webDir": "www",
+  "server": { "androidScheme": "https" },
+  "android": { "backgroundColor": "#ffffff", "allowMixedContent": false },
+  "plugins": {
+    "LiveUpdate": {
+      "autoUpdateStrategy": "none",
+      "autoDeleteBundles": true,
+      "autoBlockRolledBackBundles": true,
+      "readyTimeout": 30000,
+      "httpTimeout": 60000
+    }
+  }
+}

@@ -6,9 +6,9 @@ for(const [name,opts] of [['desktop',{viewport:{width:1440,height:1000}}],['mobi
  const panel=page.locator('.rules-popover');await panel.waitFor();await panel.evaluate(e=>Promise.all(e.getAnimations().map(a=>a.finished)));
  assert.equal(await page.locator('.sheet').count(),0);assert.equal(await page.locator('#app').evaluate(e=>e.inert),true);
  const r=await panel.boundingBox(),a=await page.locator('[data-action="rules"]').boundingBox(),phone=await page.locator('#phone').boundingBox();assert.ok(Math.abs(r.x+r.width-a.x-a.width)<2);assert.ok(Math.abs(r.y-a.y-a.height-12)<2);assert.ok(r.y+r.height<=phone.y+phone.height-8);
- assert.match(await panel.textContent(),/自由探索实景 · 不限时/);assert.match(await panel.textContent(),/共限时 2 分钟/);
- assert.match(await panel.textContent(),/每题 20 分/);assert.match(await panel.textContent(),/地图定位 40/);
- const surfaces=await page.locator('.rules-steps li,.rules-steps li>span,.rules-score span').evaluateAll(elements=>elements.map(el=>{const c=getComputedStyle(el);return [c.backgroundColor,c.backgroundImage,c.boxShadow,c.borderRadius,c.borderTopWidth];}));
+ assert.match(await panel.textContent(),/奇境挑战TripWonder/);assert.deepEqual(await page.locator('.rules-steps li>span').allTextContents(),['探','答','猜','奖']);
+ assert.match(await panel.textContent(),/在2分钟内根据收集到的线索完成答题挑战/);assert.deepEqual(await page.locator('.rules-steps p').evaluateAll(els=>[...new Set(els.map(e=>getComputedStyle(e).color))]),['rgb(15, 29, 51)'],'step copy is dark, not grey');
+ const surfaces=await page.locator('.rules-steps li,.rules-steps li>span').evaluateAll(elements=>elements.map(el=>{const c=getComputedStyle(el);return [c.backgroundColor,c.backgroundImage,c.boxShadow,c.borderRadius,c.borderTopWidth];}));
  for(const style of surfaces)assert.deepEqual(style,['rgba(0, 0, 0, 0)','none','none','0px','0px'],'rules content has no card effects');
  assert.equal(await panel.evaluate(el=>el.scrollWidth>el.clientWidth),false,'rules have no horizontal overflow');
  if(process.env.TRIPWONDER_TEST_ARTIFACTS)await page.screenshot({path:require('node:path').join(process.env.TRIPWONDER_TEST_ARTIFACTS,`rules-${name}.png`)});

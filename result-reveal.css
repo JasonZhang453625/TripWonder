@@ -43,36 +43,53 @@
 .result-scroll-cue .icon{width:16px;height:16px}.result-scroll-cue:active{transform:translateX(-50%)}
 /* One white content plane rises over the edge-to-edge destination photograph. */
 .result-page .result-details{position:relative;z-index:1;display:flow-root;margin-top:calc(-1 * var(--panel-overlap,0px));padding:26px 22px calc(30px + var(--safe-bottom,0px));border-radius:26px 26px 0 0;background:#fff}
-.result-page .result-details>.content-card{margin:0;padding:24px 0;border:0;border-bottom:1px solid #e5e7eb;border-radius:0;background:#fff;box-shadow:none}
+.result-page .result-details>.content-card{margin:0;padding:16px 0;border:0;border-radius:0;background:#fff;box-shadow:none}
 .result-page .result-details>.content-card:first-child{padding-top:0}
 .result-page .content-card h3,.result-page .benefit strong,.result-page .friend-compare>strong{font-size:18px;font-weight:650;letter-spacing:-.02em;color:#171e2b}
-.result-page .content-card h3{margin-bottom:14px}
-.result-page .guess-summary .row{margin-bottom:16px}
+.result-page .content-card h3{margin-bottom:6px}
+.result-page .guess-summary .row{margin-bottom:12px}
 .result-page .guess-summary h3{margin:0}
 .result-page .guess-summary .pill{padding:5px 8px;border-radius:4px;background:#edf2ff;color:#2855f7;font-size:11px}
 .result-page .guess-mini{border-radius:8px;background:#eef3f9}
-.result-page .guess-stats{gap:0;margin-top:18px}
+.result-page .guess-stats{gap:0;margin-top:14px}
 .result-page .guess-stats>div+div{border-left:1px solid #e5e7eb}
 .result-page .guess-stats b{font-size:18px;color:#171e2b;font-weight:650}
 .result-page .guess-stats small{margin-top:5px;font-size:11px;color:#747b86}
-.result-page .answer-line{min-height:54px;padding:12px 0;font-size:13px;border-bottom-color:#e5e7eb}
+.result-page .answer-line{min-height:44px;padding:8px 0;font-size:13px;border-bottom-color:#e5e7eb}
 .result-page .answer-line>.icon{width:18px;color:#2855f7}
 .result-page .answer-line>.icon:last-child{width:16px;color:#848b96}
 .result-page .answer-line b{font-size:12px;color:#2855f7;font-weight:600}
-.result-page .benefit p{margin:8px 0 12px;color:#555e6b;font-size:13px}
+.result-page .benefit p{margin:4px 0 0;color:#555e6b;font-size:13px}
+.result-page .benefit .row{align-items:center}
 .result-page .benefit .tiny{font-size:10px;line-height:1.8;color:#858b95}
+/* Coupon card: pink panel, compact claim button, white notched tickets. */
+.result-page .coupon-panel{padding:14px 14px 16px;border-radius:12px;background:linear-gradient(180deg,#fdeef3,#fbe7ee)}
+.result-page .coupon-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.result-page .coupon-benefit .coupon-head strong{color:#e0245e;font-size:18px;font-weight:600}
+.result-page .coupon-tickets{display:flex;gap:8px;margin:12px -14px 0;padding:0 14px;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x mandatory;scroll-padding:0 14px;scrollbar-width:none;cursor:grab;user-select:none}
+.result-page .coupon-tickets::-webkit-scrollbar{display:none}
+.result-page .coupon-tickets.dragging{scroll-snap-type:none;cursor:grabbing}
+.result-page .coupon-tickets:focus-visible{outline:2px solid #2659f5;outline-offset:2px}
+.result-page .coupon-ticket{flex:0 0 auto;scroll-snap-align:start;display:flex;flex-direction:column;align-items:center;min-width:46%;padding:7px 16px;white-space:nowrap;border-radius:4px;background:#fff;color:#e0245e;text-align:center;
+  -webkit-mask:radial-gradient(circle 4px at 0 50%,#0000 98%,#000) left/51% 100% no-repeat,radial-gradient(circle 4px at 100% 50%,#0000 98%,#000) right/51% 100% no-repeat;
+  mask:radial-gradient(circle 4px at 0 50%,#0000 98%,#000) left/51% 100% no-repeat,radial-gradient(circle 4px at 100% 50%,#0000 98%,#000) right/51% 100% no-repeat}
+.result-page .coupon-ticket b{font-size:15px;font-weight:500;line-height:1.4}
+.result-page .coupon-ticket span{font-size:12px;line-height:1.4}
+.result-page .coupon-panel p.coupon-terms{margin:10px 0 0;color:#b8617f;font-size:10px;line-height:1.6}
 .result-page .friend-compare p{color:#555e6b}
 .result-page .friend-compare>b{color:#2855f7;font-size:18px;font-weight:650}
 .result-page .friend-compare small{color:#858b95}
-.result-page .result-actions{padding:24px 0 0}
-.result-page .stop-nav{gap:10px;margin-top:12px}
+.result-page .result-actions{padding:16px 0 0}
+.result-page .stop-nav{gap:10px;margin-top:10px}
 .result-page .demo-note{font-size:10px;line-height:1.8;color:#858b95;margin:22px 0 0}
 /* The experiment is scoped here so shared controls on other pages stay intact. */
 #app .result-page :is(.primary,.secondary,.glass-light),#app .result-page .benefit button{border:1px solid #d6dae1;border-radius:6px;background:#fff;box-shadow:none;text-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none;color:#171e2b;font-weight:600;letter-spacing:0}
-#app .result-page .primary{min-height:50px;border-color:#3264ff;background:#3264ff;color:#fff}
+#app>.page.result-page .result-actions :is(.primary,.secondary,.glass-light){font-weight:400}
+#app>.page.result-page .result-actions .primary{min-height:46px}
+#app .result-page .primary{min-height:46px;border-color:#3264ff;background:#3264ff;color:#fff}
 #app .result-page .primary[aria-busy=true]{background:#3264ff;color:#fff}
-#app .result-page :is(.secondary,.glass-light){min-height:46px}
-#app .result-page .benefit button{min-width:66px;padding:9px 14px;border-color:#3264ff;background:#3264ff;color:#fff}
+#app .result-page :is(.secondary,.glass-light){min-height:42px}
+#app .result-page .benefit button{flex-shrink:0;min-width:0;min-height:30px;padding:5px 10px;border-color:#2659f5;border-radius:4px;background:#2659f5;color:#fff;font-size:13px;font-weight:400;line-height:1.4}
 @media(hover:hover){
   #app .result-page :is(.secondary,.glass-light):hover{background:#f4f6fa}
   #app .result-page :is(.primary,.benefit button):hover{background:#2855eb}

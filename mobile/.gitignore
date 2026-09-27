@@ -1,0 +1,9 @@
+/node_modules/
+/www/
+/hosting/
+/artifacts/
+*.keystore
+*.jks
+*.pem
+signing.properties
+/build-report.json

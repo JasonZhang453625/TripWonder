@@ -1,5 +1,5 @@
 // Bakes assets/map/*.geojson (DataV.GeoAtlas, https://datav.aliyun.com/portal/school/atlas/area_selector)
-// into china-map.js: pre-projected, simplified SVG paths so the phone never parses GeoJSON.
+// plus the neighbouring countries (assets/map/world-countries-50m.json) into china-map.js: pre-projected, simplified SVG paths so the phone never parses GeoJSON.
 // Also bakes assets/map/cities/<adcode>.geojson (DataV <adcode>_full.json) into china-cities.js,
 // which the page loads only when the player zooms in far enough to need city boundaries.
 // Re-run after replacing the source data: node scripts/build-china-map.cjs
@@ -108,6 +108,42 @@ out.inset = {
   land: encode(provinceFeatures.flatMap(f => ringsOf(f.geometry)).filter(inWindow), toInset, .4, .8),
   dashes: encode(ringsOf(jd.geometry), toInset, 0, .4)
 };
+
+// Neighbouring countries, grey context under the provinces (Natural Earth 1:50m via world-atlas@2,
+// public domain: assets/map/world-countries-50m.json). China itself stays in the layer so any sliver
+// between the two datasets reads as land; the DataV provinces are painted over it.
+{
+  const world = JSON.parse(fs.readFileSync(path.join(root, 'assets/map/world-countries-50m.json'), 'utf8'));
+  const { scale: [sx, sy], translate: [tx, ty] } = world.transform;
+  const arcs = world.arcs.map(a => { let x = 0, y = 0; return a.map(([dx, dy]) => [(x += dx) * sx + tx, (y += dy) * sy + ty]); });
+  const arc = i => i < 0 ? arcs[~i].slice().reverse() : arcs[i];
+  const ring = ids => ids.flatMap((i, n) => n ? arc(i).slice(1) : arc(i));
+  const polygons = g => g.type === 'Polygon' ? [g.arcs] : g.type === 'MultiPolygon' ? g.arcs : [];
+  // Far enough around the mainland to fill the letterbox of a portrait phone at the widest zoom.
+  const EXT = 1100, box = { x0: -EXT, y0: -EXT, x1: W + EXT, y1: H + EXT };
+  const nearby = r => r.some(([lng, lat]) => lng > 45 && lng < 170 && lat > -15 && lat < 82);
+  // Sutherland–Hodgman against the four sides of the box, in map units.
+  const clip = pts => [[0, box.x0, 1], [0, box.x1, -1], [1, box.y0, 1], [1, box.y1, -1]].reduce((input, [axis, edge, dir]) => {
+    const out = [], inside = p => (p[axis] - edge) * dir >= 0;
+    input.forEach((cur, i) => {
+      const prev = input[(i + input.length - 1) % input.length];
+      if (inside(cur) !== inside(prev)) { const t = (edge - prev[axis]) / (cur[axis] - prev[axis]); out.push([prev[0] + (cur[0] - prev[0]) * t, prev[1] + (cur[1] - prev[1]) * t]); }
+      if (inside(cur)) out.push(cur);
+    });
+    return out;
+  }, pts);
+  const rings = world.objects.countries.geometries.flatMap(polygons).flat().map(ring)
+    .filter(nearby).map(r => clip(r.map(toMain))).filter(r => r.length > 2);
+  out.world = encode(rings, p => p, 30, 1.6);
+  // Country names, grey and small; only ones that land inside the baked area. Small countries (1) wait for a closer zoom.
+  out.nations = [
+    ['俄罗斯', 108, 58.5], ['蒙古', 103, 46.6], ['哈萨克斯坦', 79, 47.6], ['吉尔吉斯斯坦', 74.8, 41.6, 1], ['塔吉克斯坦', 71, 38.8, 1],
+    ['阿富汗', 66, 34], ['巴基斯坦', 69.5, 29], ['印度', 78.5, 22], ['尼泊尔', 83.8, 28.3, 1], ['不丹', 90.4, 27.4, 1], ['孟加拉国', 90.2, 23.9, 1],
+    ['缅甸', 95.9, 21.5], ['老挝', 102.6, 19.6], ['越南', 107.9, 14.3], ['泰国', 101, 15.5], ['柬埔寨', 104.9, 12.6, 1],
+    ['马来西亚', 102.2, 4], ['朝鲜', 126.9, 40.2], ['韩国', 128, 36.3], ['日本', 138.5, 36.8], ['菲律宾', 122.2, 12.3]
+  ].map(([name, lng, lat, small = 0]) => { const [x, y] = toMain([lng, lat]); return [name, Math.round(x), Math.round(y), small]; })
+    .filter(([, x, y]) => x > box.x0 + 60 && x < box.x1 - 60 && y > box.y0 + 30 && y < box.y1 - 30);
+}
 
 // Orientation labels. The five challenge destinations are deliberately absent.
 const cities = [

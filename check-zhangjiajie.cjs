@@ -48,7 +48,8 @@ async function openClue(page,index){
       await scene(page,i+1);
       assert.equal(await page.locator('#app .photo-viewport').getAttribute('data-source-size'),sizes[i]);
       assert.equal(await page.locator('#app [data-clue]').count(),3);
-      assert.equal(await page.locator('#app [data-action="next-scene"]').innerText(),i===3?'开始答题':'下一处');
+      assert.equal(await page.locator('#app [data-action="next-scene"]').innerText(),i===3?'开始挑战':'');
+      assert.equal(await page.locator('#app [data-action="next-scene"]').getAttribute('aria-label'),i===3?'开始挑战':'下一处');
       assert.ok(!/张家界|湖南/.test(await page.locator('#app').innerText()),'destination stays concealed during exploration');
       await shot(page,`zhangjiajie-scene-${i+1}`);
       const wheelPoint=await page.evaluate(()=>{

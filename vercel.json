@@ -1,5 +1,6 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "npm ci --prefix mobile --no-audit --no-fund && npm run --prefix mobile build:hosting",
   "headers": [
     {
       "source": "/photo-library/:city/:scene/immersive-blur/photo.jpg",

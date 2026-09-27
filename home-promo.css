@@ -9,30 +9,31 @@
   transform-origin:50% 50%;will-change:transform,opacity}
 .hp-card:focus-visible{outline:3px solid #ffd24a;outline-offset:4px}
 
-/* Stage: rotating light rays behind two floating coupons. */
-.hp-stage{position:relative;height:150px;display:grid;place-items:center}
-.hp-rays{position:absolute;left:50%;top:58%;width:360px;height:360px;margin:-180px 0 0 -180px;border-radius:50%;opacity:.55;
-  background:repeating-conic-gradient(from 0deg,#ffffff2e 0 9deg,#fff0 9deg 22deg);
-  -webkit-mask:radial-gradient(circle,#000 0,#000 18%,#0000 62%);mask:radial-gradient(circle,#000 0,#000 18%,#0000 62%);
-  animation:hp-spin 14s linear infinite}
-.hp-glow{position:absolute;left:50%;top:58%;width:170px;height:110px;margin:-55px 0 0 -85px;border-radius:50%;background:radial-gradient(#ffe38a8c,#ffe38a00 70%)}
-.hp-ticket{position:absolute;display:flex;align-items:center;gap:10px;height:66px;padding:0 16px 0 14px;border-radius:10px;
-  -webkit-mask:radial-gradient(circle 8px at 0 50%,#0000 98%,#000) left/51% 100% no-repeat,radial-gradient(circle 8px at 100% 50%,#0000 98%,#000) right/51% 100% no-repeat;
-  mask:radial-gradient(circle 8px at 0 50%,#0000 98%,#000) left/51% 100% no-repeat,radial-gradient(circle 8px at 100% 50%,#0000 98%,#000) right/51% 100% no-repeat}
-.hp-ticket.main{top:42px;left:50%;width:168px;margin-left:-84px;background:linear-gradient(135deg,#fff3c4,#ffd044 45%,#ffab1f);color:#9a3412;transform:rotate(-6deg);
-  box-shadow:inset 0 -3px 0 #e8890f55;filter:drop-shadow(0 10px 14px #6b2c0066);animation:hp-float 2.6s ease-in-out infinite}
-.hp-ticket.main::after{content:'';position:absolute;top:10px;bottom:10px;left:58px;border-left:2px dashed #b4530966}
-.hp-ticket.side{top:30px;left:50%;width:120px;margin-left:-8px;background:linear-gradient(135deg,#ffd6e6,#ff7aa8);transform:rotate(12deg);opacity:.95;filter:drop-shadow(0 8px 12px #5b0b3a55);animation:hp-float 2.6s ease-in-out -1.3s infinite}
-.hp-pin{width:34px;height:34px;flex-shrink:0;border-radius:50%;background:#fff;display:grid;place-items:center;box-shadow:0 2px 0 #e8890f66}
-.hp-pin svg{width:24px;height:24px}
-.hp-ticket b{display:block;margin-left:10px;font-family:'TripWonder Promo',sans-serif;font-weight:400;font-size:25px;line-height:1;letter-spacing:.5px;text-align:left}
-.hp-ticket small{display:block;margin-top:3px;font-size:9px;font-weight:800;letter-spacing:1.6px}
-.hp-spark{position:absolute;width:14px;height:14px;background:#fff;clip-path:polygon(50% 0,62% 38%,100% 50%,62% 62%,50% 100%,38% 62%,0 50%,38% 38%);animation:hp-twinkle 1.6s ease-in-out infinite}
-.hp-spark.s1{left:36px;top:34px}.hp-spark.s2{right:34px;top:98px;width:10px;height:10px;animation-delay:-.5s;background:#ffe27a}
-.hp-spark.s3{left:58px;top:112px;width:8px;height:8px;animation-delay:-1s}.hp-spark.s4{right:62px;top:22px;width:9px;height:9px;animation-delay:-.8s;background:#ffe27a}
-.hp-confetti{position:absolute;width:6px;height:10px;border-radius:2px;opacity:.9}
-.hp-confetti.c1{left:26px;top:80px;background:#ffd24a;transform:rotate(25deg)}.hp-confetti.c2{right:24px;top:52px;background:#ff8fb8;transform:rotate(-30deg)}
-.hp-confetti.c3{left:84px;top:18px;background:#8ff0ff;transform:rotate(60deg);width:5px;height:8px}.hp-confetti.c4{right:88px;top:130px;background:#fff;transform:rotate(-15deg);width:5px;height:8px}
+/* Stage: sky over Paris and Santorini; a destination coupon slips out of an envelope. */
+.hp-stage{position:relative;height:184px;overflow:hidden;background:linear-gradient(180deg,#a4dbff 0,#79c0ff 38%,#4f92ff 70%,#3b6cff00 100%)}
+.hp-scene{position:absolute;inset:0;width:100%;height:100%;-webkit-mask:linear-gradient(#000 72%,#0000);mask:linear-gradient(#000 72%,#0000)}
+.hp-jet{animation:hp-jet 3s ease-in-out infinite}
+.hp-script{position:absolute;left:14px;top:12px;color:#fff;text-align:center;font:italic 700 13px/1.05 'Segoe Script','Snell Roundhand','Brush Script MT',cursive;letter-spacing:.2px;text-shadow:0 1px 3px #1d4ed880;transform:rotate(-10deg)}
+.hp-pop{position:absolute;left:50%;top:0;width:300px;height:184px;margin-left:-150px}
+.hp-env{position:absolute;inset:0;width:100%;height:100%;-webkit-mask:linear-gradient(#000 84%,#0000);mask:linear-gradient(#000 84%,#0000)}
+.hp-ticket{position:absolute;border-radius:9px;
+  -webkit-mask:radial-gradient(circle 7px at 0 50%,#0000 98%,#000) left/51% 100% no-repeat,radial-gradient(circle 7px at 100% 50%,#0000 98%,#000) right/51% 100% no-repeat;
+  mask:radial-gradient(circle 7px at 0 50%,#0000 98%,#000) left/51% 100% no-repeat,radial-gradient(circle 7px at 100% 50%,#0000 98%,#000) right/51% 100% no-repeat}
+.hp-ticket.back{left:92px;top:36px;width:150px;height:66px;background:linear-gradient(135deg,#fff3c9,#ffd76a 60%,#ffc043);transform:rotate(-1deg);filter:drop-shadow(0 4px 8px #1e3a8a33)}
+.hp-ticket.main{left:68px;top:56px;width:164px;height:78px;display:flex;align-items:stretch;padding:9px 0 9px 14px;background:linear-gradient(140deg,#fff6d2,#ffd65a 45%,#ffb126);color:#c2410c;transform:rotate(-7deg);
+  box-shadow:inset 0 -3px 0 #e8890f40;filter:drop-shadow(0 8px 12px #1e3a8a4d);animation:hp-float 2.6s ease-in-out infinite}
+.hp-ticket-face{flex:1;display:grid;place-content:center;border:1.5px solid #e9a33a;border-radius:8px;font-weight:800;line-height:1.1}
+.hp-ticket-face b{font-weight:inherit;font-size:15px;letter-spacing:1px}
+.hp-ticket-face b+b{font-size:23px;letter-spacing:2px}
+.hp-ticket-stub{width:44px;display:grid;place-items:center;border-left:2px dashed #d9892466;margin-left:8px}
+.hp-ticket-stub svg{width:24px;height:24px;transform:rotate(90deg)}
+.hp-mark{position:absolute;display:block;filter:drop-shadow(0 4px 5px #1e3a8a4d)}
+.hp-mark svg{display:block;width:100%;height:100%}
+.hp-mark.yellow{left:38px;top:106px;width:22px;height:28px;animation:hp-float 2.4s ease-in-out -.6s infinite}
+.hp-mark.red{left:246px;top:70px;width:26px;height:33px;animation:hp-float 2.4s ease-in-out -1.5s infinite}
+.hp-spark{position:absolute;width:12px;height:12px;background:#fff;clip-path:polygon(50% 0,62% 38%,100% 50%,62% 62%,50% 100%,38% 62%,0 50%,38% 38%);animation:hp-twinkle 1.6s ease-in-out infinite}
+.hp-spark.s1{left:60px;top:50px}.hp-spark.s2{right:30px;top:52px;width:10px;height:10px;animation-delay:-.5s;background:#ffe27a}
+.hp-spark.s3{left:112px;top:30px;width:8px;height:8px;animation-delay:-1s}
 
 /* Art headline */
 .hp-kicker{display:inline-block;margin-top:2px;padding:4px 10px;border-radius:20px;background:#ffffff24;box-shadow:inset 0 0 0 1px #ffffff33;font-size:11px;font-weight:700;letter-spacing:1.2px}
@@ -49,7 +50,7 @@
 .hp-ripple{position:absolute;inset:0;border-radius:50%;border:2px solid #2d61ff;opacity:0;pointer-events:none}
 .hp-glint{position:absolute;inset:0;border-radius:50%;background:radial-gradient(circle at 50% 45%,#ffffff 0,#dbe5ff 45%,#dbe5ff00 72%);pointer-events:none}
 
-@keyframes hp-spin{to{transform:rotate(360deg)}}
+@keyframes hp-jet{50%{translate:-4px 3px}}
 @keyframes hp-float{50%{translate:0 -5px}}
 @keyframes hp-twinkle{0%,100%{opacity:.35;scale:.7}50%{opacity:1;scale:1.1}}
-@media(prefers-reduced-motion:reduce){.hp-rays,.hp-ticket,.hp-spark{animation:none!important}}
+@media(prefers-reduced-motion:reduce){.hp-jet,.hp-ticket,.hp-mark,.hp-spark{animation:none!important}}

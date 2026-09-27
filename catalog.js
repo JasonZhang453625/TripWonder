@@ -25,6 +25,12 @@
     hongkong: [['摄影','自然'],['摄影','文化'],['文化','美食'],['摄影','文化'],['文化','建筑'],['自然','摄影']]
   };
   const photoById = new Map();
+  // The mountain challenge has four scenes but three questions; its first
+  // question covers both peak views, followed by the cave and winding road.
+  const questionScenes = {zhangjiajie:['zjj-tianzishan','zjj-tianmen-cave','zjj-winding-road']};
+  for (const city of cities) city.questions.forEach((question,index) => {
+    question.sceneId ||= questionScenes[city.id]?.[index] || city.scenes[index]?.id || city.scenes[0].id;
+  });
   for (const city of cities) city.stops.forEach((stop,index) => { stop.interests = stop.interests || interests[city.id]?.[index] || []; });
   for (const city of cities) for (const scene of city.scenes) {
     const p = scene.photo;

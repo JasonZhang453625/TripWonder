@@ -4,7 +4,31 @@
   'use strict';
   const DURATION = 3000;
   const reduced = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const pin = '<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M24 8.5c-7 0-12.5 5.3-12.5 12.1 0 8.6 12.5 19.9 12.5 19.9s12.5-11.3 12.5-19.9C36.5 13.8 31 8.5 24 8.5Z" fill="none" stroke="#161a2b" stroke-width="3.2" stroke-linejoin="round"/><path d="M20.2 18.4a3.9 3.9 0 1 1 5.6 3.5c-1.3.7-1.8 1.4-1.8 2.8" fill="none" stroke="#2d61ff" stroke-width="3" stroke-linecap="round"/><circle cx="24" cy="29" r="1.9" fill="#2d61ff"/></svg>';
+  // Upper stage art: a sky over Paris and Santorini, a ticket slipping out of an envelope.
+  const plane = fill => `<svg viewBox="0 0 24 24"><path fill="${fill}" d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/></svg>`;
+  const marker = (fill, dot) => `<svg viewBox="0 0 24 30"><path fill="${fill}" d="M12 29s10-10.5 10-18a10 10 0 0 0-20 0c0 7.5 10 18 10 18Z"/><circle cx="12" cy="11" r="4.2" fill="${dot}"/></svg>`;
+  const scene = `<svg class="hp-scene" viewBox="0 0 300 184" preserveAspectRatio="xMidYMax slice">
+    <defs><linearGradient id="hp-sea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#52b5ff"/><stop offset="1" stop-color="#3b6cff" stop-opacity="0"/></linearGradient>
+    <radialGradient id="hp-sun"><stop offset="0" stop-color="#fff" stop-opacity=".95"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient></defs>
+    <circle cx="160" cy="44" r="80" fill="url(#hp-sun)" opacity=".5"/>
+    <g fill="#fff" opacity=".75"><ellipse cx="204" cy="34" rx="26" ry="6"/><ellipse cx="216" cy="29" rx="12" ry="7"/><ellipse cx="116" cy="22" rx="18" ry="4.5"/></g>
+    <rect y="136" width="300" height="48" fill="url(#hp-sea)"/>
+    <path d="M150 142h34M200 148h26M92 148h22" stroke="#fff" stroke-opacity=".5" stroke-width="1.2" stroke-linecap="round"/>
+    <g fill="#35b37c"><ellipse cx="6" cy="146" rx="24" ry="13"/><ellipse cx="68" cy="147" rx="16" ry="8"/></g>
+    <path fill="#2856c8" fill-opacity=".78" d="M38 58l1 12 1 14 1.5 14H44v3h-1.2l2.7 15H49v3h-1.8L57 150h-9q-10-22-20 0h-9l9.8-31H27v-3h3.5l2.7-15H32v-3h2.5L36 84l1-14z"/>
+    <path fill="#e8f3ff" d="M204 146c16-22 42-30 96-34v38h-96z"/>
+    <g fill="#fff"><rect x="222" y="126" width="15" height="17" rx="1.5"/><rect x="240" y="119" width="20" height="24" rx="1.5"/><rect x="263" y="124" width="14" height="19" rx="1.5"/><rect x="280" y="113" width="20" height="30" rx="1.5"/></g>
+    <g fill="#2f6bff"><path d="M223.5 126a6 6 0 0 1 12 0z"/><path d="M264.5 124a5.5 5.5 0 0 1 11 0z"/><path d="M281 113a8 8 0 0 1 16 0z"/><rect x="288.4" y="99.5" width="1.2" height="6"/><rect x="286.5" y="101.2" width="5" height="1.2"/></g>
+    <g fill="#8dbbff"><rect x="245" y="126" width="3" height="5" rx="1.5"/><rect x="252" y="126" width="3" height="5" rx="1.5"/><rect x="227.5" y="132" width="3" height="5" rx="1.5"/><rect x="268.5" y="130" width="3" height="5" rx="1.5"/><rect x="286" y="122" width="3" height="5" rx="1.5"/><rect x="292" y="122" width="3" height="5" rx="1.5"/></g>
+    <path d="M136 56c40 12 78-2 108-22" fill="none" stroke="#fff" stroke-width="1.4" stroke-dasharray="3 4" stroke-linecap="round" opacity=".85"/>
+    <g class="hp-jet"><g transform="translate(240 14) rotate(58 12 12)">${plane('#fff').replace(/<\/?svg[^>]*>/g, '')}</g></g>
+    <g fill="#fff"><circle cx="16" cy="164" r="14"/><circle cx="40" cy="158" r="16"/><circle cx="64" cy="166" r="12"/><rect y="164" width="78" height="20"/><circle cx="238" cy="164" r="12"/><circle cx="260" cy="155" r="17"/><circle cx="284" cy="161" r="14"/><circle cx="300" cy="152" r="12"/><rect x="228" y="162" width="72" height="22"/></g>
+  </svg>`;
+  const envelopeBack = `<svg class="hp-env" viewBox="0 0 300 184"><path fill="#1e4fd6" d="M58 118h184v66H58z"/><path fill="#3e7bff" d="M58 118 150 76l92 42z"/></svg>`;
+  const envelopeFront = `<svg class="hp-env" viewBox="0 0 300 184"><defs><linearGradient id="hp-env-f" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6aafff"/><stop offset=".55" stop-color="#3f7dff"/><stop offset="1" stop-color="#2a5ef2"/></linearGradient></defs>
+    <path fill="url(#hp-env-f)" d="M58 118 150 162l92-44v66H58z"/>
+    <path d="M58 184l70-36M242 184l-70-36" stroke="#fff" stroke-opacity=".22" stroke-width="1.5"/>
+    <path d="M59 119 150 162.5 241 119" fill="none" stroke="#d6ebff" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/></svg>`;
   let active = null;
 
   function markup() {
@@ -12,11 +36,17 @@
       <button class="hp-card" type="button" aria-label="参加 TripWonder 挑战，赢得优惠券！点击开始">
         <div class="hp-content">
           <div class="hp-stage" aria-hidden="true">
-            <i class="hp-rays"></i><i class="hp-glow"></i>
-            <span class="hp-ticket side"><span><b>奖励</b><small>REWARD</small></span></span>
-            <span class="hp-ticket main"><span class="hp-pin">${pin}</span><span><b>优惠券</b><small>TRIPWONDER</small></span></span>
-            <i class="hp-spark s1"></i><i class="hp-spark s2"></i><i class="hp-spark s3"></i><i class="hp-spark s4"></i>
-            <i class="hp-confetti c1"></i><i class="hp-confetti c2"></i><i class="hp-confetti c3"></i><i class="hp-confetti c4"></i>
+            ${scene}
+            <span class="hp-script">Explore<br>More<br>Together</span>
+            <div class="hp-pop">
+              ${envelopeBack}
+              <span class="hp-ticket back"></span>
+              <span class="hp-ticket main"><span class="hp-ticket-face"><b>目的地</b><b>优惠券</b></span><span class="hp-ticket-stub">${plane('#f08a1c')}</span></span>
+              ${envelopeFront}
+              <span class="hp-mark yellow">${marker('#ffc83d','#fff4c7')}</span>
+              <span class="hp-mark red">${marker('#ff5b4d','#ffe1dc')}</span>
+            </div>
+            <i class="hp-spark s1"></i><i class="hp-spark s2"></i><i class="hp-spark s3"></i>
           </div>
           <span class="hp-kicker" aria-hidden="true">TRIPWONDER · 携程奇境挑战</span>
           <p class="hp-title" aria-hidden="true"><span class="hp-line1">参加TripWonder挑战，</span><span class="hp-line2">赢得优惠券！</span></p>
@@ -34,9 +64,11 @@
       {opacity:1, transform:'translateY(-4px) scale(1.04)', offset:.62},
       {opacity:1, transform:'none'}
     ], {duration:620, easing:'cubic-bezier(.2,.9,.3,1)', fill:'both'});
-    layer.querySelector('.hp-stage').animate([
-      {opacity:0, transform:'translateY(-22px) scale(.6) rotate(-8deg)'},
-      {opacity:1, transform:'translateY(3px) scale(1.06) rotate(2deg)', offset:.7},
+    layer.querySelector('.hp-scene').animate([{opacity:0, transform:'scale(1.08)'},{opacity:1, transform:'none'}], {duration:520, delay:60, easing:'ease-out', fill:'both'});
+    layer.querySelector('.hp-script').animate([{opacity:0, transform:'translateX(-10px) rotate(-10deg)'},{opacity:1, transform:'rotate(-10deg)'}], {duration:420, delay:260, easing:'ease-out', fill:'both'});
+    layer.querySelector('.hp-pop').animate([
+      {opacity:0, transform:'translateY(30px) scale(.7)'},
+      {opacity:1, transform:'translateY(-4px) scale(1.04)', offset:.7},
       {opacity:1, transform:'none'}
     ], {duration:640, delay:120, easing:'cubic-bezier(.2,.9,.3,1)', fill:'both'});
     layer.querySelector('.hp-kicker').animate([{opacity:0, transform:'translateY(8px)'},{opacity:1, transform:'none'}], {duration:360, delay:220, easing:'ease-out', fill:'both'});
