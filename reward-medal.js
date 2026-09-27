@@ -61,7 +61,7 @@ window.RewardMedal = (() => {
       <g clip-path="url(#${id}-clip)"><rect class="reward-metal-sheen" x="-260" y="-60" width="220" height="420" fill="url(#${id}-shine)" transform="rotate(-20 150 150)"/></g>
     </svg>`;
   }
-  function markup({city,score=0,percentile}={}) {
+  function markup({city,score=0,percentile,date}={}) {
     const destination=typeof city==='string' ? {id:city,name:city} : city || {id:'',name:'目的地'};
     const points=Math.max(0,Math.min(100,Number(score)||0));
     // 原型缺省按得分估算百分位；没有真实全站排名数据，接入后由调用方传入 percentile。
@@ -75,7 +75,7 @@ window.RewardMedal = (() => {
         <div class="reward-medal-object"><div class="reward-medal-coin" style="animation:none;transform:none">${medal(destination)}</div></div>
         <div class="reward-sparks" aria-hidden="true">${Array.from({length:8},(_,i)=>`<i style="--spark:${i}"></i>`).join('')}</div>
       </div>
-      <div class="reward-caption"><span class="reward-score">超越了<strong class="reward-percentile">${surpassed}%</strong>的驴友</span></div>
+      <div class="reward-caption">${date?`<span class="reward-date">获得于 ${escape(String(date).replace(/-/g,'.'))}</span>`:''}<span class="reward-score">超越了<strong class="reward-percentile">${surpassed}%</strong>的驴友</span></div>
       <button class="reward-continue" data-action="close">收下徽章<svg aria-hidden="true" viewBox="0 0 24 24"><path d="M5 12H19M13 6L19 12L13 18"/></svg></button>
     </div>`;
   }

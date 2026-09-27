@@ -47,3 +47,4 @@
   .reward-metal-sheen,.reward-sparks{display:none}
   .reward-intro,.reward-caption,#modal-root .reward-dialog .reward-continue{opacity:1}
 }
+.reward-date{display:block;margin-bottom:2px;font-size:12px;line-height:1.8;color:#e0e5ec;letter-spacing:.06em;font-variant-numeric:tabular-nums}

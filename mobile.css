@@ -1,5 +1,8 @@
 /* Device mode applies at any width, including landscape and tablet browsers. */
 html.mobile-device {
+  /* Use the authored sizes rather than the browser's text inflation heuristic. */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --safe-left: env(safe-area-inset-left, 0px);

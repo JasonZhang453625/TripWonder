@@ -23,6 +23,7 @@
 .rk-trail li+li::before{content:'';position:absolute;top:17px;right:calc(50% + 19px);left:calc(-50% + 19px);height:2px;border-radius:1px;background:repeating-linear-gradient(90deg,#ffffff66 0 4px,#fff0 4px 8px)}
 .rk-trail li.is-lit+li.is-lit::before{background:#ffd45c}
 .rk-trail span{display:grid;place-items:center;width:36px;height:36px;border-radius:50%;background:#ffffff1f;box-shadow:inset 0 0 0 1.5px #ffffff55;font-size:14px;font-weight:700;color:#ffffffc0}
+.rk-trail span svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
 .rk-trail li.is-lit span{background:#fff;box-shadow:0 0 0 3px #ffd45c,0 6px 12px -4px #0b1f7a80;color:#2855f7;font-size:14px;font-weight:800;letter-spacing:-.5px}
 .rk-trail small{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;font-weight:600;opacity:.72}
 .rk-trail li.is-lit small{opacity:1}
@@ -47,7 +48,6 @@
 .rk-thumb{position:relative;flex-shrink:0;width:58px;height:58px}
 .rk-thumb>img,.rk-thumb-fallback{display:block;width:100%;height:100%;border-radius:14px;object-fit:cover;background:#e9edf4}
 .rk-thumb-fallback{display:grid;place-items:center;font-size:20px;font-weight:700;color:#7d8798}
-.rk-city.is-open .rk-thumb>img{filter:grayscale(.85) brightness(1.05);opacity:.6}
 .rk-place-badge{position:absolute;left:-5px;top:-5px;display:grid;place-items:center;width:22px;height:22px;border-radius:50%;border:2px solid #fff;background:#8a93a3;color:#fff;font-size:11px;font-weight:800}
 .rk-place-badge.p1{background:linear-gradient(135deg,#ffd76a,#f5a524)}
 .rk-place-badge.p2{background:linear-gradient(135deg,#dfe6f1,#9fb0c8)}
@@ -60,9 +60,13 @@
 .rk-city-score{flex-shrink:0;display:flex;align-items:baseline;gap:1px;color:#2855f7}
 .rk-city-score b{font-size:26px;line-height:1;font-weight:800;letter-spacing:-1px;font-variant-numeric:tabular-nums}
 .rk-city-score small{font-size:11px;font-weight:700}
-.rk-city.is-open .rk-city-copy strong{color:#5a6475}
-.rk-go{flex-shrink:0;display:inline-flex;align-items:center;gap:2px;height:30px;padding:0 10px 0 12px;border-radius:15px;background:#eef2ff;color:#2855f7;font-size:12.5px;font-weight:700}
-.rk-go svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.rk-unlock{display:flex;flex-direction:column;align-items:center;gap:9px;padding:28px 12px 16px;text-align:center;color:#171d28}
+.rk-unlock-icon{display:grid;place-items:center;width:44px;height:44px;border-radius:50%;background:#eaf0ff;color:#2855f7}
+.rk-unlock-icon svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.rk-unlock strong{font-size:15px;font-weight:650}
+.rk-unlock p{margin:0;font-size:12px}
+#app .rk-page .rk-unlock button{display:inline-flex;align-items:center;gap:8px;margin-top:5px;min-height:38px;padding:0 18px;border:0;border-radius:19px;background:#eaf0ff;color:#2855f7;font-size:13px;font-weight:650;box-shadow:none;text-shadow:none}
+.rk-unlock button svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 
 /* Friends podium */
 .rk-podium{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));align-items:end;gap:8px;margin:6px 0 0;padding:0;list-style:none}

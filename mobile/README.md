@@ -11,7 +11,7 @@ npm ci
 ./scripts/build-android.ps1
 ```
 
-测试 APK 位于 `artifacts/TripWonder-1.0.0-debug.apk`。签名发行包：
+测试 APK 位于 `artifacts/TripWonder-<versionName>-debug.apk`（版本号见 `release.json`）。签名发行包：
 
 ```powershell
 node scripts/init-signing.cjs
@@ -21,6 +21,12 @@ node scripts/init-signing.cjs
 `init-signing.cjs` 要求设置 JAVA_HOME，首次生成证书，后续复用。私钥和密码保存在用户目录 `.tripwonder/signing/`，本机引用文件 `android/signing.properties` 被 Git 忽略。请备份整个私钥目录；丢失后无法用同一证书覆盖安装。Debug 与 Release 签名不同，不可直接互相覆盖。
 
 本机工具安装于 `D:/Android/tripwonder-tools/`，构建脚本会检测。其他电脑设置 JAVA_HOME、ANDROID_HOME。Windows 的短目录套接字异常通过单次构建的 `jdk.net.unixdomain.tmpdir` 避开；可以用 TRIPWONDER_SOCKET_DIR 指定一个短的英文目录。不会修改系统代理或全局 Java 设置。
+
+## Android 字体适配
+
+1.0.1 将 WebView 文字缩放统一为 100%，在启动、回到前台和配置变更后重新确认，使原型按网页 CSS 字号显示。这个原型版本的网页文字不随 Android 系统字体大小额外放大；不修改手机的系统设置、显示密度或场景双指缩放。
+
+`mobile.css` 设置 `text-size-adjust: 100%`，避免浏览器另行放大文字。首页的密集图标标签随真实手机视口宽度调整，桌面预览字号保持原样。该适配同时包含原生代码，旧 APK 需要安装新版；仅刷新网页或在线更新不能应用原生缩放设置。真机视觉效果仍需在目标 Android 设备确认。
 
 ## 场景资源
 

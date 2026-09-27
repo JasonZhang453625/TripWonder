@@ -114,7 +114,7 @@
 
     const trail = destinations.map((city, index) => {
       const lit = !!daily[city.id]?.result;
-      return `<li class="${lit ? 'is-lit' : ''}" style="--rk-i:${index}"><span>${lit ? scoreOf(city) : esc(city.name.slice(0, 1))}</span><small>${esc(city.name)}</small></li>`;
+      return `<li class="${lit ? 'is-lit' : ''}" style="--rk-i:${index}"><span>${lit ? scoreOf(city) : lock}</span><small>${lit ? esc(city.name) : '待解锁'}</small></li>`;
     }).join('');
 
     const hero = `<section class="rk-hero" aria-label="今日成绩">
@@ -130,16 +130,11 @@
       return `<button data-rank="${value}" role="tab" aria-selected="${on}" aria-controls="rk-panel" class="${on ? 'active' : ''}">${label}</button>`;
     }).join('');
 
-    // Today: every destination of the day, completed ones first by score.
-    const sorted = [...done].sort((a, b) => scoreOf(b) - scoreOf(a)).concat(destinations.filter(city => !daily[city.id]?.result));
+    // A destination is revealed only after a completed challenge, including a zero score.
+    const sorted = [...done].sort((a, b) => scoreOf(b) - scoreOf(a));
     const cityRows = sorted.map((city, index) => {
       const r = daily[city.id]?.result, score = scoreOf(city);
       const thumb = img ? img(city.scenes[0].id, '') : `<span class="rk-thumb-fallback">${esc(city.name.slice(0, 1))}</span>`;
-      if (!r) return `<li style="--rk-i:${index}"><button class="rk-city is-open" data-city="${esc(city.id)}" aria-label="${esc(city.name)}，待挑战，开始挑战">
-          <span class="rk-thumb">${thumb}</span>
-          <span class="rk-city-copy"><strong>${esc(city.name)}</strong><small>${city.region && city.region !== city.name ? `${esc(city.region)} · ` : ''}待挑战 · 满分 ${CITY_MAX}</small><i class="rk-bar"><i style="--rk-fill:0"></i></i></span>
-          <span class="rk-go">去挑战${arrow}</span>
-        </button></li>`;
       const guess = r.guess ? finiteScore(r.guess.points) : 0;
       const quiz = finiteScore(r.correct ?? r.answers?.filter(a => a.correct).length);
       return `<li style="--rk-i:${index}"><button class="rk-city" data-city="${esc(city.id)}" aria-label="第 ${index + 1} 名，${esc(city.name)}，${score} 分，查看探索结果">
@@ -148,8 +143,14 @@
           <span class="rk-city-score"><b>${score}</b><small>分</small></span>
         </button></li>`;
     }).join('');
-    const today = `<div class="rk-caption"><strong>今日目的地</strong><span>已完成 ${done.length} / ${destinations.length}</span></div>
-      <ol class="rk-cities">${cityRows}</ol>`;
+    const unlock = left ? `<section class="rk-unlock">
+        <span class="rk-unlock-icon">${lock}</span>
+        <strong>${done.length ? `还有 ${left} 个目的地待解锁` : '还没有解锁的目的地'}</strong>
+        <p>完成挑战后，目的地将在这里揭晓</p>
+        <button data-go="today">${done.length ? '继续探索' : '去探索'}${arrow}</button>
+      </section>` : '';
+    const today = `<div class="rk-caption"><strong>已解锁目的地</strong><span>已完成 ${done.length} / ${destinations.length}</span></div>
+      ${cityRows ? `<ol class="rk-cities">${cityRows}</ol>` : ''}${unlock}`;
 
     // Friends: a three-step podium, the rest as rows, then what it takes to move up.
     const podium = board.slice(0, 3).map((entry, index) => `<li class="rk-step p${index + 1}${entry.mine ? ' is-mine' : ''}" style="--rk-i:${[1, 0, 2][index]}" aria-label="第 ${index + 1} 名，${esc(entry.name)}${entry.mine ? '（你）' : ''}，${entry.score} 分">

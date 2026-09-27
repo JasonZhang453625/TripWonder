@@ -153,11 +153,26 @@ window.ChallengeMotion=(()=>{
       }
     }
   }
+  // Keyboard activation has no hold, so it gets a single down-and-up pulse.
   function press(button){
     if(!button||button.disabled||reduce()||busy)return;
     presses.get(button)?.cancel();
     const animation=button.animate([{scale:1},{scale:.965,offset:.3},{scale:1}],{duration:260,easing:ease});
     presses.set(button,animation);
+  }
+  // Pointer press: sink and stay down while held; spring back only on release or cancel.
+  function hold(button){
+    if(!button||button.disabled||reduce()||busy)return;
+    presses.get(button)?.cancel();
+    const down=button.animate([{scale:1},{scale:.965}],{duration:110,easing:'ease-out',fill:'forwards'});
+    presses.set(button,down);
+    const release=()=>{
+      removeEventListener('pointerup',release,true);removeEventListener('pointercancel',release,true);
+      if(presses.get(button)!==down)return;
+      const from=parseFloat(getComputedStyle(button).scale)||1;
+      down.cancel();presses.set(button,button.animate([{scale:from},{scale:1}],{duration:220,easing:ease}));
+    };
+    addEventListener('pointerup',release,true);addEventListener('pointercancel',release,true);
   }
   function select(button){
     animate(button?.querySelector('.option-check'),[{opacity:0,scale:.55},{opacity:1,scale:1}],{duration:260});
@@ -182,5 +197,5 @@ window.ChallengeMotion=(()=>{
     ]);
     if(overlay.isConnected)done();
   }
-  return {run,slide,cancel,press,select,activate,update,reveal,dialogIn,dialogOut,get busy(){return busy;}};
+  return {run,slide,cancel,press,hold,select,activate,update,reveal,dialogIn,dialogOut,get busy(){return busy;}};
 })();

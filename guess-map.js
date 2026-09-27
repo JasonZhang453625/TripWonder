@@ -1,6 +1,7 @@
 /* Map-pick for the location guess. The China map is pre-projected SVG (china-map.js);
-   pan/zoom rewrites one transform and the SVG size per frame, labels and pins are a small set
-   of absolutely positioned nodes, and nothing runs while the map is idle. City boundaries
+   pan/zoom only rewrites transforms per frame: while zooming the already-rasterised SVG is
+   GPU-scaled, and it is re-rendered at the exact size once the zoom settles. Labels and pins are
+   a small set of absolutely positioned nodes, and nothing runs while the map is idle. City boundaries
    (china-cities.js) load only the first time the player zooms in far enough to see them. */
 (() => {
   'use strict';
@@ -8,6 +9,10 @@
   const NS = 'http://www.w3.org/2000/svg';
   const rad = Math.PI / 180;
   const MAX_ZOOM = 10, TAP_SLOP = 7;
+  const SETTLE_MS = 140;   // quiet time after the last zoom step before the SVG is re-rendered sharp
+  const MAX_STRETCH = 3;   // re-render mid-gesture beyond this GPU scale, before it turns too blurry
+  const WINDOW = .4;       // the SVG only draws the viewport plus this fraction of it on every side
+  const EXT = M.ext;       // neighbouring countries are baked this far around the mainland
   const NAME_ZOOM = 1.9;   // provincial capitals get their names
   const CITY_ZOOM = 3.2;   // prefecture-level boundaries appear
   const KM_PER_UNIT = 6371 / M.proj.k;
@@ -65,7 +70,7 @@
   function svgMarkup({ viewBox = `0 0 ${M.w} ${M.h}`, extra = '', inset = true } = {}) {
     const i = M.inset;
     return `<svg class="gm-svg" xmlns="${NS}" viewBox="${viewBox}" aria-hidden="true" focusable="false">`
-      + `<path class="gm-world" d="${M.world}"/>`
+      + `<g class="gm-world">${M.world.map(d => `<path d="${d}"/>`).join('')}</g>`
       + `<path class="gm-glow" d="${M.outline}"/>`
       + `<g class="gm-land">${M.provinces.map(p => `<path data-p="${p.name}" class="c${p.c}" d="${p.d}"/>`).join('')}</g>`
       + `<path class="gm-outline" d="${M.outline}"/>`
@@ -91,13 +96,13 @@
       const secret = new Set(avoid.map(c => c.name));
       const provinces = M.provinces.map(p => `<span class="gm-prov${SMALL_PROVINCES.has(p.name) ? ' small' : ''}${secret.has(p.name) ? ' secret' : ''}">${p.name}</span>`).join('');
       const capitals = M.labels.map(([name, x, y, level]) => `<span class="gm-cap${level === 0 ? ' national' : ''}${near(x, y) || secret.has(name) ? ' secret' : ''}"><b>${name}</b></span>`).join('');
-      // Labels and pins live inside the plane, so a pan moves one composited layer and repaints nothing.
+      // Map and labels are two composited layers: the map may be GPU-scaled mid-zoom, the labels never are.
       const nations = M.nations.map(([name, , , small]) => `<span class="gm-nation${small ? ' small' : ''}">${name}</span>`).join('');
-      root.innerHTML = `<div class="gm-plane">${svgMarkup({ extra: '<line class="gm-line" x1="0" y1="0" x2="0" y2="0"/>' })}`
+      root.innerHTML = `<div class="gm-plane">${svgMarkup({ extra: '<line class="gm-line" x1="0" y1="0" x2="0" y2="0"/>' })}</div>`
         + `<div class="gm-marks">${nations}${capitals}${provinces}<span class="gm-dist" hidden></span>`
-        + `<span class="gm-pin guess" hidden><i></i></span><span class="gm-pin answer" hidden><i></i><em class="gm-tag"></em></span></div></div>`
+        + `<span class="gm-pin guess" hidden><i></i></span><span class="gm-pin answer" hidden><i></i><em class="gm-tag"></em></span></div>`
         + `<div class="gm-overlay"><span class="gm-scale"><i></i><small></small></span></div>`;
-      this.plane = root.querySelector('.gm-plane'); this.svg = root.querySelector('svg');
+      this.plane = root.querySelector('.gm-plane'); this.marks = root.querySelector('.gm-marks'); this.svg = root.querySelector('svg');
       this.line = root.querySelector('.gm-line'); this.pick = root.querySelector('.gm-pick');
       this.provs = [...root.querySelectorAll('.gm-prov')].map((el, i) => ({ el, x: M.provinces[i].lx, y: M.provinces[i].ly, small: SMALL_PROVINCES.has(M.provinces[i].name), w: M.provinces[i].name.length * 14 + 8 }));
       this.nations = [...root.querySelectorAll('.gm-nation')].map((el, i) => ({ el, x: M.nations[i][1], y: M.nations[i][2], small: !!M.nations[i][3], w: M.nations[i][0].length * 13.5 }));
@@ -115,10 +120,12 @@
       root.addEventListener('wheel', this.handlers.wheel, { passive: false });
       this.observer = new ResizeObserver(this.handlers.resize); this.observer.observe(root);
       this.fit();
+      // City boundaries are built (hidden) while the player looks at the map, not mid-zoom.
+      this.idle = (window.requestIdleCallback || (f => setTimeout(f, 400)))(() => this.attachCities(), { timeout: 2000 });
     }
     destroy() {
       this.dead = true; this.revealing = false; this.clearGesture();
-      cancelAnimationFrame(this.frame); cancelAnimationFrame(this.anim); clearTimeout(this.wheelEnd); this.observer.disconnect();
+      cancelAnimationFrame(this.frame); cancelAnimationFrame(this.anim); clearTimeout(this.wheelEnd); clearTimeout(this.settleTimer); (window.cancelIdleCallback || clearTimeout)(this.idle); this.observer.disconnect();
       this.root.removeEventListener('pointerdown', this.handlers.down);
       this.root.removeEventListener('pointermove', this.handlers.move);
       this.root.removeEventListener('pointerup', this.handlers.up);
@@ -148,16 +155,46 @@
     schedule() { if (!this.frame) this.frame = requestAnimationFrame(() => { this.frame = 0; this.apply(); }); }
     at(el, x, y) { const s = this.base * this.z; el.style.transform = `translate(${x * s}px,${y * s}px)`; }
     apply() {
-      this.plane.style.transform = `translate3d(${this.tx}px,${this.ty}px,0)`;
-      this.updateScale();
       const s = this.base * this.z;
+      // Re-rendering the SVG re-rasterises every province, city and neighbour path, too slow per frame.
+      // Mid-zoom the rendered map is stretched instead and re-rendered once the zoom settles; a pan
+      // only re-renders when it runs past the drawn window.
+      if (!this.rs || s / this.rs > MAX_STRETCH || this.rs / s > MAX_STRETCH || !this.covers(s)) this.render(s);
+      const k = s / this.rs, w = this.win;
+      this.plane.style.transform = `translate3d(${this.tx + w.x0 * s}px,${this.ty + w.y0 * s}px,0)${k === 1 ? '' : ` scale(${k})`}`;
+      this.marks.style.transform = `translate3d(${this.tx}px,${this.ty}px,0)`;
+      this.updateScale();
       if (s === this.lastS) return; // pure pan: done
       this.lastS = s; this.placeMarks(s);
+      clearTimeout(this.settleTimer);
+      if (k !== 1) this.settleTimer = setTimeout(() => this.settle(), SETTLE_MS);
+    }
+    // The part of the map on screen, in map units, limited to what is baked.
+    visible(s) {
+      const x0 = -this.tx / s, y0 = -this.ty / s;
+      return { x0: Math.max(-EXT, x0), y0: Math.max(-EXT, y0), x1: Math.min(M.w + EXT, x0 + this.vw / s), y1: Math.min(M.h + EXT, y0 + this.vh / s) };
+    }
+    covers(s) {
+      const w = this.win, v = this.visible(s);
+      return !!w && v.x0 >= w.x0 - .5 && v.y0 >= w.y0 - .5 && v.x1 <= w.x1 + .5 && v.y1 <= w.y1 + .5;
+    }
+    // Only the viewport plus a margin is drawn (viewBox + clip), so the raster cost is the same at
+    // every zoom. Strokes stay hairline-crisp because the SVG is sized in CSS pixels, never scaled, once settled.
+    render(s) {
+      const mx = this.vw / s * WINDOW, my = this.vh / s * WINDOW, x0 = -this.tx / s, y0 = -this.ty / s;
+      const w = { x0: Math.max(-EXT, x0 - mx), y0: Math.max(-EXT, y0 - my), x1: Math.min(M.w + EXT, x0 + this.vw / s + mx), y1: Math.min(M.h + EXT, y0 + this.vh / s + my) };
+      this.rs = s; this.win = w;
+      this.svg.setAttribute('viewBox', `${w.x0} ${w.y0} ${w.x1 - w.x0} ${w.y1 - w.y0}`);
+      this.svg.style.width = `${(w.x1 - w.x0) * s}px`; this.svg.style.height = `${(w.y1 - w.y0) * s}px`;
+    }
+    settle() {
+      if (this.dead) return;
+      const s = this.base * this.z;
+      if (s === this.rs) return;
+      this.render(s); this.plane.style.transform = `translate3d(${this.tx + this.win.x0 * s}px,${this.ty + this.win.y0 * s}px,0)`;
     }
     placeMarks(s = this.base * this.z) {
       const named = this.z >= NAME_ZOOM, cities = this.z >= CITY_ZOOM;
-      // Resize the SVG rather than CSS-scaling it: strokes stay hairline-crisp at every zoom.
-      this.svg.style.width = `${M.w * s}px`; this.svg.style.height = `${M.h * s}px`;
       this.root.classList.toggle('named', named);
       this.root.classList.toggle('detail', this.z >= 2.2);
       this.root.classList.toggle('cities', cities && !!this.cityLayer);

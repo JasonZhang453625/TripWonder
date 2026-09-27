@@ -88,3 +88,28 @@
   #modal-root .coupon-dialog .benefit-pack-terms{font-size:9px;margin-top:10px}
 }
 @media(prefers-reduced-motion:reduce){.benefit-pack *{animation:none!important;transition:none!important}}
+/* Coupon list: hero and claim button stay put; the tickets scroll vertically between them. */
+#modal-root .sheet.coupon-dialog{position:relative;display:flex;flex-direction:column;overflow:hidden}
+#modal-root .coupon-dialog .sheet-heading{position:absolute;top:14px;left:0;right:0}
+#modal-root .coupon-dialog .benefit-pack{display:flex;flex-direction:column;flex:1;min-height:0}
+.benefit-pack-hero{flex-shrink:0}
+.benefit-pack-body{display:flex;flex-direction:column;flex:1;min-height:0;padding-top:8px;padding-bottom:16px}
+.benefit-pack-list{display:flex;flex-direction:column;gap:12px;flex:1;min-height:0;margin:0 -18px;padding:10px 18px 14px;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none;
+  -webkit-mask:linear-gradient(#0000,#000 10px,#000 calc(100% - 18px),#0000);mask:linear-gradient(#0000,#000 10px,#000 calc(100% - 18px),#0000)}
+.benefit-pack-list::-webkit-scrollbar{display:none}
+.benefit-pack-list:focus-visible{outline:2px solid #ec377a;outline-offset:-2px}
+#modal-root .coupon-dialog .benefit-pack-body>.benefit-pack-accept{flex-shrink:0;margin-top:4px}
+/* Wide, short tickets: amount stub | dashed tear line with notches | details. */
+.benefit-pack-list{gap:10px}
+.benefit-pack-list .benefit-pack-ticket{flex-shrink:0;display:grid;grid-template-columns:92px 1fr;align-items:stretch;min-height:84px;padding:0;border-radius:12px}
+.benefit-pack-list .benefit-pack-ticket::before,.benefit-pack-list .benefit-pack-ticket::after{content:'';position:absolute;left:84px;width:15px;height:15px;border:1px solid #f0c2d3;border-radius:50%;background:#fff5f9}
+.benefit-pack-list .benefit-pack-ticket::before{top:-9px}.benefit-pack-list .benefit-pack-ticket::after{bottom:-9px}
+.benefit-pack-list .benefit-pack-amount{align-items:baseline;align-self:center;margin:0;gap:1px}
+.benefit-pack-list .benefit-pack-amount>strong{font-size:38px;letter-spacing:-1.5px;line-height:1}
+.benefit-pack-list .benefit-pack-amount>span{font-size:16px}
+.bp-info{display:flex;flex-direction:column;justify-content:center;gap:3px;min-width:0;padding:10px 14px;border-left:1px dashed #e9abc2}
+.bp-kind{display:flex;align-items:center;gap:5px;color:#ad1850;font-size:13px;font-weight:650;line-height:1.4}
+.bp-kind .icon{width:15px;height:15px;flex-shrink:0}
+#modal-root .coupon-dialog .bp-info p{margin:0;color:#171820;line-height:1.45}
+#modal-root .coupon-dialog .bp-info .bp-rule{font-size:13px;font-weight:600}
+#modal-root .coupon-dialog .bp-info .bp-meta{font-size:11px;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}

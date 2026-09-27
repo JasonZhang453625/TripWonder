@@ -1,9 +1,21 @@
 /* A question's photograph is decorative: never expose the destination name. */
 window.QuizScene = (() => {
   const requests = new WeakMap();
+  const toneSources = new Map();
   let active;
   const ink='#000000',paper='#ffffff';
   const linear=value=>{value/=255;return value<=.04045?value/12.92:((value+.055)/1.055)**2.4;};
+  function toneSource(id) {
+    if(toneSources.has(id))return toneSources.get(id);
+    const tone=window.QUIZ_SCENE_TONES?.[id];
+    if(!tone)throw new Error('Missing scene contrast map');
+    const source=document.createElement('canvas');source.width=tone.width;source.height=tone.height;
+    const ctx=source.getContext('2d'),pixels=ctx.createImageData(tone.width,tone.height),rgb=atob(tone.rgb);
+    for(let i=0,j=0;i<rgb.length;i+=3,j+=4){
+      pixels.data[j]=rgb.charCodeAt(i);pixels.data[j+1]=rgb.charCodeAt(i+1);pixels.data[j+2]=rgb.charCodeAt(i+2);pixels.data[j+3]=255;
+    }
+    ctx.putImageData(pixels,0,0);toneSources.set(id,source);return source;
+  }
   function destroy() {
     if(!active)return;
     cancelAnimationFrame(active.frame);
@@ -40,17 +52,17 @@ window.QuizScene = (() => {
     ctx.fillStyle='#f8faff';ctx.fillRect(0,0,width,height);
     const targets=[page.querySelector('.quiz-question'),page.querySelector('.quiz-header strong'),...status].filter(element=>element?.getClientRects().length);
     try {
-      // Reproduce cover cropping, the crossfade and the gradient before sampling
-      // each text region. No filters alter the original photograph or text hue.
+      // Local files taint a canvas drawn from <img>. Sample the bundled RGB map
+      // instead, with the same cover crop, crossfade and gradient as the photo.
       for(const image of backdrop.querySelectorAll('img')){
         if(!image.complete||!image.naturalWidth)continue;
         const scale=Math.max(width/image.naturalWidth,height/image.naturalHeight),w=image.naturalWidth*scale,h=image.naturalHeight*scale;
         ctx.globalAlpha=Number(getComputedStyle(image).opacity);
-        ctx.drawImage(image,(width-w)*.5,(height-h)*.4,w,h);
+        ctx.drawImage(toneSource(image.dataset.sceneId),(width-w)*.5,(height-h)*.4,w,h);
       }
       ctx.globalAlpha=1;
       const shade=ctx.createLinearGradient(0,0,0,height);
-      const stops=[[0,'#f8faff00'],[.22,'#f8faff0d'],[.45,'#f8faff66'],[.72,'#f8faff80'],[1,'#f8faff99']];
+      const stops=[[0,'#0716260d'],[.18,'#07162600'],[.42,'#07162640'],[.58,'#07162670'],[1,'#0716268c']];
       stops.forEach(([offset,color])=>shade.addColorStop(offset,color));ctx.fillStyle=shade;ctx.fillRect(0,0,width,height);
       const pixels=ctx.getImageData(0,0,width,height).data;
       for(const element of targets){
@@ -67,7 +79,11 @@ window.QuizScene = (() => {
         const useWhite=light<threshold;
         element.style.color=useWhite?paper:ink;element.dataset.photoInk=useWhite?'light':'dark';
       }
-    }catch {targets.forEach(element=>{element.style.color=ink;});}
+      page.dataset.contrastSource='local-map';
+    }catch {
+      page.dataset.contrastSource='fallback';
+      targets.forEach(element=>{element.style.color=paper;element.dataset.photoInk='light';});
+    }
   }
   function set(page,city,question) {
     const backdrop=page?.querySelector('.quiz-backdrop');
@@ -78,7 +94,7 @@ window.QuizScene = (() => {
     if(backdrop.dataset.sceneId===scene.id || requests.get(backdrop)?.sceneId===scene.id)return;
     const request={sceneId:scene.id};requests.set(backdrop,request);
     const asset=SceneMedia.source(scene.photo,true),image=new Image(asset.width,asset.height);
-    image.className='quiz-scene-photo';image.alt='';image.decoding='async';image.draggable=false;
+    image.className='quiz-scene-photo';image.dataset.sceneId=scene.id;image.alt='';image.decoding='async';image.draggable=false;
     const current=()=>page.isConnected&&requests.get(backdrop)===request;
     const fallback=()=>{
       if(!current())return;

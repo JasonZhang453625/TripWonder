@@ -132,9 +132,11 @@ out.inset = {
     });
     return out;
   }, pts);
-  const rings = world.objects.countries.geometries.flatMap(polygons).flat().map(ring)
-    .filter(nearby).map(r => clip(r.map(toMain))).filter(r => r.length > 2);
-  out.world = encode(rings, p => p, 30, 1.6);
+  // One path per polygon (not one for the whole layer), so the rasteriser can skip what is off screen.
+  out.ext = EXT;
+  out.world = world.objects.countries.geometries.flatMap(polygons)
+    .map(poly => poly.map(ring).filter(nearby).map(r => clip(r.map(toMain))).filter(r => r.length > 2))
+    .map(rings => encode(rings, p => p, 30, 1.6)).filter(Boolean);
   // Country names, grey and small; only ones that land inside the baked area. Small countries (1) wait for a closer zoom.
   out.nations = [
     ['俄罗斯', 108, 58.5], ['蒙古', 103, 46.6], ['哈萨克斯坦', 79, 47.6], ['吉尔吉斯斯坦', 74.8, 41.6, 1], ['塔吉克斯坦', 71, 38.8, 1],
