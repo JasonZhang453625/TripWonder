@@ -205,6 +205,8 @@
   const rewardTerms = () => tr('领取后 30 日内有效。优惠券具体可用范围请查看活动规则。','Valid for 30 days after claiming. See the campaign rules for where each coupon can be used.');
   // Prices stay in yuan in both languages: the rewards are for trips in China.
   const benefitFor = () => ({name:tr(`优惠权益 · ${city().name}`,`Travel perks · ${cname(city())}`),detail:tr('景点门票 20 元优惠券','¥20 off attraction tickets'),threshold:tr('满 100 元可用','On orders of ¥100+'),amount:20,minimumSpend:100,validDays:30});
+  // A destination badge needs 80+ points, matching the atlas (collection-pages.js MEDAL_SCORE).
+  const MEDAL_SCORE=80;
   // Coupons shown on the result card and in the claim dialog; the first entry mirrors benefitFor().
   const RESULT_COUPONS=[{kind:'景点门票',kindEn:'Attraction tickets',icon:'ticket',amount:20,rule:'满 100 元可用',ruleEn:'On orders of ¥100+'},{kind:'酒店',kindEn:'Hotels',icon:'bed',amount:50,rule:'满 500 元可用',ruleEn:'On orders of ¥500+'},{kind:'火车票',kindEn:'Train tickets',icon:'train',amount:15,rule:'满 200 元可用',ruleEn:'On orders of ¥200+'},{kind:'当地玩乐',kindEn:'Local experiences',icon:'spark',amount:9,discount:true,rule:'最高减 30 元',ruleEn:'Save up to ¥30'},{kind:'美食',kindEn:'Dining',icon:'bag',amount:10,rule:'满 80 元可用',ruleEn:'On orders of ¥80+'}];
   // 9 折 means paying 90%: 10% off.
@@ -250,7 +252,7 @@
       </div>
     </section>`;
   }
-  function result() { const r=s.result || current().result; if(!r)return empty(tr('目的地尚未揭晓','Destination not revealed yet'),tr('完成探索和三道题，再来查看结果。','Finish exploring and the three questions to see your result.')); const c=city(), name=esc(cname(c)), benefit=benefitFor(r), status=benefitStatus(c.id), next=nextDestination(s.cityId,true), prev=previousDestination(s.cityId); return `<div class="page result-page">${resultOpening(c,r)}<div class="result-details">${r.guess?`<section class="content-card guess-summary"><div class="row"><h3>${tr('地图定位','Map guess')}</h3><span class="pill">${esc(guessVerdict(r.guess))}</span></div><div class="guess-mini">${GuessMap.snapshot(r.guess,c)}</div><div class="guess-legend"><span class="you">${tr('你的落点','Your pin')}</span><span class="target">${name}</span></div><div class="guess-stats"><div><b>${r.guess.km} km</b><small>${tr('直线距离','Straight-line distance')}</small></div><div><b>+${r.guess.points}</b><small>${tr(`定位得分 / ${GUESS.max}`,`Map points / ${GUESS.max}`)}</small></div><div><b>${esc(place(r.guess.city||r.guess.province)||'—')}</b><small>${tr('你的落点','Your pin')}</small></div></div></section>`:''}<section class="content-card"><h3>${tr('三题一起揭晓','Your three answers')}</h3>${r.answers.map((a,i)=>`<button class="answer-line" data-review="${i}" style="width:100%;text-align:left">${icon(a.correct?'check':'book')}<span>${tr(`第 ${i+1} 题 · ${a.correct?'答对':'查看解析'}`,`Question ${i+1} · ${a.correct?'Correct':'See explanation'}`)}</span><b>${tr(`${a.correct?'+'+a.points:'0'} 分`,`${a.correct?'+'+a.points:'0'} pts`)}</b>${icon('next')}</button>`).join('')}</section><section class="content-card benefit badge-benefit" aria-label="${tr('纪念徽章','Keepsake badge')}"><div class="row"><div><strong>${badgeTitle(c)}</strong><p>${tr('珍藏这一站的发现','Keep a memento of this stop')}</p></div><button data-action="claim">${s.badges[c.id]?tr('查看徽章','View badge'):tr('领取徽章','Claim badge')}</button></div></section><section class="content-card benefit coupon-benefit" aria-label="${tr('优惠权益','Travel perks')}"><div class="coupon-panel"><div class="coupon-head"><strong>${esc(benefit.name)}</strong><button data-action="claim-coupon">${status==='active'?tr('查看权益','View perks'):status==='expired'?tr('重新领取','Claim again'):tr('领取权益','Claim perks')}</button></div><div class="coupon-tickets" tabindex="0" aria-label="${tr('优惠券列表，左右滑动查看','Coupons. Swipe sideways to see them all')}">${RESULT_COUPONS.map(c=>`<div class="coupon-ticket"><b>${couponTitle(c)}</b><span>${f(c,'kind')} · ${f(c,'rule')}</span></div>`).join('')}</div><p class="coupon-terms">${rewardTerms()}</p></div></section><div class="result-actions"><button class="primary" data-go="route">${tr(`为我规划${name}之旅`,`Plan my ${name} trip`)} ${icon('next')}</button><div class="stop-nav"><button class="glass-light prev-city" data-action="prev-city"${prev?'':' disabled'}>${icon('back')} ${tr('上一个目的地','Previous destination')}</button>${next?`<button class="secondary next-city" data-action="next-city">${tr('下一个目的地','Next destination')} ${icon('next')}</button>`:`<button class="secondary next-city" data-go="home">${tr('返回首页','Back to home')}</button>`}</div></div></div></div>`; }
+  function result() { const r=s.result || current().result; if(!r)return empty(tr('目的地尚未揭晓','Destination not revealed yet'),tr('完成探索和三道题，再来查看结果。','Finish exploring and the three questions to see your result.')); const c=city(), name=esc(cname(c)), benefit=benefitFor(r), status=benefitStatus(c.id), next=nextDestination(s.cityId,true), prev=previousDestination(s.cityId), medalReady=r.score>=MEDAL_SCORE||!!s.badges[c.id]; return `<div class="page result-page">${resultOpening(c,r)}<div class="result-details">${r.guess?`<section class="content-card guess-summary"><div class="row"><h3>${tr('地图定位','Map guess')}</h3><span class="pill">${esc(guessVerdict(r.guess))}</span></div><div class="guess-mini">${GuessMap.snapshot(r.guess,c)}</div><div class="guess-legend"><span class="you">${tr('你的落点','Your pin')}</span><span class="target">${name}</span></div><div class="guess-stats"><div><b>${r.guess.km} km</b><small>${tr('直线距离','Straight-line distance')}</small></div><div><b>+${r.guess.points}</b><small>${tr(`定位得分 / ${GUESS.max}`,`Map points / ${GUESS.max}`)}</small></div><div><b>${esc(place(r.guess.city||r.guess.province)||'—')}</b><small>${tr('你的落点','Your pin')}</small></div></div></section>`:''}<section class="content-card"><h3>${tr('三题一起揭晓','Your three answers')}</h3>${r.answers.map((a,i)=>`<button class="answer-line" data-review="${i}" style="width:100%;text-align:left">${icon(a.correct?'check':'book')}<span>${tr(`第 ${i+1} 题 · ${a.correct?'答对':'查看解析'}`,`Question ${i+1} · ${a.correct?'Correct':'See explanation'}`)}</span><b>${tr(`${a.correct?'+'+a.points:'0'} 分`,`${a.correct?'+'+a.points:'0'} pts`)}</b>${icon('next')}</button>`).join('')}</section><section class="content-card benefit badge-benefit" aria-label="${tr('纪念徽章','Keepsake badge')}"><div class="row"><div><strong>${badgeTitle(c)}</strong><p>${medalReady?tr('珍藏这一站的发现','Keep a memento of this stop'):tr(`本次 ${r.score} 分，达到 ${MEDAL_SCORE} 分可领取`,`You scored ${r.score}. Reach ${MEDAL_SCORE} to claim it`)}</p></div><button data-action="claim"${medalReady?'':' disabled'}>${s.badges[c.id]?tr('查看徽章','View badge'):medalReady?tr('领取徽章','Claim badge'):tr(`${MEDAL_SCORE} 分解锁`,`Unlocks at ${MEDAL_SCORE}`)}</button></div></section><section class="content-card benefit coupon-benefit" aria-label="${tr('优惠权益','Travel perks')}"><div class="coupon-panel"><div class="coupon-head"><strong>${esc(benefit.name)}</strong><button data-action="claim-coupon">${status==='active'?tr('查看权益','View perks'):status==='expired'?tr('重新领取','Claim again'):tr('领取权益','Claim perks')}</button></div><div class="coupon-tickets" tabindex="0" aria-label="${tr('优惠券列表，左右滑动查看','Coupons. Swipe sideways to see them all')}">${RESULT_COUPONS.map(c=>`<div class="coupon-ticket"><b>${couponTitle(c)}</b><span>${f(c,'kind')} · ${f(c,'rule')}</span></div>`).join('')}</div><p class="coupon-terms">${rewardTerms()}</p></div></section><div class="result-actions"><button class="primary" data-go="route">${tr(`为我规划${name}之旅`,`Plan my ${name} trip`)} ${icon('next')}</button><div class="stop-nav"><button class="glass-light prev-city" data-action="prev-city"${prev?'':' disabled'}>${icon('back')} ${tr('上一个目的地','Previous destination')}</button>${next?`<button class="secondary next-city" data-action="next-city">${tr('下一个目的地','Next destination')} ${icon('next')}</button>`:`<button class="secondary next-city" data-go="home">${tr('返回首页','Back to home')}</button>`}</div></div></div></div>`; }
   const badgeTitle = c => tr(`奇境挑战徽章 · ${esc(c.name)}`,`TripWonder badge · ${esc(cname(c))}`);
   function distance(a,b) { const rad=Math.PI/180, dLat=(b.lat-a.lat)*rad, dLng=(b.lng-a.lng)*rad; const h=Math.sin(dLat/2)**2+Math.cos(a.lat*rad)*Math.cos(b.lat*rad)*Math.sin(dLng/2)**2; return 12742*Math.asin(Math.sqrt(h)); }
   function travelMinutes(a,b) { const km=distance(a,b); return Math.max(15,Math.ceil((km/32*60+12)/5)*5); }
@@ -681,6 +683,7 @@
     else if(action==='bookmark'){s.bookmarks[s.cityId]=!s.bookmarks[s.cityId];const y=app.scrollTop;render();app.scrollTop=y;resultReveal?.refresh();}
     else if(action==='claim'&&current().result){
       const score=(s.result||current().result).score;
+      if(score<MEDAL_SCORE&&!s.badges[s.cityId])return;
       s.badges[s.cityId]??={date:today()};
       // Keep the expanded result panel and its native scroll state intact.
       b.textContent=tr('查看徽章','View badge');
@@ -709,22 +712,30 @@
   document.addEventListener('keydown',event=>{if(!modalRoot.innerHTML)return;if(event.key==='Escape')dismissModal();if(event.key==='Tab'){const f=[...modalRoot.querySelectorAll('button:not(:disabled),a[href],input:not([hidden]):not(:disabled),[tabindex="0"]')].filter(el=>el.getClientRects().length&&getComputedStyle(el).visibility!=='hidden');if(!f.length)return;if(event.shiftKey&&(document.activeElement===f[0]||document.activeElement===modalRoot.querySelector('[role="dialog"]'))){event.preventDefault();f.at(-1).focus();}else if(!event.shiftKey&&document.activeElement===f.at(-1)){event.preventDefault();f[0].focus();}}});
   modalRoot.addEventListener('click',event=>{if(event.target.classList.contains('modal-overlay')||event.target.classList.contains('rules-overlay'))dismissModal();});
   window.addEventListener('pagehide',()=>{cancelPending();SceneMedia.retain([]);viewer?.destroy();window.ImmersiveSceneMedia?.clear();resultReveal?.destroy();window.speechSynthesis?.cancel?.();});
-  // Capacitor uses the same page navigation and modal dismissal as the website.
-  if(window.Capacitor?.isNativePlatform?.())window.TripWonderNativeHooks={
-    isReady:()=>!!app.firstElementChild,
-    toast,
-    back:()=>{
-      if(document.querySelector('.hp-layer')){HomePromo.dismiss();return true;}
-      if(modalRoot.firstElementChild){dismissModal();return true;}
-      if(pendingCleanup||ChallengeMotion.busy){cancelPending();ChallengeMotion.cancel();return true;}
-      if(s.view==='home')return false;
-      const action=s.view==='quiz'?'quiz-back':s.view==='guess'?'guess-back':null;
-      if(action){app.querySelector(`[data-action="${action}"]`)?.click();return true;}
-      if(s.view==='explore')go('cover',{back:true});
-      else if(s.view==='route')go('result',{back:true});
-      else go('home',{back:true});
-      return true;
-    }
+  // One back behaviour for the Android back button and the browser back gesture.
+  // Returns false only on the home page, where leaving the prototype is expected.
+  const handleBack=()=>{
+    if(document.querySelector('.hp-layer')){HomePromo.dismiss();return true;}
+    if(modalRoot.firstElementChild){dismissModal();return true;}
+    if(pendingCleanup||ChallengeMotion.busy){cancelPending();ChallengeMotion.cancel();return true;}
+    if(s.view==='home')return false;
+    const action=s.view==='quiz'?'quiz-back':s.view==='guess'?'guess-back':null;
+    if(action){app.querySelector(`[data-action="${action}"]`)?.click();return true;}
+    if(s.view==='explore')go('cover',{back:true});
+    else if(s.view==='route')go('result',{back:true});
+    else go('home',{back:true});
+    return true;
   };
+  // Capacitor uses the same page navigation and modal dismissal as the website.
+  if(window.Capacitor?.isNativePlatform?.())window.TripWonderNativeHooks={isReady:()=>!!app.firstElementChild,toast,back:handleBack};
+  else{
+    // Progress lives only in this page, so a browser back (iOS swipe, Android back) must not
+    // leave the site. Keep a same-URL guard entry above the page and spend it on in-app back
+    // steps. Chrome skips entries pushed without a user gesture, so a tap re-arms the guard.
+    let guard=0; // 0: none, 1: pushed after a back step, 2: pushed during a tap
+    const arm=level=>{if(guard>=level)return;guard=level;try{history.pushState({tripwonderGuard:true},'',location.href);}catch{}};
+    document.addEventListener('click',()=>arm(2),true);
+    window.addEventListener('popstate',()=>{guard=0;if(handleBack())arm(1);else history.back();});
+  }
   if(invitation)loadView('cover',0);else render();
 })();
