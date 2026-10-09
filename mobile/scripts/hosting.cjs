@@ -12,7 +12,7 @@ async function hosting(){
   for(const folder of ['assets','content','photo-library'])for(const file of walk(path.join(root,folder))){
     const rel=relative(root,file);
     if(/(?:^|\/)check-[^/]*\//.test(rel)||/\/immersive\//.test(rel))continue;
-    if(/\.(jpg|jpeg|png|avif|webp|woff2?|json|js|md)$/i.test(rel))copy(file,rel);
+    if(/\.(jpg|jpeg|png|avif|webp|woff2?|json|js|md|mp3)$/i.test(rel))copy(file,rel);
   }
   const routes=[{
     src:'/photo-library/[^/]+/[^/]+/immersive-blur/photo\\.jpg',
