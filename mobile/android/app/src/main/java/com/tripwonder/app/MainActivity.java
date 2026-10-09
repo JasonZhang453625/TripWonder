@@ -1,17 +1,43 @@
 package com.tripwonder.app;
 
+import android.Manifest;
+import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.Display;
 import android.view.WindowManager;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import com.getcapacitor.BridgeActivity;
 
 public class MainActivity extends BridgeActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        registerPlugin(UpdateNotifierPlugin.class);
         super.onCreate(savedInstanceState);
         applyPrototypeTextScale();
         preferHighRefreshRate();
+        requestNotificationPermission();
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        // Tapping "新版页面已就绪" while the app is running: switch to the downloaded bundle now.
+        // From a cold start the plugin already boots into the pending bundle, so nothing to do there.
+        if (intent != null && intent.getBooleanExtra(UpdateNotifierPlugin.EXTRA_APPLY_UPDATE, false) && bridge != null) {
+            bridge.triggerWindowJSEvent("tripwonderapplyupdate");
+        }
+    }
+
+    private void requestNotificationPermission() {
+        // Android 13+ asks once; declining only hides the update progress notification.
+        if (Build.VERSION.SDK_INT >= 33
+                && ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.POST_NOTIFICATIONS}, 4201);
+        }
     }
 
     @Override

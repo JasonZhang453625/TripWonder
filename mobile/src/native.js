@@ -1,4 +1,4 @@
-import {Capacitor} from '@capacitor/core';
+import {Capacitor, registerPlugin} from '@capacitor/core';
 import {App} from '@capacitor/app';
 import {Share} from '@capacitor/share';
 import {Filesystem, Directory} from '@capacitor/filesystem';
@@ -24,10 +24,40 @@ if (Capacitor.isNativePlatform()) {
     if (window.TripWonderNativeHooks?.back()) return;
     await App.minimizeApp();
   });
-  const updater=createUpdater({plugin:LiveUpdate,fetcher:fetch,runtime:__RUNTIME__,origin:__PUBLIC_ORIGIN__,builtInId:__BUNDLE_ID__,notify:message=>window.TripWonderNativeHooks?.toast(message)});
+  // Status-bar progress for live updates (native UpdateNotifierPlugin). Failures to notify never block the update.
+  const UpdateNotifier=registerPlugin('UpdateNotifier');
+  const quiet=promise=>promise.catch(()=>{});
+  const mb=bytes=>(bytes/1048576).toFixed(1);
+  let lastPercent=-1,lastPaint=0;
+  LiveUpdate.addListener('downloadBundleProgress',({progress=0,downloadedBytes=0,totalBytes=0})=>{
+    const percent=Math.floor(progress*100),now=Date.now();
+    if(!totalBytes||percent===lastPercent||(percent<100&&now-lastPaint<250))return;
+    lastPercent=percent;lastPaint=now;
+    void quiet(UpdateNotifier.progress({percent,title:'正在拉取新版页面',text:`${mb(downloadedBytes)} MB / ${mb(totalBytes)} MB`}));
+  });
+  const report=({state,message})=>{
+    if(state==='downloading'){lastPercent=-1;void quiet(UpdateNotifier.progress({percent:0,indeterminate:true,title:'正在拉取新版页面',text:'正在比对需要更新的文件…'}));}
+    else if(state==='ready')void quiet(UpdateNotifier.finish({apply:true,title:'新版页面已就绪',text:'点按立即使用新版页面（下次打开 App 也会自动生效）'}));
+    else if(state==='failed')void quiet(UpdateNotifier.finish({apply:false,title:'新版页面拉取失败',text:`${message}。已保留当前版本，下次打开 App 会自动重试。`}));
+  };
+  // Tapping the "ready" notification while the app is open switches to the downloaded bundle right away.
+  window.addEventListener('tripwonderapplyupdate',async()=>{
+    const next=await LiveUpdate.getNextBundle().catch(()=>({}));
+    if(!next.bundleId)return;
+    await quiet(UpdateNotifier.clear());
+    await LiveUpdate.reload();
+  });
+  const updater=createUpdater({plugin:LiveUpdate,fetcher:fetch,runtime:__RUNTIME__,origin:__PUBLIC_ORIGIN__,builtInId:__BUNDLE_ID__,notify:message=>window.TripWonderNativeHooks?.toast(message),report});
   window.TripWonderUpdates={check:()=>updater.check({force:true}),runtime:__RUNTIME__,bundleId:__BUNDLE_ID__};
-  let ready=false;
-  const check=()=>updater.check().catch(error=>console.info('Live update unavailable; using installed content.',error.message));
+  let ready=false,firstCheck=true;
+  // The first check after launch says so when the update server is unreachable, instead of failing silently.
+  const check=()=>{
+    const announce=firstCheck;firstCheck=false;
+    return updater.check().catch(error=>{
+      console.info('Live update unavailable; using installed content.',error.message);
+      if(announce&&!/: 404$/.test(error.message||''))window.TripWonderNativeHooks?.toast('暂时连不上更新服务器，当前使用已安装版本');
+    });
+  };
   App.addListener('appStateChange',({isActive})=>{if(isActive&&ready)void check();});
   // A JS crash or blank page must not acknowledge a broken bundle as healthy.
   const deadline=Date.now()+25000;

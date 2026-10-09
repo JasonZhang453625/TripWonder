@@ -6,7 +6,8 @@ export function validateRelease(value, runtime, origin) {
   return {...value, url:url.href};
 }
 
-export function createUpdater({plugin, fetcher, runtime, origin, builtInId, notify=()=>{}}) {
+// report({state}) drives the status-bar notification: 'downloading' → 'ready', or 'failed'.
+export function createUpdater({plugin, fetcher, runtime, origin, builtInId, notify=()=>{}, report=()=>{}}) {
   let running, lastCheck=0;
   async function check() {
     const response=await fetcher(`${origin}/mobile-updates/${runtime}.json`, {cache:'no-store', signal:AbortSignal.timeout(12000)});
@@ -22,11 +23,17 @@ export function createUpdater({plugin, fetcher, runtime, origin, builtInId, noti
       return 'current';
     }
     if ((await plugin.getBlockedBundles()).bundleIds.includes(release.bundleId)) return 'blocked';
-    if (next.bundleId===release.bundleId) return 'pending';
+    // Already downloaded earlier but not yet applied: surface it again instead of waiting silently.
+    if (next.bundleId===release.bundleId) { report({state:'ready', bundleId:release.bundleId}); return 'pending'; }
     const downloaded=await plugin.getBundles();
-    if (!downloaded.bundleIds.includes(release.bundleId)) await plugin.downloadBundle({bundleId:release.bundleId, artifactType:'manifest', url:release.url});
+    if (!downloaded.bundleIds.includes(release.bundleId)) {
+      report({state:'downloading', bundleId:release.bundleId});
+      try { await plugin.downloadBundle({bundleId:release.bundleId, artifactType:'manifest', url:release.url}); }
+      catch (error) { report({state:'failed', bundleId:release.bundleId, message:error?.message||'下载中断'}); throw error; }
+    }
     await plugin.setNextBundle({bundleId:release.bundleId});
-    notify('更新已下载，下次打开时生效');
+    report({state:'ready', bundleId:release.bundleId});
+    notify('新版页面已下载：点按通知栏提示即可立即使用');
     return 'downloaded';
   }
   return {
