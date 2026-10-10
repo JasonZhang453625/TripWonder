@@ -1,0 +1,64 @@
+/* Personal discovery page, using the shared blue and light glass palette. */
+#app>.profile-page{background:radial-gradient(ellipse at 100% 20%,#e7edff 0,transparent 55%),#f5f7fc!important;color:#111827;padding-bottom:0}
+#app>.profile-page .page-head{position:sticky;top:0;z-index:3;background:#ffffffd9!important;backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-bottom:1px solid #ffffff80}
+.pf-content{padding:20px 22px 24px}
+.pf-intro{margin-bottom:18px}
+.pf-intro>span{font-size:10px;font-weight:750;letter-spacing:2px;color:#2855f7}
+.pf-intro h1{font-size:29px;line-height:1.3;letter-spacing:-.6px;margin:7px 0}
+.pf-intro p{margin:0;font-size:13px;line-height:1.6;color:#111827}
+.pf-overview{position:relative;overflow:hidden;border-radius:25px;padding:18px;color:#fff;background:radial-gradient(ellipse at 110% -20%,#94c4ffb3,transparent 65%),linear-gradient(135deg,#2953ed,#3d6fff);border:1px solid #648cffa8;box-shadow:inset 0 1px 0 #ffffff80,0 14px 28px -16px #1b48e6a6}
+.pf-overview::before{content:'';position:absolute;right:-54px;top:-82px;width:250px;height:250px;border:1px solid #ffffff26;border-radius:50%;box-shadow:0 0 0 30px #ffffff08,0 0 0 60px #ffffff08;pointer-events:none}
+.pf-overview-top{position:relative;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.pf-discoveries>span{font-size:13px;font-weight:550}
+.pf-discoveries>div{display:flex;align-items:baseline;gap:9px;margin-top:5px}
+.pf-discoveries b{font-size:60px;font-weight:750;line-height:1.1;letter-spacing:-2px;font-variant-numeric:tabular-nums}
+.pf-discoveries small{font-size:18px;color:#fff}
+.pf-progress{position:relative;width:84px;height:84px;flex-shrink:0}
+.pf-progress svg{width:100%;height:100%;transform:rotate(-90deg);fill:none;stroke:#ffffff33;stroke-width:4}
+.pf-progress .pf-progress-value{stroke:#ffe298;stroke-linecap:round}
+.pf-progress>span{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px}
+.pf-progress b{font-size:24px;font-weight:750;font-variant-numeric:tabular-nums}
+.pf-progress i{font-style:normal;font-weight:500;font-size:13px}
+.pf-progress small{font-size:10px}
+.pf-stats{position:relative;display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px;padding-top:14px;border-top:1px solid #ffffff38}
+.pf-stats>div{display:flex;align-items:center;gap:10px}
+.pf-stats>div+div{border-left:1px solid #ffffff38;padding-left:18px}
+.pf-stats .icon{width:22px;height:22px;color:#fff}
+.pf-stats span{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 7px}
+.pf-stats b{font-size:22px;font-weight:700;font-variant-numeric:tabular-nums}
+.pf-stats small{font-size:11px}
+.pf-library{margin-top:22px}
+.pf-section-heading{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:13px}
+.pf-section-heading h2{margin:0;font-size:17px;font-weight:750;letter-spacing:-.3px}
+.pf-section-heading>span{font-size:10px;color:#111827}
+.pf-shortcuts{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+#app .profile-page :is(.pf-shortcut,.pf-itinerary){position:relative;text-align:left;color:#111827;border:1px solid #fff;background:var(--glass-light);box-shadow:inset 0 1px 0 #fff,0 6px 18px -10px #183d6926;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);transition:transform .2s,box-shadow .2s}
+#app .profile-page .pf-shortcut{display:flex;flex-direction:column;align-items:flex-start;padding:15px 15px 14px;border-radius:20px;min-width:0;gap:5px;background:linear-gradient(140deg,#ffffffed,#e8efffc2)}
+#app .profile-page .pf-ranking{background:linear-gradient(140deg,#fffefd,#fff2dcb3)}
+.pf-feature-icon{display:grid;place-items:center;width:38px;height:38px;border-radius:13px;color:#2855f7;background:linear-gradient(150deg,#fff,#dce6ff);border:1px solid #fff;box-shadow:0 4px 10px -5px #2855f733,inset 0 1px 0 #fff;margin-bottom:8px}
+.pf-feature-icon .icon{width:23px;height:23px}
+.pf-ranking .pf-feature-icon{color:#96600b;background:linear-gradient(150deg,#fff8e7,#ffe5a9)}
+.pf-shortcut strong{font-size:15px;line-height:1.4}
+.pf-shortcut small{font-size:10.5px;line-height:1.6}
+.pf-shortcut-arrow{position:absolute;right:13px;top:25px;color:#2855f7}
+.pf-shortcut-arrow .icon{width:16px;height:16px}
+.pf-ranking .pf-shortcut-arrow{color:#96600b}
+#app .profile-page .pf-itinerary{display:flex;align-items:center;gap:12px;width:100%;margin-top:12px;padding:14px;border-radius:20px}
+.pf-itinerary .pf-feature-icon{margin:0;flex-shrink:0}
+.pf-itinerary>span:nth-child(2){display:flex;flex-direction:column;gap:5px;flex:1;min-width:0}
+.pf-itinerary strong{font-size:15px}
+.pf-itinerary small{font-size:10.5px;line-height:1.6}
+.pf-itinerary>.icon{width:16px;height:16px;flex-shrink:0;color:#2855f7}
+.pf-interests{margin:22px 2px 20px}
+.pf-interests .pf-section-heading{margin-bottom:10px}
+.pf-interests .icon{width:17px;height:17px;color:#2855f7}
+.pf-interests p{font-size:12px;line-height:1.8;margin:0;color:#111827}
+.pf-tags{display:flex;flex-wrap:wrap;gap:8px}
+.pf-tags span{padding:7px 12px;border-radius:20px;border:1px solid #dfe7ff;background:#ffffffb3;font-size:12px;line-height:1.4}
+#app .profile-page .pf-explore{display:flex;align-items:center;justify-content:center;gap:10px;min-height:52px;width:100%;padding:12px 16px;border-radius:17px;border:1px solid #9fb8ff8c;border-top-color:#dfe8ffcc;background:var(--glass-blue);box-shadow:var(--glass-blue-shadow);color:#fff;font-size:15px;font-weight:650;text-shadow:0 1px 2px #0d2c8a59;transition:transform .2s,box-shadow .2s}
+.pf-explore .icon{width:18px;height:18px}
+#app .profile-page button:focus-visible{outline:3px solid #7b9eff;outline-offset:3px}
+#app .profile-page :is(.pf-shortcut,.pf-itinerary,.pf-explore):active{transform:scale(.975)}
+@media(hover:hover){#app .profile-page :is(.pf-shortcut,.pf-itinerary):hover{box-shadow:inset 0 1px 0 #fff,0 8px 24px -10px #183d6940}#app .profile-page .pf-explore:hover{background:var(--glass-blue-hover)}}
+.mobile-device .pf-content{padding-bottom:calc(28px + env(safe-area-inset-bottom,0px))}
+@media(max-width:360px){.pf-content{padding:20px 16px 28px}.pf-overview{padding:18px}.pf-progress{width:86px;height:86px}.pf-discoveries b{font-size:52px}.pf-section-heading>span{font-size:9px}.pf-shortcuts{gap:9px}.pf-shortcut small{font-size:10px}.pf-stats>div+div{padding-left:12px}.pf-stats small{font-size:10px}}
