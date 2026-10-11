@@ -2,3 +2,6 @@
 /photo-library/**/immersive-blur/check-*/
 /photo-library/**/immersive/
 /.vercel/output/
+
+# Dependencies
+node_modules/
