@@ -3,7 +3,7 @@ const {buildSync}=require('esbuild'),vm=require('node:vm'),path=require('node:pa
 const compiled=buildSync({entryPoints:[path.join(__dirname,'../src/updates.js')],bundle:true,format:'cjs',write:false}).outputFiles[0].text;
 const context={module:{exports:{}},exports:{},URL,AbortSignal,Date,console};vm.runInNewContext(compiled,context);
 const {createUpdater,validateRelease}=context.module.exports;
-const origin='https://trip-guessr.vercel.app',runtime='android-test',id='a'.repeat(24),old='b'.repeat(24);
+const origin='https://tripwonder.vercel.app',runtime='android-test',id='a'.repeat(24),old='b'.repeat(24);
 function fixture(overrides={}){
  const calls=[],release={schema:1,runtime,bundleId:id,url:`${origin}/mobile-updates/files/${id}`};
  const plugin={getCurrentBundle:async()=>({bundleId:old}),getNextBundle:async()=>({bundleId:null}),getBlockedBundles:async()=>({bundleIds:[]}),getBundles:async()=>({bundleIds:[]}),downloadBundle:async x=>calls.push(['download',x]),setNextBundle:async x=>calls.push(['next',x]),...overrides};

@@ -2,7 +2,7 @@
 // These are browser simulations, not claims about physical phones or every network.
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto');
 const {chromium}=require('C:/Users/Administrator/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
-const base=process.env.TRIPWONDER_BASE_URL||'https://trip-guessr.vercel.app/';
+const base=process.env.TRIPWONDER_BASE_URL||'https://tripwonder.vercel.app/';
 const out=process.env.TRIPWONDER_TEST_ARTIFACTS;
 const token=Buffer.from(JSON.stringify({cityId:'shenzhen',score:0})).toString('base64url');
 const texture=x=>x.includes('/shenzhen/')&&x.includes('/immersive-blur/photo.jpg');

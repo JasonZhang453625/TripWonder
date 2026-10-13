@@ -1,4 +1,8 @@
-# TripWonder 安卓应用与在线更新
+# TripWonder 携程 · 奇境挑战：安卓应用与在线更新
+
+项目仓库为私有的 [JasonZhang453625/TripWonder](https://github.com/JasonZhang453625/TripWonder)。线上入口是 [tripwonder.vercel.app](https://tripwonder.vercel.app)。需要添加协作者时，由仓库管理员在 GitHub 的 Settings → Collaborators 中按账号邀请；安卓签名私钥仍由发布负责人保管，不随仓库分享。
+
+1.0.4 将应用显示名称和更新入口同步到新品牌。安装过 1.0.3 或更早版本的手机需要安装新版 APK，才能使用新更新入口；仅网页在线更新无法更改旧安装包里的服务器地址。
 
 实现采用 Capacitor 8 + `@capawesome/capacitor-live-update` 8。应用包名 `com.tripwonder.app`。网页继续通过 GitHub → Vercel 部署，安卓应用从本地文件启动，未设置远程 `server.url`。
 

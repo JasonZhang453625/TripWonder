@@ -28,7 +28,7 @@ const server=http.createServer((req,res)=>{
     return {};
    }};
   });
-  await page.route('https://trip-guessr.vercel.app/mobile-updates/**',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(release)}));
+  await page.route('https://tripwonder.vercel.app/mobile-updates/**',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(release)}));
   const token=Buffer.from(JSON.stringify({cityId:'shenzhen',score:0})).toString('base64url');
   await page.goto(`http://127.0.0.1:${server.address().port}/?challenge=${token}`);
   await page.locator('.cover-page').waitFor();

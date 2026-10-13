@@ -1,4 +1,6 @@
-# TripWonder · 携程奇境挑战原型
+# TripWonder 携程 · 奇境挑战
+
+GitHub 仓库：[JasonZhang453625/TripWonder](https://github.com/JasonZhang453625/TripWonder)（私有）。项目仍由仓库所有者管理；需要协作时，在 GitHub 仓库的 Settings → Collaborators 中邀请指定账号。未提供协作者账号前不预先添加成员。
 
 打开 `index.html`，或在本目录运行 `python -m http.server 8765 --bind 127.0.0.1` 后访问 `http://127.0.0.1:8765/`。这是可直接在浏览器打开的静态 HTML 原型；当前工作区修改没有自动代表线上部署。
 

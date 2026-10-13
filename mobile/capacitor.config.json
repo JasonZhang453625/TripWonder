@@ -1,6 +1,6 @@
 {
   "appId": "com.tripwonder.app",
-  "appName": "TripWonder",
+  "appName": "TripWonder 携程 · 奇境挑战",
   "webDir": "www",
   "server": { "androidScheme": "https" },
   "android": { "backgroundColor": "#ffffff", "allowMixedContent": false },
