@@ -1,8 +1,8 @@
 {
-  "name": "trip-guessr",
+  "name": "tripwonder",
   "version": "1.0.0",
   "private": true,
-  "description": "TripWonder - 携程奇境挑战",
+  "description": "TripWonder 携程 · 奇境挑战",
   "scripts": {
     "build": "npm ci --prefix mobile --no-audit --no-fund && npm run --prefix mobile build:hosting",
     "test": "npm test --prefix mobile"
