@@ -84,6 +84,45 @@ async function closeRules(page){if(await page.locator('.rules-popover').count())
     assert.equal(await page.locator('.tw-bubble img').count(),0);assert.equal(await page.evaluate(()=>window.__xss),undefined,'note text is escaped');
     assert.equal(await page.evaluate(scene=>TWStore.get().bubbles[scene]?.length,current.scene),1,'note saved');
     assert.ok(await page.evaluate(scene=>!!TWStore.get().explored[scene],current.scene),'explored scene remembered');
+    await page.locator('[data-bubble-filter]').click();await page.locator('[data-bubble-filter]').click();await page.locator('[data-bubble-filter]').click();
+    assert.equal(await page.evaluate(()=>localStorage.getItem('tripwonder-bubble-filter')),'off');
+    await page.evaluate(()=>TWStore.reset());
+    assert.equal(await page.evaluate(()=>localStorage.getItem('tripwonder-bubble-filter')),null,'demo reset turns scene notes back on');
+
+    // Friend link through the real UI: the friend becomes the PK opponent, the 60-second quiz times out,
+    // unanswered questions score 0, and the VS card carries the link's score (no second comparison card).
+    const friend=await browser.newContext({...devices['iPhone 13'],deviceScaleFactor:1});
+    const fp=await friend.newPage();fp.setDefaultTimeout(20000);const friendErrors=[];fp.on('pageerror',error=>friendErrors.push(error.message));
+    await fp.clock.install({time:new Date('2026-10-15T12:00:00+08:00')});
+    const token=Buffer.from(JSON.stringify({cityId:'datong',score:70,day:'2026-10-15'})).toString('base64url');
+    await fp.goto(base+'?challenge='+token);await fp.locator('.cover-page').waitFor();await idle(fp);await closeRules(fp);
+    assert.match(await fp.locator('.cover-enter').textContent(),/接受好友挑战/);
+    assert.equal(await fp.locator('[data-action="pk-start"]').count(),0,'no separate PK entry on a friend challenge');
+    await fp.locator('[data-action="start"]').click();
+    assert.match(await fp.locator('.pk-match').textContent(),/好友挑战/);
+    await fp.locator('.explore-page').waitFor();await idle(fp);
+    while(await fp.locator('.explore-page').count()){
+      const previous=await fp.locator('.scene-counter').textContent();
+      await fp.locator('[data-action="next-scene"]').click();
+      await fp.waitForFunction(previous=>!document.querySelector('.scene-counter')||document.querySelector('.scene-counter').textContent!==previous,previous);
+    }
+    await fp.locator('#timer').waitFor();await idle(fp);
+    assert.equal(await fp.locator('#timer').textContent(),'01:00','one-minute quiz');
+    assert.equal(await fp.locator('.quiz-header .pk-hud').count(),1,'PK progress replaces the title');
+    const firstAnswer=await fp.evaluate(()=>TRIPWONDER_CATALOG.cities.find(c=>c.id==='datong').questions[0].answer);
+    await fp.locator(`[data-option="${firstAnswer}"]`).click();await fp.locator('[data-action="submit"]').click();await idle(fp);
+    await fp.clock.fastForward(52000);await fp.waitForFunction(()=>document.querySelector('.quiz-timer')?.classList.contains('final'));
+    assert.equal(await fp.locator('.quiz-timer.urgent').count(),1,'red from 15 s');
+    await fp.clock.fastForward(9000);await fp.locator('.guess-map').waitFor();
+    assert.match(await fp.locator('#toast').textContent(),/答题时间到/);
+    await idle(fp);await fp.locator('.guess-map').click({position:{x:200,y:330}});await fp.locator('[data-action="guess-submit"]').click();
+    await fp.locator('.gm-pin.rival').waitFor({state:'attached'});
+    assert.match(await fp.locator('.gm-pin.rival .gm-tag').textContent(),/好友/);
+    await fp.locator('.guess-card [data-action="show-result"]').click();await fp.locator('.result-hero').waitFor();await idle(fp);
+    assert.match(await fp.locator('.pk-result .pk-player').nth(1).textContent(),/70/,'VS card shows the friend’s score');
+    assert.equal(await fp.locator('.friend-compare').count(),0,'no duplicate friend comparison');
+    assert.deepEqual(await fp.locator('.answer-line b').allTextContents(),['+20 分','0 分','0 分'],'unanswered questions score 0');
+    assert.deepEqual(friendErrors,[]);
 
     // Blocked storage: the page and the coin rules still work in memory.
     const locked=await browser.newContext({...devices['iPhone 13'],deviceScaleFactor:1});
@@ -94,6 +133,6 @@ async function closeRules(page){if(await page.locator('.rules-popover').count())
     assert.deepEqual(lockedErrors,[]);
     await page.evaluate(()=>TWStore.reset());
     assert.deepEqual(errors,[]);
-    console.log('PASS: coin rules and same-day replay guard across reloads; daily bonus once; redeem and overspend guard; reproducible PK and exact friend scores; anonymous sample notes; rewards page hides unsolved cities; scene notes filter, post, escape, mask and persist; explored scenes recorded; blocked storage still works.');
+    console.log('PASS: coin rules and same-day replay guard across reloads; daily bonus once; redeem and overspend guard; reproducible PK and exact friend scores; anonymous sample notes; rewards page hides unsolved cities; scene notes filter, post, escape, mask and persist; demo reset restores notes; explored scenes recorded; friend link plays as PK through a 60-second timeout (red at 15 s, beat in the last 10 s, unanswered score 0); blocked storage still works.');
   }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});

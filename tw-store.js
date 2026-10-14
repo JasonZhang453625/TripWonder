@@ -20,7 +20,8 @@
   function notify() { listeners.forEach(fn => { try { fn(data); } catch {} }); }
   function save() { try { localStorage.setItem(KEY, JSON.stringify(data)); } catch {} }
   function update(fn) { const result = fn(data); save(); notify(); return result; }
-  function reset() { data = blank(); try { localStorage.removeItem(KEY); } catch {} notify(); }
+  // The scene-note filter (scene-bubbles.js) is a demo setting too: a reset must bring the notes back.
+  function reset() { data = blank(); try { localStorage.removeItem(KEY); localStorage.removeItem('tripwonder-bubble-filter'); } catch {} notify(); }
   function subscribe(fn) { listeners.add(fn); return () => listeners.delete(fn); }
   window.TWStore = Object.freeze({get: () => data, update, reset, subscribe});
 
