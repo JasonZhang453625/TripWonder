@@ -33,7 +33,7 @@ async function reveal(page){await idle(page);await page.locator('.guess-map').cl
     await page.clock.setFixedTime(new Date(epoch));await page.goto(base);await page.locator('.entry').click();
     const ids=await page.evaluate(()=>window.TRIPWONDER_CATALOG.cities.map(c=>c.id));
     await closeRules(page);
-    // Every destination uses the same untimed exploration and two-minute quiz.
+    // Every destination uses the same untimed exploration and one-minute quiz.
     for(let i=0;i<ids.length;i++){
       await enter(page);assert.equal(await page.locator('#timer,[role="timer"]').count(),0);
       await advance(page,300);await page.waitForTimeout(300);
@@ -47,17 +47,17 @@ async function reveal(page){await idle(page);await page.locator('.guess-map').cl
         await advance(page,300);await page.waitForTimeout(300);assert.equal(await page.locator('.cover-page').count(),1);
         await enter(page);assert.equal(await page.locator('.scene-counter').textContent(),counter,'return preserves the current scene');
       }
-      await toQuiz(page);await timerIs(page,'02:00');
-      await advance(page,43);await timerIs(page,'01:17');
-      await answer(page,0);await timerIs(page,'01:17');
+      await toQuiz(page);await timerIs(page,'01:00');
+      await advance(page,43);await timerIs(page,'00:17');
+      await answer(page,0);await timerIs(page,'00:17');
       if(i===0){
-        await shot(page,'quiz-two-minutes');
+        await shot(page,'quiz-one-minute');
         await answer(page,1);await answer(page,2);await page.locator('.guess-map').waitFor();
         assert.equal(await page.locator('#timer').count(),0,'map has no countdown');
-        await advance(page,300);await page.locator('[data-action="guess-back"]').click();await timerIs(page,'01:17');
-        await advance(page,47);await timerIs(page,'00:30');assert.ok(await page.locator('.quiz-timer.urgent').count());
+        await advance(page,300);await page.locator('[data-action="guess-back"]').click();await timerIs(page,'00:17');
+        await advance(page,7);await timerIs(page,'00:10');assert.ok(await page.locator('.quiz-timer.urgent').count());
         await page.locator('[data-action="submit"]').click();await page.locator('.guess-map').waitFor();await idle(page);
-        await page.locator('[data-action="guess-back"]').click();await timerIs(page,'00:30');
+        await page.locator('[data-action="guess-back"]').click();await timerIs(page,'00:10');
       }
       await page.locator('[data-action="quiz-back"]').click();await page.locator('.explore-page').waitFor();await idle(page);
       const sceneCounter=await page.locator('.scene-counter').textContent(),sceneParts=sceneCounter.split('/').map(Number);
@@ -76,7 +76,7 @@ async function reveal(page){await idle(page);await page.locator('.guess-map').cl
     await page.locator('.entry').waitFor();
     // Timeout preserves submitted answers and the currently selected answer; unanswered questions score zero.
     const token=Buffer.from(JSON.stringify({cityId:'datong',score:0,day:'2026-09-26'})).toString('base64url');
-    await page.goto(base+'?challenge='+token);await enter(page);await toQuiz(page);await timerIs(page,'02:00');
+    await page.goto(base+'?challenge='+token);await enter(page);await toQuiz(page);await timerIs(page,'01:00');
     const answers=await page.evaluate(()=>window.TRIPWONDER_CATALOG.cities.find(c=>c.id==='datong').questions.map(q=>q.answer));
     await answer(page,answers[0]);await page.locator(`[data-option="${answers[1]}"]`).click();
     await advance(page,120);await page.locator('.guess-map').waitFor();
@@ -86,9 +86,9 @@ async function reveal(page){await idle(page);await page.locator('.guess-map').cl
     assert.match(await page.locator('.sheet').textContent(),/你的答案：未作答/);
     await page.reload();await enter(page);
     assert.match(await page.locator('.scene-counter').textContent(),/^1 \/ /);assert.equal(await page.locator('#timer').count(),0);
-    await toQuiz(page);await timerIs(page,'02:00');await advance(page,120);await page.locator('.guess-map').waitFor();
+    await toQuiz(page);await timerIs(page,'01:00');await advance(page,120);await page.locator('.guess-map').waitFor();
     await reveal(page);assert.match(await page.locator('.result-score-breakdown,.score-split').textContent(),/答题\s*0\s*\/ 60/);
     assert.deepEqual(errors,[]);
-    console.log(`PASS: all ${ids.length} destinations; untimed exploration; quiz back returns to the last scene without a dialog; direct scene exit and resume; shared 120-second quiz; stopped timer on exploration/cover/map; remaining time on map return; timeout scoring and unanswered review; fresh reload.`);
+    console.log(`PASS: all ${ids.length} destinations; untimed exploration; quiz back returns to the last scene without a dialog; direct scene exit and resume; shared 60-second quiz; stopped timer on exploration/cover/map; remaining time on map return; timeout scoring and unanswered review; fresh reload.`);
   }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});

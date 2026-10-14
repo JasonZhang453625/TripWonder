@@ -1,0 +1,69 @@
+/* Simulated PK (pk-mode.js): quiz header progress, opponent pings, matchmaking, map pin and result card. */
+.pk-avatar{width:26px;height:26px;flex:none;display:grid;place-items:center;border-radius:50%;font-size:12px;font-weight:700;color:#fff;background:linear-gradient(140deg,hsl(var(--hue) 80% 62%),hsl(var(--hue) 70% 45%));border:2px solid #fff;box-shadow:0 2px 6px #0003}
+.pk-avatar.me{background:linear-gradient(140deg,#5a86ff,#2350f0)}
+.pk-vs{font-size:12px;font-weight:800;font-style:italic;letter-spacing:.04em;color:#ffcf4a;text-shadow:0 1px 4px #0006}
+.pk-vs.big{font-size:22px}
+.pk-dots{display:inline-flex;gap:4px}
+.pk-dots i{width:7px;height:7px;border-radius:50%;background:#ffffff4d;transition:background .25s,scale .25s}
+.pk-dots i.current{background:#ffffffa6}
+.pk-dots i.done{background:#ffcf4a;scale:1.15}
+
+/* Quiz header: replaces the title while a PK is on. */
+#app .quiz-header .pk-hud{display:flex;align-items:center;gap:6px;padding:4px 6px;border-radius:20px;background:#0b1a3a59;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+.pk-rival{display:inline-flex;align-items:center;gap:6px}
+.pk-rival.bump .pk-avatar{animation:pk-bump .5s cubic-bezier(.3,1.6,.5,1)}
+@keyframes pk-bump{30%{scale:1.25}}
+.pk-ping{position:absolute;left:50%;top:calc(var(--quiz-top-inset,0px) + 74px);translate:-50% 0;z-index:5;padding:6px 12px;border-radius:14px;background:#0b1a3acc;color:#fff;font-size:12px;white-space:nowrap;pointer-events:none;animation:pk-ping 1.9s ease forwards}
+@keyframes pk-ping{0%{opacity:0;translate:-50% -6px}12%{opacity:1;translate:-50% 0}80%{opacity:1}100%{opacity:0}}
+
+/* Cover entry: a third tool in the dock. */
+#app .cover-page .cover-dock:has(.cover-pk){grid-template-columns:minmax(0,1.2fr) minmax(0,1fr)}
+#app .cover-page .cover-dock-links:has(.cover-pk){grid-template-columns:repeat(3,1fr)}
+#app .cover-page .cover-tool:nth-child(2):has(+ .cover-pk){position:relative}
+#app .cover-page .cover-tool:nth-child(2):has(+ .cover-pk)::after{content:'';position:absolute;right:0;top:10px;bottom:10px;width:1px;background:#ffffff2e}
+#app .cover-page .cover-pk .pk-vs{display:grid;place-items:center;height:24px;font-size:16px;line-height:1}
+
+/* Matchmaking */
+.pk-match{position:absolute;inset:0;z-index:60;display:grid;place-items:center;padding:24px;background:radial-gradient(circle at 50% 40%,#2350f0e6,#0b1a3af2 70%);opacity:0;transition:opacity .25s}
+.pk-match.shown{opacity:1}.pk-match.leaving{opacity:0}
+.pk-match-card{width:100%;max-width:320px;text-align:center;color:#fff}
+.pk-match-title{display:block;font-size:14px;letter-spacing:.08em;opacity:.85}
+.pk-match-row{display:flex;align-items:center;justify-content:space-around;margin:28px 0 22px}
+.pk-match-side{display:grid;justify-items:center;gap:8px;min-width:96px}
+.pk-match-side .pk-avatar{width:64px;height:64px;font-size:26px;border-width:3px}
+.pk-match-side b{font-size:15px}.pk-match-side small{font-size:11px;padding:2px 8px;border-radius:8px;background:#ffffff26}
+.pk-match .pk-vs.big{font-size:34px;animation:pk-vs-pulse 1s ease-in-out infinite}
+@keyframes pk-vs-pulse{50%{scale:1.15}}
+.pk-match-side.rival{position:relative}
+.pk-reel{position:absolute;top:0;left:50%;width:64px;height:64px;translate:-50% 0;overflow:hidden;border-radius:50%}
+.pk-reel .pk-avatar{width:64px;height:64px;font-size:26px;border-width:3px;animation:pk-reel .5s linear infinite}
+@keyframes pk-reel{to{translate:0 -100%}}
+.pk-match:not(.locked) .pk-match-side.rival>.pk-avatar,.pk-match:not(.locked) .pk-match-side.rival b,.pk-match:not(.locked) .pk-match-side.rival small{visibility:hidden}
+.pk-match.locked .pk-reel{display:none}
+.pk-match.locked .pk-match-side.rival>.pk-avatar{animation:pk-lock .4s cubic-bezier(.3,1.6,.5,1)}
+@keyframes pk-lock{0%{scale:.6}100%{scale:1}}
+.pk-match p{margin:0;font-size:12px;line-height:1.6;opacity:.8}
+
+/* Opponent pin on the guess map */
+.gm-pin.rival i{background:linear-gradient(135deg,#ffcf4a,#f59e0b);box-shadow:0 4px 10px #b4530959}
+.gm-pin.rival .gm-tag{top:8px;background:linear-gradient(180deg,#f8b72cf2,#e8900cf2);border-color:#ffe6a8b3}
+
+/* Result card */
+.result-page .pk-result{padding:16px 14px!important;margin:0 0 6px!important;border-radius:16px!important;background:linear-gradient(160deg,#eef3ff,#f7f9ff)!important}
+.result-page .pk-result.win{background:linear-gradient(160deg,#fff4d6,#fffaf0)!important}
+.pk-result-top{display:flex;align-items:center;justify-content:space-between}
+.pk-stamp{padding:3px 12px;border-radius:6px;border:2px solid currentColor;font-size:16px;font-weight:800;letter-spacing:.1em;color:#5b6b85;rotate:-4deg}
+.pk-result.win .pk-stamp{color:#e8900c}.pk-result.lose .pk-stamp{color:#6b7383}
+.pk-versus{display:flex;align-items:center;justify-content:space-around;margin:14px 0 10px}
+.pk-player{display:grid;justify-items:center;gap:2px}
+.pk-player .pk-avatar{width:40px;height:40px;font-size:16px}
+.pk-player b{font-size:28px;font-weight:750;color:#171e2b;font-variant-numeric:tabular-nums}
+.pk-player small{font-size:11px;color:#6b7383}
+.pk-result .pk-vs{color:#2855f7;text-shadow:none}
+.pk-rows{display:grid;gap:2px}
+.pk-row{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:10px;padding:6px 0;border-top:1px solid #e5e9f2;font-size:12px;color:#6b7383}
+.pk-row b{font-weight:600;color:#3b4456;font-variant-numeric:tabular-nums}
+.pk-row b:first-child{text-align:right}.pk-row b.lead{color:#2855f7}
+.pk-result.win .pk-row b.lead{color:#d97706}
+.pk-bonus{margin:8px 0 0;font-size:10px;color:#a07a3c;text-align:center}
+@media (prefers-reduced-motion: reduce){.pk-match .pk-vs.big,.pk-reel .pk-avatar,.pk-rival.bump .pk-avatar{animation:none}}

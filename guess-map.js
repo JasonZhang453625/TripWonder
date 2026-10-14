@@ -231,6 +231,19 @@
         // Pins nearly on top of each other: the card already shows the distance.
         this.distEl.classList.toggle('tight', Math.hypot(this.answer.x - this.pin.x, this.answer.y - this.pin.y) * s < 80);
       }
+      for (const mark of this.extraPins || []) this.at(mark.el, mark.x, mark.y);
+    }
+    // An extra labelled pin after the reveal (the PK opponent's guess). It follows pan and zoom like the others.
+    addMarker(lat, lng, label = '', kind = 'rival') {
+      if (this.dead) return null;
+      const p = toXY(lat, lng), el = document.createElement('span');
+      el.className = `gm-pin ${kind} drop`;
+      el.innerHTML = '<i></i><em class="gm-tag"></em>';
+      el.querySelector('.gm-tag').textContent = label;
+      this.marks.append(el);
+      (this.extraPins ||= []).push({ el, x: p.x, y: p.y });
+      this.at(el, p.x, p.y);
+      return el;
     }
     // Capital names never overlap: in priority order each takes the right side, else the left, else hides.
     declutter(s) {

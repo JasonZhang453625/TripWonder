@@ -28,6 +28,7 @@
     ticket:'M2 6h20v4a2 2 0 0 0 0 4v4H2v-4a2 2 0 0 0 0-4V6Zm13 0v3m0 3v2m0 2v2'
   };
   const icon = name => `<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="${paths[name] || paths.spark}"/></svg>`;
+  window.TWIcon = icon;
   const esc = value => String(value ?? '').replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
   const app = document.querySelector('#app'), modalRoot = document.querySelector('#modal-root');
   const today = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; };
@@ -48,13 +49,17 @@
   try { const raw=new URL(location.href).searchParams.get('challenge');if(raw){const token=raw.replace(/-/g,'+').replace(/_/g,'/'),candidate=JSON.parse(atob(token));if(libraryOrder.includes(candidate.cityId)&&Number.isInteger(candidate.score)&&candidate.score>=0&&candidate.score<=100)invitation=candidate;} } catch {}
   // A shared destination must stay playable even when it is outside today's draw.
   if(invitation&&!order.includes(invitation.cityId))order[order.length-1]=invitation.cityId;
-  const QUIZ_DURATION = 2 * 60 * 1000;
+  const QUIZ_DURATION = 60 * 1000;
+  const mmss = ms => { const sec=Math.max(0,Math.ceil(ms/1000)); return String(Math.floor(sec/60)).padStart(2,'0')+':'+String(sec%60).padStart(2,'0'); };
   const s = {
     view:invitation?'cover':'home', cityId: invitation?.cityId || order.find(id => !daily[id]?.result && !daily[id]?.skipped) || order[0],
     scene:0, exploring:false, deadline:0, quizRemaining:QUIZ_DURATION, clues:new Set(), visited:new Set([0]), questions:[], answers:[], q:0, selected:null,
     result:null, days:2, pace:'舒适', theme:'自动', date:'', route:null, rank:'今日', collectionBack:'today', itineraryBack:'home',
-    daily, benefits, badges:{}, invitation, itineraries:{}, bookmarks:{}, rulesSeen:false
+    daily, benefits, badges:{}, invitation, itineraries:{}, bookmarks:{}, rulesSeen:false, pk:null, mallBack:'home'
   };
+  // Gameplay layer (tw-store.js): coins, simulated PK and scene notes, each switchable for the live demo.
+  const feature = name => !!window.TW_FEATURES?.[name] && !!window.TWStore && !!{wallet:window.Wallet,pk:window.PKMode,bubbles:window.SceneBubbles}[name];
+  let bubbles=null, pkMatching=false;
   let timer, viewer, mapView, resultReveal, coverCarousel, clueSheet, toastTimer, transition=0, pendingCleanup, rulesCleanup, previousFocus, activeShare, resultRouteReturn;
   const cityProgress = new Map();
   const city = () => C.cities.find(c => c.id === s.cityId) || C.cities[0];
@@ -125,7 +130,7 @@
     + `<button class="th-ai" data-action="home-ai"><img src="${h}ai.png" alt=""><span>${tr('问问 AI，或按住说话','Ask AI or hold to speak')}</span></button>${homeNav()}</div>`; }
   function cover() {
     const c=city(),record=current(),friend=s.invitation?.cityId===c.id,index=order.indexOf(c.id);
-    return `<div class="page cover-page" data-cover-city="${esc(c.id)}" role="region" aria-roledescription="${tr('轮播','carousel')}" aria-label="${tr('今日目的地，左右滑动切换','Today’s destinations. Swipe left or right to switch')}"><div class="cover-hero" tabindex="0" aria-label="${tr(`第 ${index+1} 个目的地，共 ${order.length} 个；左右方向键切换`,`Destination ${index+1} of ${order.length}. Use the left and right arrow keys to switch`)}">${img(c.scenes[0].id,tr('待探索的目的地','A destination to explore'),true)}</div><header class="immersive-top"><button class="glass round" data-go="home" aria-label="${tr('返回首页','Back to home')}">${icon('back')}</button><span class="cover-name">TripWonder</span><button class="glass" data-action="rules" aria-haspopup="dialog" aria-expanded="false">${tr('玩法','How to play')}</button></header><div class="cover-footer"><nav class="cover-dock" aria-label="${tr('探索与发现','Explore and discover')}"><div class="cover-dock-links"><button class="cover-tool" data-go="atlas">${icon('atlas')}<span>${tr('图鉴','Atlas')}</span></button><button class="cover-tool" data-go="ranking">${icon('trophy')}<span>${tr('排行榜','Rankings')}</span></button></div><button class="primary cover-enter" data-action="${record.result&&!friend?'show-result':'start'}"><span>${friend?tr('接受好友挑战','Accept friend’s challenge'):record.result?tr('查看探索结果','View results'):s.exploring?tr('继续探索','Continue exploring'):tr('进入探索','Start exploring')}</span>${icon('next')}</button></nav></div></div>`;
+    return `<div class="page cover-page" data-cover-city="${esc(c.id)}" role="region" aria-roledescription="${tr('轮播','carousel')}" aria-label="${tr('今日目的地，左右滑动切换','Today’s destinations. Swipe left or right to switch')}"><div class="cover-hero" tabindex="0" aria-label="${tr(`第 ${index+1} 个目的地，共 ${order.length} 个；左右方向键切换`,`Destination ${index+1} of ${order.length}. Use the left and right arrow keys to switch`)}">${img(c.scenes[0].id,tr('待探索的目的地','A destination to explore'),true)}</div><header class="immersive-top"><button class="glass round" data-go="home" aria-label="${tr('返回首页','Back to home')}">${icon('back')}</button><span class="cover-name">TripWonder</span><button class="glass" data-action="rules" aria-haspopup="dialog" aria-expanded="false">${tr('玩法','How to play')}</button></header><div class="cover-footer"><nav class="cover-dock" aria-label="${tr('探索与发现','Explore and discover')}"><div class="cover-dock-links"><button class="cover-tool" data-go="atlas">${icon('atlas')}<span>${tr('图鉴','Atlas')}</span></button><button class="cover-tool" data-go="ranking">${icon('trophy')}<span>${tr('排行榜','Rankings')}</span></button>${feature('pk')&&!record.result&&!friend&&!s.exploring?`<button class="cover-tool cover-pk" data-action="pk-start"><b class="pk-vs" aria-hidden="true">VS</b><span>${tr('PK 对战','PK battle')}</span></button>`:''}</div><button class="primary cover-enter" data-action="${record.result&&!friend?'show-result':'start'}"><span>${friend?tr('接受好友挑战','Accept friend’s challenge'):record.result?tr('查看探索结果','View results'):s.exploring?tr('继续探索','Continue exploring'):tr('进入探索','Start exploring')}</span>${icon('next')}</button></nav></div></div>`;
   }
   function bgmButton() { if(!window.SceneBGM||!window.BGM_TRACKS?.[s.cityId])return ''; const on=!SceneBGM.isMuted(); return `<button class="glass round bgm" data-action="bgm" aria-pressed="${on}" aria-label="${tr('背景音乐','Background music')}">${icon(on?'sound':'soundOff')}</button>`; }
   function explore(index=s.scene) { const scene=city().scenes[index],last=index===city().scenes.length-1; return `<div class="page explore-page"><div class="photo-viewport" tabindex="0" role="region" aria-label="${tr('景点照片，可双指缩放、拖动和平移','Scene photo. Pinch to zoom, drag to pan')}"><div class="photo-plane">${window.IMMERSIVE_SCENES?.[scene.id]?'':img(scene.id,tr(`第${index+1}处景点`,`Scene ${index+1}`),true)}${scene.hotspots.map((h,i)=>`<button class="hotspot ${s.clues.has(`${index}-${i}`)?'read':''}" data-clue="${i}" aria-label="${tr(`查看线索 ${i+1}`,`Open clue ${i+1}`)}" aria-haspopup="dialog" style="left:${h.x}%;top:${h.y}%;--pulse-delay:${i*-.8}s"><span class="hotspot-dot" aria-hidden="true"></span></button>`).join('')}</div></div><header class="immersive-top"><button class="glass round" data-action="leave" aria-label="${tr('退出探索','Leave exploration')}">${icon('back')}</button><span class="scene-counter">${index+1} / ${city().scenes.length}</span><span class="top-right">${bgmButton()}<button class="glass round fav" data-action="fav" aria-pressed="${!!s.bookmarks[s.cityId]}" aria-label="${favLabel(s.bookmarks[s.cityId])}">${icon('heart')}</button></span></header><div class="explore-bottom"><div class="scene-nav${last?' scene-nav-last':''}" role="group" aria-label="${tr('场景导航','Scene navigation')}"><button class="prev-scene" data-action="prev-scene" aria-label="${tr('上一处','Previous scene')}"${index?'':' disabled'}>${icon('back')}</button><button data-action="next-scene" aria-label="${last?tr('开始挑战','Start the quiz'):tr('下一处','Next scene')}">${last?tr('开始挑战','Start the quiz'):icon('next')}</button></div></div></div>`; }
@@ -135,7 +140,7 @@
     return `<section class="quiz-top"><div class="quiz-progress" aria-label="${tr(`第 ${s.q+1} 题，共 3 题`,`Question ${s.q+1} of 3`)}">${s.questions.map((_,i)=>`<span class="${i<s.q?'done':i===s.q?'current':''}"></span>`).join('')}</div><h1 class="quiz-question" tabindex="-1">${esc(f(q,'q'))}</h1></section><div class="question-card quiz-options" role="group" aria-label="${tr('选择答案','Choose an answer')}">${f(q,'options').map((o,i)=>`<button class="option ${s.selected===i?'selected':''}" data-option="${i}" aria-pressed="${s.selected===i}"><b class="option-letter">${String.fromCharCode(65+i)}</b><span class="option-text">${esc(o)}</span><span class="option-check" aria-hidden="true">${icon('check')}</span></button>`).join('')}</div>`;
   }
   function quiz() {
-    return `<div class="page quiz-page"><div class="quiz-backdrop" aria-hidden="true"></div><header class="page-head quiz-header"><button class="glass round quiz-back" data-action="quiz-back" aria-label="${tr('返回刚刚的场景','Back to the last scene')}">${icon('back')}</button><strong>${tr('线索挑战','Clue quiz')}</strong><span class="glass timer quiz-timer" role="timer" aria-label="${tr('答题剩余时间','Time left')}"><svg class="icon quiz-clock" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l3 2"/></svg><b id="timer">02:00</b></span></header><main class="quiz-body">${quizBody()}</main><footer class="quiz-submit"><button class="primary" data-action="submit" ${s.selected===null?'disabled':''}><span>${submitLabel()}</span>${icon('next')}</button></footer></div>`;
+    return `<div class="page quiz-page"><div class="quiz-backdrop" aria-hidden="true"></div><header class="page-head quiz-header"><button class="glass round quiz-back" data-action="quiz-back" aria-label="${tr('返回刚刚的场景','Back to the last scene')}">${icon('back')}</button>${s.pk?PKMode.hud(s.pk,{mine:s.answers.length,total:s.questions.length,elapsed:QUIZ_DURATION-s.quizRemaining}):`<strong>${tr('线索挑战','Clue quiz')}</strong>`}<span class="glass timer quiz-timer" role="timer" aria-label="${tr('答题剩余时间','Time left')}"><svg class="icon quiz-clock" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l3 2"/></svg><b id="timer">${mmss(s.quizRemaining)}</b></span></header><main class="quiz-body">${quizBody()}</main><footer class="quiz-submit"><button class="primary" data-action="submit" ${s.selected===null?'disabled':''}><span>${submitLabel()}</span>${icon('next')}</button></footer></div>`;
   }
   function submitLabel() { return s.q===2?tr('前往地图','Go to the map'):tr('下一题','Next question');
   }
@@ -193,7 +198,8 @@
     const page=app.querySelector('.guess-page'),card=app.querySelector('.guess-card'),back=page.querySelector('[data-action="guess-back"]');page.classList.add('done');back.disabled=false;back.setAttribute('aria-label',tr('返回首页','Back to home'));page.querySelector('.guess-top h2').textContent=revealTitle();card.innerHTML=guessCard();ChallengeMotion.reveal(card,page.querySelector('.guess-top h2'));
     const counters=[...card.querySelectorAll('[data-count]')];counters.forEach(el=>el.textContent='0');
     card.querySelector('.primary').focus({preventScroll:true});
-    mapView.remeasure();mapView.reveal(city(),{name:cname(city()),km},()=>countUp(counters));
+    const rival=s.pk&&s.result?.pk;
+    mapView.remeasure();mapView.reveal(city(),{name:cname(city()),km},()=>{countUp(counters);if(rival)mapView?.addMarker(rival.guess.lat,rival.guess.lng,tr(`${rival.opponent.name} · ${rival.guess.km} km`,`${cname(rival.opponent)} · ${rival.guess.km} km`));});
   }
   function countUp(els) {
     const t0=performance.now(),dur=matchMedia('(prefers-reduced-motion: reduce)').matches?0:650;
@@ -255,7 +261,7 @@
       </div>
     </section>`;
   }
-  function result() { const r=s.result || current().result; if(!r)return empty(tr('目的地尚未揭晓','Destination not revealed yet'),tr('完成探索和三道题，再来查看结果。','Finish exploring and the three questions to see your result.')); const c=city(), name=esc(cname(c)), benefit=benefitFor(r), status=benefitStatus(c.id), next=nextDestination(s.cityId,true), prev=previousDestination(s.cityId), medalReady=r.score>=MEDAL_SCORE||!!s.badges[c.id]; return `<div class="page result-page">${resultOpening(c,r)}<div class="result-details">${r.guess?`<section class="content-card guess-summary"><div class="row"><h3>${tr('地图定位','Map guess')}</h3><span class="pill">${esc(guessVerdict(r.guess))}</span></div><div class="guess-mini">${GuessMap.snapshot(r.guess,c)}</div><div class="guess-legend"><span class="you">${tr('你的落点','Your pin')}</span><span class="target">${name}</span></div><div class="guess-stats"><div><b>${r.guess.km} km</b><small>${tr('直线距离','Straight-line distance')}</small></div><div><b>+${r.guess.points}</b><small>${tr(`定位得分 / ${GUESS.max}`,`Map points / ${GUESS.max}`)}</small></div><div><b>${esc(place(r.guess.city||r.guess.province)||'—')}</b><small>${tr('你的落点','Your pin')}</small></div></div></section>`:''}<section class="content-card"><h3>${tr('三题一起揭晓','Your three answers')}</h3>${r.answers.map((a,i)=>`<button class="answer-line" data-review="${i}" style="width:100%;text-align:left">${icon(a.correct?'check':'book')}<span>${tr(`第 ${i+1} 题 · ${a.correct?'答对':'查看解析'}`,`Question ${i+1} · ${a.correct?'Correct':'See explanation'}`)}</span><b>${tr(`${a.correct?'+'+a.points:'0'} 分`,`${a.correct?'+'+a.points:'0'} pts`)}</b>${icon('next')}</button>`).join('')}</section><section class="content-card benefit badge-benefit" aria-label="${tr('纪念徽章','Keepsake badge')}"><div class="row"><div><strong>${badgeTitle(c)}</strong><p>${medalReady?tr('珍藏这一站的发现','Keep a memento of this stop'):tr(`本次 ${r.score} 分，达到 ${MEDAL_SCORE} 分可领取`,`You scored ${r.score}. Reach ${MEDAL_SCORE} to claim it`)}</p></div><button data-action="claim"${medalReady?'':' disabled'}>${s.badges[c.id]?tr('查看徽章','View badge'):medalReady?tr('领取徽章','Claim badge'):tr(`${MEDAL_SCORE} 分解锁`,`Unlocks at ${MEDAL_SCORE}`)}</button></div></section><section class="content-card benefit coupon-benefit" aria-label="${tr('优惠权益','Travel perks')}"><div class="coupon-panel"><div class="coupon-head"><strong>${esc(benefit.name)}</strong><button data-action="claim-coupon">${status==='active'?tr('查看权益','View perks'):status==='expired'?tr('重新领取','Claim again'):tr('领取权益','Claim perks')}</button></div><div class="coupon-tickets" tabindex="0" aria-label="${tr('优惠券列表，左右滑动查看','Coupons. Swipe sideways to see them all')}">${RESULT_COUPONS.map(c=>`<div class="coupon-ticket"><b>${couponTitle(c)}</b><span>${f(c,'kind')} · ${f(c,'rule')}</span></div>`).join('')}</div><p class="coupon-terms">${rewardTerms()}</p></div></section><div class="result-actions"><button class="primary" data-go="route">${tr(`为我规划${name}之旅`,`Plan my ${name} trip`)} ${icon('next')}</button><div class="stop-nav"><button class="glass-light prev-city" data-action="prev-city"${prev?'':' disabled'}>${icon('back')} ${tr('上一个目的地','Previous destination')}</button>${next?`<button class="secondary next-city" data-action="next-city">${tr('下一个目的地','Next destination')} ${icon('next')}</button>`:`<button class="secondary next-city" data-go="home">${tr('返回首页','Back to home')}</button>`}</div></div></div></div>`; }
+  function result() { const r=s.result || current().result; if(!r)return empty(tr('目的地尚未揭晓','Destination not revealed yet'),tr('完成探索和三道题，再来查看结果。','Finish exploring and the three questions to see your result.')); const c=city(), name=esc(cname(c)), benefit=benefitFor(r), status=benefitStatus(c.id), next=nextDestination(s.cityId,true), prev=previousDestination(s.cityId), medalReady=r.score>=MEDAL_SCORE||!!s.badges[c.id]; return `<div class="page result-page">${resultOpening(c,r)}<div class="result-details">${r.pk?PKMode.resultCard(r.pk,r):''}${feature('wallet')&&r.coins?Wallet.earnedCard(r.coins):''}${r.guess?`<section class="content-card guess-summary"><div class="row"><h3>${tr('地图定位','Map guess')}</h3><span class="pill">${esc(guessVerdict(r.guess))}</span></div><div class="guess-mini">${GuessMap.snapshot(r.guess,c)}</div><div class="guess-legend"><span class="you">${tr('你的落点','Your pin')}</span><span class="target">${name}</span></div><div class="guess-stats"><div><b>${r.guess.km} km</b><small>${tr('直线距离','Straight-line distance')}</small></div><div><b>+${r.guess.points}</b><small>${tr(`定位得分 / ${GUESS.max}`,`Map points / ${GUESS.max}`)}</small></div><div><b>${esc(place(r.guess.city||r.guess.province)||'—')}</b><small>${tr('你的落点','Your pin')}</small></div></div></section>`:''}<section class="content-card"><h3>${tr('三题一起揭晓','Your three answers')}</h3>${r.answers.map((a,i)=>`<button class="answer-line" data-review="${i}" style="width:100%;text-align:left">${icon(a.correct?'check':'book')}<span>${tr(`第 ${i+1} 题 · ${a.correct?'答对':'查看解析'}`,`Question ${i+1} · ${a.correct?'Correct':'See explanation'}`)}</span><b>${tr(`${a.correct?'+'+a.points:'0'} 分`,`${a.correct?'+'+a.points:'0'} pts`)}</b>${icon('next')}</button>`).join('')}</section><section class="content-card benefit badge-benefit" aria-label="${tr('纪念徽章','Keepsake badge')}"><div class="row"><div><strong>${badgeTitle(c)}</strong><p>${medalReady?tr('珍藏这一站的发现','Keep a memento of this stop'):tr(`本次 ${r.score} 分，达到 ${MEDAL_SCORE} 分可领取`,`You scored ${r.score}. Reach ${MEDAL_SCORE} to claim it`)}</p></div><button data-action="claim"${medalReady?'':' disabled'}>${s.badges[c.id]?tr('查看徽章','View badge'):medalReady?tr('领取徽章','Claim badge'):tr(`${MEDAL_SCORE} 分解锁`,`Unlocks at ${MEDAL_SCORE}`)}</button></div></section><section class="content-card benefit coupon-benefit" aria-label="${tr('优惠权益','Travel perks')}"><div class="coupon-panel"><div class="coupon-head"><strong>${esc(benefit.name)}</strong><button data-action="claim-coupon">${status==='active'?tr('查看权益','View perks'):status==='expired'?tr('重新领取','Claim again'):tr('领取权益','Claim perks')}</button></div><div class="coupon-tickets" tabindex="0" aria-label="${tr('优惠券列表，左右滑动查看','Coupons. Swipe sideways to see them all')}">${RESULT_COUPONS.map(c=>`<div class="coupon-ticket"><b>${couponTitle(c)}</b><span>${f(c,'kind')} · ${f(c,'rule')}</span></div>`).join('')}</div><p class="coupon-terms">${rewardTerms()}</p></div></section>${feature('wallet')?Wallet.sponsorSlot(c.id,C.cities):''}<div class="result-actions"><button class="primary" data-go="route">${tr(`为我规划${name}之旅`,`Plan my ${name} trip`)} ${icon('next')}</button><div class="stop-nav"><button class="glass-light prev-city" data-action="prev-city"${prev?'':' disabled'}>${icon('back')} ${tr('上一个目的地','Previous destination')}</button>${next?`<button class="secondary next-city" data-action="next-city">${tr('下一个目的地','Next destination')} ${icon('next')}</button>`:`<button class="secondary next-city" data-go="home">${tr('返回首页','Back to home')}</button>`}</div></div></div></div>`; }
   const badgeTitle = c => tr(`奇境挑战徽章 · ${esc(c.name)}`,`TripWonder badge · ${esc(cname(c))}`);
   function distance(a,b) { const rad=Math.PI/180, dLat=(b.lat-a.lat)*rad, dLng=(b.lng-a.lng)*rad; const h=Math.sin(dLat/2)**2+Math.cos(a.lat*rad)*Math.cos(b.lat*rad)*Math.sin(dLng/2)**2; return 12742*Math.asin(Math.sqrt(h)); }
   function travelMinutes(a,b) { const km=distance(a,b); return Math.max(15,Math.ceil((km/32*60+12)/5)*5); }
@@ -315,6 +321,8 @@
   }
   function showFriendComparison() {
     if(s.view!=='result'||s.invitation?.cityId!==s.cityId)return;
+    // A friend PK already shows the full comparison in its VS card.
+    if((s.result||current().result)?.pk)return;
     const score=(s.result||current().result)?.score;if(score===undefined)return;
     const other=s.invitation.score,difference=score-other;
     const card=document.createElement('section');card.className='content-card friend-compare';
@@ -327,7 +335,27 @@
   function atlas() { return CollectionPages.atlas({order,cities:C.cities,daily:s.daily,badges:s.badges,img,head,esc,back:s.collectionBack}); }
   function ranking() { return CollectionPages.ranking({order,cities:C.cities,daily:s.daily,rank:s.rank,head,esc,icon,img,back:s.collectionBack}); }
   function itinerary() { const items=Object.entries(s.itineraries); return `<div class="page">${head(tr('我的行程','My Trips'),s.itineraryBack)}<div class="pad"><h2>${items.length?tr(`${items.length} 份已保存路线`,items.length===1?'1 saved route':`${items.length} saved routes`):tr('还没有行程','No trips yet')}</h2></div>${items.length?items.map(([id,it])=>`<section class="content-card itinerary-card"><strong>${tr(`${esc(it.city)} ${it.days} 日`,`${esc(cname(C.cities.find(c=>c.id===id)))} · ${daysLabel(it.days)}`)}</strong><p>${esc(it.date || tr('日期待定','Date to be decided'))} · ${tr(`${it.route.flat().length} 处停留`,`${it.route.flat().length} stops`)} · ${tr(`${esc(it.pace)}节奏`,`${esc(term(it.pace))} pace`)}</p><button class="secondary" data-itinerary="${id}">${tr('查看并调整','View and adjust')}</button></section>`).join(''):`<div class="pad"><button class="primary" data-go="today">${tr('去发现目的地','Discover a destination')}</button></div>`}</div>`; }
-  function profile() { return ProfilePage.render({cities:C.cities,order,daily:s.daily,badges:s.badges,itineraries:s.itineraries,head,esc,icon}); }
+  function profile() { return ProfilePage.render({cities:C.cities,order,daily:s.daily,badges:s.badges,itineraries:s.itineraries,head,esc,icon,extra:feature('wallet')?Wallet.profileCard():''}); }
+  function mall() { return feature('wallet')?Wallet.mall({head,back:s.mallBack,cities:C.cities,solved:Object.keys(s.daily).filter(id=>s.daily[id]?.result)}):empty(tr('奇境币兑换','Coin rewards'),tr('当前演示未开启奇境币。','Wonder Coins are switched off in this demo.')); }
+  // Names a scene note must not show before the map guess (scene-bubbles.js replaces them with "here").
+  function hiddenNames() { const c=city(),parts=value=>String(value||'').split(/[·\s,，、]+/); return [c.name,c.nameEn,c.region,String(c.region||'').replace(/^中国|特别行政区$|省$|市$|自治区$/g,''),c.regionEn,String(c.regionEn||'').replace(/ SAR$/,''),...c.scenes.flatMap(sc=>[...parts(sc.name),...String(sc.nameEn||'').split('·').map(x=>x.trim())])]; }
+  function composeNote(at) {
+    const target=bubbles;
+    sheet(tr('留下你的气泡','Leave a note'),SceneBubbles.composeMarkup());
+    SceneBubbles.bindCompose(modalRoot.querySelector('.sheet'),note=>{closeModal();target?.add({...at,...note});toast(tr('留言已放上，下一位旅人会看到它','Your note is up for the next traveller'));});
+  }
+  function rememberExplored() { const scene=city().scenes[s.scene];if(scene&&window.TWStore)TWStore.update(data=>{data.explored[scene.id]={cityId:s.cityId,at:Date.now()};}); }
+  function beginChallenge() {
+    // Accepting a friend's link plays against the friend; a fresh normal start drops any earlier PK.
+    if(!s.exploring){if(s.invitation?.cityId===s.cityId&&feature('pk')){startPK(s.invitation);return;}s.pk=null;}
+    start();
+  }
+  function startPK(invitation=null) {
+    if(pkMatching||s.view!=='cover')return;
+    s.pk=PKMode.create({city:city(),day,points:QUIZ_POINTS,guessScore:km=>guessScore(km),guessMax:guessRule().max,duration:QUIZ_DURATION,invitation});
+    pkMatching=true;
+    PKMode.match(document.querySelector('#phone'),s.pk).then(()=>{pkMatching=false;if(s.view==='cover')start();});
+  }
   function empty(title,body) { return `<div class="page">${head(title)}<div class="empty"><p>${body}</p><button class="primary" data-go="today">${tr('探索今日目的地','Explore today’s destinations')}</button></div></div>`; }
 
   function cancelPending() { transition++; pendingCleanup?.(); pendingCleanup=null; }
@@ -378,6 +406,7 @@
   }
   function render(ready,prepared,{deferRules=false}={}) {
     QuizScene.destroy();
+    bubbles?.destroy();bubbles=null;
     coverCarousel?.destroy();coverCarousel=null;
     cancelPending(); closeModal(); pauseQuizTimer(); viewer?.destroy(); viewer=null; mapView?.destroy(); mapView=null;resultReveal?.destroy();resultReveal=null;
     if(s.view!=='explore')window.ImmersiveSceneMedia?.clear();
@@ -386,7 +415,7 @@
     document.querySelector('#phone').classList.toggle('quiz-mode',s.view==='quiz');
     document.querySelector('#phone').classList.toggle('home-mode',s.view==='home');
     document.querySelector('#phone').classList.toggle('result-mode',s.view==='result'&&!!(s.result||current().result));
-    const views={home,cover,explore,quiz,guess,result,route,atlas,ranking,itinerary,profile};
+    const views={home,cover,explore,quiz,guess,result,route,atlas,ranking,itinerary,profile,mall};
     const frame=document.createElement('div');
     if(prepared){prepared.page.classList.remove('scene-staging');prepared.page.inert=false;prepared.page.removeAttribute('aria-hidden');frame.append(prepared.page);}
     else frame.innerHTML=(views[s.view]||home)();
@@ -395,11 +424,11 @@
     app.replaceChildren(...frame.childNodes);app.scrollTop=0;showOpeningWarnings();showFriendComparison();
     document.querySelectorAll('.flow button').forEach(b=>b.classList.toggle('active',b.dataset.go===s.view || (b.dataset.go==='today'&&['cover','explore','quiz','guess','result','route','atlas','ranking'].includes(s.view))));
     app.querySelectorAll('img').forEach(el=>el.addEventListener('error',()=>{el.insertAdjacentHTML('afterend','<span class="error-image">'+tr('照片未能载入','Photo failed to load')+'</span>');},{once:true}));
-    if(s.view==='explore') { const root=app.querySelector('.photo-viewport'),config=window.IMMERSIVE_SCENES?.[activePhoto().id];viewer=prepared?.viewer||(config&&window.ImmersivePhotoViewer?new ImmersivePhotoViewer(root,activePhoto(),config):new PhotoViewer(root,activePhoto()));viewer.ready?.then(()=>{if(viewer?.root===root)viewer.present?.();},()=>{}); }
+    if(s.view==='explore') { const root=app.querySelector('.photo-viewport'),config=window.IMMERSIVE_SCENES?.[activePhoto().id];viewer=prepared?.viewer||(config&&window.ImmersivePhotoViewer?new ImmersivePhotoViewer(root,activePhoto(),config):new PhotoViewer(root,activePhoto()));viewer.ready?.then(()=>{if(viewer?.root===root)viewer.present?.();},()=>{}); rememberExplored(); if(feature('bubbles'))bubbles=SceneBubbles.mount({root,viewer,scene:city().scenes[s.scene],hiddenNames:hiddenNames(),onCompose:composeNote}); }
     window.SceneBGM?.sync(s.view==='explore'?s.cityId:null);
     if(s.view==='quiz'){resumeQuizTimer();QuizScene.set(app.querySelector('.quiz-page'),city(),s.questions[s.q]);}
     if(s.view==='guess'&&!mapView)mountGuess();
-    if(s.view==='result')resultReveal=ResultReveal.mount(app);
+    if(s.view==='result'){resultReveal=ResultReveal.mount(app);if(feature('wallet'))Wallet.animateEarned(app);}
     if(s.view==='cover' && !s.rulesSeen&&!deferRules){s.rulesSeen=true;showRules();}
     if(s.view==='home'&&!s.promoSeen){s.promoSeen=true;HomePromo.show({phone:document.querySelector('#phone'),getTarget:()=>app.querySelector('.th-wonder .th-app-icon'),onAccept:()=>go('today')});}else if(s.view!=='home')HomePromo.dismiss();
     if(s.view==='cover')mountCover();else SceneMedia.retain([]);
@@ -407,8 +436,8 @@
   function activateCity(id) {
     if(s.cityId!==id){
       pauseQuizTimer();
-      cityProgress.set(s.cityId,{scene:s.scene,exploring:s.exploring,quizRemaining:s.quizRemaining,clues:new Set(s.clues),visited:new Set(s.visited),questions:[...s.questions],answers:[...s.answers],q:s.q,selected:s.selected,guess:s.guess,guessDone:s.guessDone});
-      Object.assign(s,cityProgress.get(id)||{scene:0,exploring:false,quizRemaining:QUIZ_DURATION,clues:new Set(),visited:new Set([0]),questions:[],answers:[],q:0,selected:null,guess:null,guessDone:false});
+      cityProgress.set(s.cityId,{scene:s.scene,exploring:s.exploring,quizRemaining:s.quizRemaining,clues:new Set(s.clues),visited:new Set(s.visited),questions:[...s.questions],answers:[...s.answers],q:s.q,selected:s.selected,guess:s.guess,guessDone:s.guessDone,pk:s.pk});
+      Object.assign(s,cityProgress.get(id)||{scene:0,exploring:false,quizRemaining:QUIZ_DURATION,clues:new Set(),visited:new Set([0]),questions:[],answers:[],q:0,selected:null,guess:null,guessDone:false,pk:null});
     }
     s.cityId=id;s.result=s.daily[id]?.result||null;s.route=null;s.days=2;s.pace='舒适';s.theme='自动';s.date='';
   }
@@ -463,6 +492,12 @@
         return SceneMedia.prepare(destinationPhoto);
       }}).then(shown=>{if(shown&&s.view==='cover'&&!s.rulesSeen){s.rulesSeen=true;showRules();}}).catch(error=>{if(error.name!=='AbortError')toast(tr('场景暂未载入，请重试','This scene didn’t load. Please try again.'));});
     }
+    if(view==='mall'&&previous!=='mall')s.mallBack=['result','profile','home'].includes(previous)?previous:'home';
+    if((previous==='result'&&view==='mall')||(previous==='mall'&&view==='result')){
+      if(previous==='result')resultRouteReturn={cityId:s.cityId,state:resultReveal?.snapshot()};
+      return ChallengeMotion.slide(()=>{s.view=view;render();if(view==='result'&&resultRouteReturn?.cityId===s.cityId)resultReveal?.restore(resultRouteReturn.state);},{force,back:previous==='mall',restoreScroll:false,prepare:()=>{cancelPending();}});
+    }
+    if(view==='mall'||previous==='mall')return ChallengeMotion.slide(commit,{force,back:previous==='mall'});
     if((previous==='profile'&&['atlas','ranking','itinerary'].includes(view))||(view==='profile'&&['atlas','ranking','itinerary'].includes(previous)))return ChallengeMotion.slide(commit,{force,back:view==='profile'});
     if((previous==='home'&&['atlas','ranking','profile'].includes(view))||(view==='home'&&['atlas','ranking','cover','result','profile'].includes(previous)))return ChallengeMotion.slide(commit,{force,back:view==='home'});
     if(['quiz','guess'].includes(previous)||['quiz','guess'].includes(view)||(view==='result'&&previous!==view))return ChallengeMotion.run(commit,{force,back:back||view==='cover'});
@@ -473,7 +508,7 @@
   function showRules() {
     closeModal(); const anchor=app.querySelector('[data-action="rules"]');if(!anchor)return;
     previousFocus=anchor;anchor.setAttribute('aria-expanded','true');
-    modalRoot.innerHTML=`<div class="rules-overlay"><section class="rules-popover" role="dialog" aria-modal="true" aria-labelledby="rules-title" tabindex="-1"><div class="rules-heading"><div><span class="rules-eyebrow">${tr('玩法说明','How to play')}</span><h2 id="rules-title">${tr('奇境挑战TripWonder','TripWonder Challenge')}</h2></div><button class="icon-btn" data-action="close" aria-label="${tr('关闭玩法','Close how to play')}">${icon('close')}</button></div><ol class="rules-steps">${[['探','Look','在全景画面中自由移动和缩放画面，探索场景中的文化背景线索！','Pan and zoom around each panorama to find clues about the culture and history of the place.'],['答','Quiz','在2分钟内根据收集到的线索完成答题挑战！','Use the clues you found to answer the quiz within 2 minutes.'],['猜','Guess','推测目的地地点，并在地图上标记位置。距离实际地点越近，得分越高！','Work out the destination and drop a pin on the map. The closer you are, the more points you score.'],['奖','Win','查看最终得分，点亮成就勋章！不仅可以一键规划目的地旅行路线，还能凭挑战排名领取丰厚优惠权益！','See your final score and unlock a badge. Plan a trip to the destination in one tap, and claim travel perks based on your result.']].map(([zh,enStep,zhText,enText])=>`<li><span${en()?' class="rules-step-en"':''}>${tr(zh,enStep)}</span><p>${tr(zhText,enText)}</p></li>`).join('')}</ol><button class="primary rules-cta" data-action="rules-start">${tr('开始探索','Start exploring')}</button></section></div>`;
+    modalRoot.innerHTML=`<div class="rules-overlay"><section class="rules-popover" role="dialog" aria-modal="true" aria-labelledby="rules-title" tabindex="-1"><div class="rules-heading"><div><span class="rules-eyebrow">${tr('玩法说明','How to play')}</span><h2 id="rules-title">${tr('奇境挑战TripWonder','TripWonder Challenge')}</h2></div><button class="icon-btn" data-action="close" aria-label="${tr('关闭玩法','Close how to play')}">${icon('close')}</button></div><ol class="rules-steps">${[['探','Look','在全景画面中自由移动和缩放画面，探索场景中的文化背景线索！','Pan and zoom around each panorama to find clues about the culture and history of the place.'],['答','Quiz','在1分钟内根据收集到的线索完成答题挑战！','Use the clues you found to answer the quiz within 1 minute.'],['猜','Guess','推测目的地地点，并在地图上标记位置。距离实际地点越近，得分越高！','Work out the destination and drop a pin on the map. The closer you are, the more points you score.'],['奖','Win','查看最终得分，点亮成就勋章！不仅可以一键规划目的地旅行路线，还能凭挑战排名领取丰厚优惠权益！','See your final score and unlock a badge. Plan a trip to the destination in one tap, and claim travel perks based on your result.']].map(([zh,enStep,zhText,enText])=>`<li><span${en()?' class="rules-step-en"':''}>${tr(zh,enStep)}</span><p>${tr(zhText,enText)}</p></li>`).join('')}</ol><button class="primary rules-cta" data-action="rules-start">${tr('开始探索','Start exploring')}</button></section></div>`;
     const panel=modalRoot.querySelector('.rules-popover'),phone=document.querySelector('#phone');
     const position=()=>{const a=anchor.getBoundingClientRect(),p=phone.getBoundingClientRect(),top=a.bottom-p.top-phone.clientTop+12,right=Math.max(12,phone.clientWidth-(a.right-p.left-phone.clientLeft));panel.style.top=top+'px';panel.style.right=right+'px';panel.style.maxHeight=Math.max(80,phone.clientHeight-top-16)+'px';};
     position();const observer=new ResizeObserver(position);observer.observe(phone);rulesCleanup=()=>observer.disconnect();app.inert=true;panel.focus({preventScroll:true});
@@ -509,7 +544,8 @@
   function tick() {
     if(s.view!=='quiz'||!s.deadline)return;
     const remain=Math.max(0,Math.ceil((s.deadline-Date.now())/1000)),el=app.querySelector('#timer');
-    if(el){el.textContent=String(Math.floor(remain/60)).padStart(2,'0')+':'+String(remain%60).padStart(2,'0');el.parentElement.classList.toggle('urgent',remain<=30);}
+    if(el){el.textContent=mmss(remain*1000);el.parentElement.classList.toggle('urgent',remain<=15);window.QuizUrgency?.update(remain,el.parentElement);}
+    if(s.pk)PKMode.update(app.querySelector('.quiz-page'),s.pk,{mine:s.answers.length,total:s.questions.length,elapsed:QUIZ_DURATION-Math.max(0,s.deadline-Date.now())});
     if(remain===0){finishQuiz(true);toast(tr('答题时间到，已提交当前答案，未作答题目计 0 分','Time’s up. Your answers have been submitted; unanswered questions score 0.'));}
   }
   function beginQuiz() {
@@ -531,7 +567,7 @@
   function sourceHotspot(answer) { const match=answer.source?.match(/第\s*(\d+)\s*处\s*·\s*(.+)/);if(!match)return null;return {n:Number(match[1]),hotspot:city().scenes[Number(match[1])-1]?.hotspots.find(h=>h.title===match[2])}; }
   function sourceLabel(answer) { const found=sourceHotspot(answer);return en()&&found?.hotspot?`Scene ${found.n} · ${f(found.hotspot,'title')}`:(en()&&/[\u4e00-\u9fa5]/.test(answer.source||'')?'':answer.source||''); }
   function answerSource(answer) { if(answer.source?.startsWith('http'))return answer.source;return sourceHotspot(answer)?.hotspot?.source||null; }
-  function finish() { const counts={};for(const key of s.clues){const [i,j]=key.split('-').map(Number),tag=city().scenes[i].hotspots[j]?.tag;if(tag)counts[tag]=(counts[tag]||0)+1;}const tags=Object.keys(counts).sort((a,b)=>counts[b]-counts[a]).slice(0,2);const quiz=s.answers.reduce((n,a)=>n+(a.correct?a.points:0),0),r={score:quiz+(s.guess?.points||0),quiz,guess:s.guess?{...s.guess}:null,correct:s.answers.filter(a=>a.correct).length,answers:s.answers,clues:s.clues.size,tags:tags.length?tags:['旅行发现'],date:day};s.result=r;const previous=current().result;s.daily[s.cityId]={...current(),result:!previous||r.score>previous.score?r:previous,skipped:false}; }
+  function finish() { const counts={};for(const key of s.clues){const [i,j]=key.split('-').map(Number),tag=city().scenes[i].hotspots[j]?.tag;if(tag)counts[tag]=(counts[tag]||0)+1;}const tags=Object.keys(counts).sort((a,b)=>counts[b]-counts[a]).slice(0,2);const quiz=s.answers.reduce((n,a)=>n+(a.correct?a.points:0),0),r={score:quiz+(s.guess?.points||0),quiz,guess:s.guess?{...s.guess}:null,correct:s.answers.filter(a=>a.correct).length,answers:s.answers,clues:s.clues.size,tags:tags.length?tags:['旅行发现'],date:day};if(s.pk)r.pk=PKMode.settle(s.pk,r,QUIZ_DURATION-s.quizRemaining);if(feature('wallet'))r.coins=Wallet.award({cityId:s.cityId,day,score:r.score,quizRemaining:s.quizRemaining,pk:r.pk});s.result=r;const previous=current().result;s.daily[s.cityId]={...current(),result:!previous||r.score>previous.score?r:previous,skipped:false}; }
   function inviteUrl() { const r=s.result||current().result,token=btoa(JSON.stringify({cityId:s.cityId,score:r.score,day})).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');const url=new URL('index.html',window.TRIPWONDER_PUBLIC_ORIGIN||location.href);url.searchParams.set('challenge',token);return url.href; }
   function share() {
     const r=s.result||current().result,c=city(),url=inviteUrl();
@@ -668,11 +704,17 @@
     if(b.dataset.swap){const [di,si]=b.dataset.swap.split('-').map(Number),used=s.route.flat(),other=city().stops.filter(x=>!used.includes(x.name));sheet(tr('替换停留地点','Swap this stop'),`<div class="swap-list">${other.length?other.map(x=>`<button class="answer-line" data-replace="${di}-${si}" data-stop="${esc(x.name)}"><span>${esc(cname(x))}</span><small>${esc(term(x.theme||'景点'))}</small></button>`).join(''):`<p>${tr('此目的地的其他景点已全部排入路线。可先缩短天数，再进行替换。','Every other sight here is already in your route. Shorten the trip first, then swap.')}</p>`}</div>`);return;}
     if(b.dataset.replace){const [di,si]=b.dataset.replace.split('-').map(Number);s.route[di][si]=b.dataset.stop;render();return;}
     if(b.dataset.move){const [di,si,direction]=b.dataset.move.split('-'),list=s.route[Number(di)],from=Number(si),to=from+(direction==='up'?-1:1);if(to>=0&&to<list.length){[list[from],list[to]]=[list[to],list[from]];render();}return;}
+    if(b.dataset.redeem){sheet(tr('兑换确认','Redeem'),Wallet.confirmMarkup(b.dataset.redeem));return;}
     const action=b.dataset.action;
     if(action==='close')dismissModal();
+    else if(action==='pk-start')startPK();
+    else if(action==='redeem-confirm'){const res=Wallet.redeem(b.dataset.offer);if(!res.ok){toast(tr('奇境币不足','Not enough coins'));return;}if(s.view==='mall'){const y=app.scrollTop;render();app.scrollTop=y;}else closeModal();sheet(tr('兑换成功','Redeemed'),Wallet.successMarkup(res));}
+    else if(action==='coin-history')sheet(tr('收支明细','Coin history'),Wallet.historyMarkup());
+    else if(action==='reset-demo')sheet(tr('重置演示数据','Reset demo data'),`<p>${tr('将清空本机的奇境币、兑换记录、场景留言和 PK 记录，用于重新演示。今日挑战进度不受影响。','This clears coins, redemptions, scene notes and PK history on this device so the demo can start fresh. Today’s challenge progress is kept.')}</p><button class="primary" data-action="reset-demo-confirm">${tr('确认清空','Clear demo data')}</button>`);
+    else if(action==='reset-demo-confirm'){TWStore.reset();render();toast(tr('演示数据已清空','Demo data cleared'));}
     else if(action==='rules')showRules();
     else if(action==='rules-start')dismissModal(cueStart);
-    else if(action==='start')start();
+    else if(action==='start')beginChallenge();
     else if(action==='show-result')go('result');
     else if(action==='prev-city'){const prev=previousDestination(s.cityId);if(prev)selectCity(prev,{back:true});}
     else if(action==='next-city'){const next=nextDestination(s.cityId,true);if(next)selectCity(next);else go('home');}
@@ -731,6 +773,7 @@
     if(action){app.querySelector(`[data-action="${action}"]`)?.click();return true;}
     if(s.view==='explore')go('cover',{back:true});
     else if(s.view==='route')go('result',{back:true});
+    else if(s.view==='mall')go(s.mallBack,{back:true});
     else go('home',{back:true});
     return true;
   };

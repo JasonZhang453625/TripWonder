@@ -33,7 +33,7 @@ async function openQuiz(page,cityId='suzhou',checkEntrance=false){
     }else await page.locator('[data-action="next-scene"]').click();
     await page.waitForFunction(previous=>!document.querySelector('.scene-counter')||document.querySelector('.scene-counter').textContent!==previous,current);
   }
-  await questionIs(page,1);await timerIs(page,'02:00');
+  await questionIs(page,1);await timerIs(page,'01:00');
   assert.equal(await page.locator('.quiz-page .eyebrow,.quiz-page .quiz-foot').count(),0,'old category label and instruction are removed');
   assert.equal(await page.getByText('三题共限时 2 分钟，答完后在地图上标出目的地。',{exact:true}).count(),0);
   assert.equal(await page.locator('.quiz-progress > span').count(),3,'three distinct question progress segments');
@@ -157,7 +157,7 @@ async function checkBackFailure(browser){
   try{
     const answers=await openQuiz(page,'suzhou');
     await select(page,answers[0]);await submit(page,2);await select(page,answers[1]);
-    await advance(page,43);await timerIs(page,'01:17');
+    await advance(page,43);await timerIs(page,'00:17');
     const before=await page.locator('.quiz-page').elementHandle();
     const source=await page.evaluate(()=>new URL(window.IMMERSIVE_SCENES['suzhou-huqiu'].sourceUrl,location.href).href);
     let aborted=0;
@@ -166,17 +166,17 @@ async function checkBackFailure(browser){
     await context.route(source,reject);
     await page.locator('[data-action="quiz-back"]').click();await idle(page);
     assert.ok(aborted>0,'the returned scene photo request was actually aborted');
-    await questionIs(page,2);await timerIs(page,'01:17');
+    await questionIs(page,2);await timerIs(page,'00:17');
     assert.equal(await before.evaluate(node=>node===document.querySelector('.quiz-page')),true,'failed scene return keeps the original quiz page');
     assert.equal(await page.locator(`[data-option="${answers[1]}"]`).getAttribute('aria-pressed'),'true','failed scene return keeps the selected second answer');
     assert.equal(await page.locator('.scene-staging,.scene-transition,.scene-loading,[role="dialog"]').count(),0,'failed scene return leaves no staging, loading overlay or dialog');
-    await advance(page,7);await timerIs(page,'01:10');
+    await advance(page,7);await timerIs(page,'00:10');
     await shot(page,'quiz-back-failed-recovered');
-    const changed=(answers[1]+1)%4;await select(page,changed);await submit(page,3);await timerIs(page,'01:10');
+    const changed=(answers[1]+1)%4;await select(page,changed);await submit(page,3);await timerIs(page,'00:10');
     assert.equal(await page.locator('.quiz-progress > .done').count(),2,'after load failure, the changed answer can still be submitted once');
     await context.unroute(source,reject);
     await returnToSceneAndResume(page,{cityId:'suzhou',question:3,selected:null});
-    await timerIs(page,'01:10');await shot(page,'quiz-back-retry-resumed');
+    await timerIs(page,'00:10');await shot(page,'quiz-back-retry-resumed');
     reports.push('Failed scene return: real photo request aborted on Q2; current page and selection preserved; overlays cleaned; timer resumes from 01:17 to 01:10; answer change and submit work; retry succeeds and 300 seconds exploring preserve Q3 progress and 01:10.');
   }finally{await context.close();}
 }
@@ -192,20 +192,20 @@ async function checkBackFailure(browser){
     }
     const {context,page}=await contextPage(browser,{...devices['iPhone 13'],viewport:{width:390,height:844},deviceScaleFactor:1},'main');
     const answers=await openQuiz(page,'suzhou',true);await assertLayout(page,'phone-390x844');await assertGlassAndInk(page,'normal and disabled');
-    await advance(page,43);await timerIs(page,'01:17');
+    await advance(page,43);await timerIs(page,'00:17');
     const original=await page.locator('.quiz-page').elementHandle(),timerNode=await page.locator('#timer').elementHandle(),optionNode=await page.locator('[data-option="0"]').elementHandle();
     await select(page,0);await select(page,answers[0]);await page.waitForTimeout(350);await assertGlassAndInk(page,'selected and enabled');
     assert.equal(await original.evaluate(node=>node===document.querySelector('.quiz-page')),true,'selection preserves quiz page DOM');
     assert.equal(await timerNode.evaluate(node=>node===document.querySelector('#timer')),true,'selection preserves timer DOM');
     assert.equal(await optionNode.evaluate(node=>node===document.querySelector('[data-option="0"]')),true,'selection preserves answer DOM');
-    await timerIs(page,'01:17');
+    await timerIs(page,'00:17');
     const double=await page.locator('[data-action="submit"]').evaluate(button=>{button.click();const busy=window.ChallengeMotion.busy;button.click();return busy;});
     assert.equal(double,true,'submit locks before the second rapid click');await questionIs(page,2);
     assert.equal(await page.locator('.option[aria-pressed="true"]').count(),0,'next question starts without an answer');
     assert.equal(await page.locator('[data-action="submit"]').isDisabled(),true,'double submit cannot skip the unanswered second question');
     await select(page,answers[1]);await submit(page,3);await select(page,answers[2]);await submit(page);
     assert.equal(await page.locator('#timer').count(),0,'map is untimed');await advance(page,300);
-    await page.locator('[data-action="guess-back"]').click();await questionIs(page,3);await timerIs(page,'01:17');
+    await page.locator('[data-action="guess-back"]').click();await questionIs(page,3);await timerIs(page,'00:17');
     assert.equal(await page.locator(`[data-option="${answers[2]}"]`).getAttribute('aria-pressed'),'true','return restores the third answer');
     await submit(page);const points=await finishMap(page,{stress:true,name:'phone-390x844'});await scoreIs(page,60,points);
     reports.push('Normal flow: animated start and result; local option updates; shared timer; duplicate-submit guard; three questions; map return; map repick/recall/zoom; reveal survives wheel and drag; correct score.');
@@ -214,10 +214,10 @@ async function checkBackFailure(browser){
     for(const cityId of ['suzhou','shenzhen']){
       const {context,page}=await contextPage(browser,{...devices['iPhone 13'],deviceScaleFactor:1},`scene-resume-${cityId}`);
       const answers=await openQuiz(page,cityId);
-      await advance(page,13);await timerIs(page,'01:47');
+      await advance(page,13);await timerIs(page,'00:47');
       await returnToSceneAndResume(page,{cityId,question:1,selected:null});
       for(let q=0;q<3;q++){
-        await select(page,answers[q]);await advance(page,7);await timerIs(page,`01:${String(40-q*7).padStart(2,'0')}`);
+        await select(page,answers[q]);await advance(page,7);await timerIs(page,`00:${String(40-q*7).padStart(2,'0')}`);
         await returnToSceneAndResume(page,{cityId,question:q+1,selected:answers[q],viaCover:q===1});
         await submit(page,q<2?q+2:0);
       }
@@ -244,7 +244,7 @@ async function checkBackFailure(browser){
       const {context,page}=await contextPage(browser,{...devices['iPhone 13'],deviceScaleFactor:1},`timeout-${stage}`);
       const answers=await openQuiz(page);
       for(let q=0;q<stage-1;q++){await select(page,answers[q]);await submit(page,q+2);}
-      await select(page,answers[stage-1]);await advance(page,119.9);await timerIs(page,'00:01');
+      await select(page,answers[stage-1]);await advance(page,59.9);await timerIs(page,'00:01');
       const locked=await page.locator('[data-action="submit"]').evaluate(button=>{button.click();button.click();return window.ChallengeMotion.busy;});
       assert.equal(locked,true,'near-expiry submit begins a transition');
       await advance(page,.2);
