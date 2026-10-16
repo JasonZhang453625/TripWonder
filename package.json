@@ -5,10 +5,12 @@
   "description": "TripWonder 携程 · 奇境挑战",
   "scripts": {
     "build": "npm ci --prefix backend --no-audit --no-fund && npm ci --prefix mobile --no-audit --no-fund && npm run --prefix mobile build:hosting",
-    "test": "npm run test:sphere && npm run test:journeys && npm test --prefix mobile",
+    "test": "npm run test:release && npm run test:sphere && npm run test:journeys && npm test --prefix mobile",
     "build:viewer": "node scripts/build-immersive-viewer.cjs",
     "test:sphere": "node --test tests/sphere-projection.test.cjs",
-    "test:journeys": "npm ci --prefix backend --no-audit --no-fund && npm test --prefix backend"
+    "test:journeys": "npm ci --prefix backend --no-audit --no-fund && npm test --prefix backend",
+    "release:merge": "node scripts/merge-release.cjs",
+    "test:release": "node --test tests/merge-release.test.cjs"
   },
   "dependencies": {
     "@vercel/analytics": "^2.0.1"

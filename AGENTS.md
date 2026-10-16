@@ -45,6 +45,8 @@ git push -u origin feat/简短主题
 
 ## Pull Request 与合并
 
+- 当前私有仓库使用 Vercel Hobby：生产发布必须由 `JasonZhang453625` 账号使用 **Create a merge commit** 合并到 `main`，优先运行 `npm run release:merge -- <PR编号>`。不要对协作者 PR 使用 squash 或 rebase 合并；squash 会将协作者设为新提交作者，导致生产部署被 Vercel 拦截。merge commit 保留协作者的原始提交与署名。
+- 合并前确认 GitHub 的 `Build and test` 检查通过。协作者分支的 Vercel 预览可能因 Hobby 作者权限被阻止；这不等于构建通过，不能替代 GitHub CI。发布后继续核对生产部署 Ready、网页与安卓更新 feed，流程见 `docs/releasing.md`。
 - 一项 PR 聚焦一项可以独立审查的工作；尽量小步提交，避免多人长时间并行修改同一文件。
 - PR 描述应写清楚：目的、主要改动、运行过的检查、截图或录屏（涉及界面时）以及未完成项。
 - 如果改动关联现存 Issue，在 PR 正文加入 `Closes #编号`。
