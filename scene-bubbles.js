@@ -26,6 +26,7 @@
 
   // Photo position (0–1) at the centre of the screen.
   function pointUV(root, viewer, clientX, clientY) {
+    if (viewer?.photoAt && viewer.projection) return viewer.photoAt(clientX, clientY);
     if (Array.isArray(viewer?.markers) && viewer.state && viewer.eye) {
       // Inverse of the immersive projection (see projectMarkers): screen point -> ray -> cylinder -> photo coordinates.
       const view = root.getBoundingClientRect();

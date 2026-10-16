@@ -2,8 +2,8 @@ const fs=require('node:fs');
 const path=require('node:path');
 const assert=require('node:assert/strict');
 const {pathToFileURL}=require('node:url');
-const {chromium}=require('C:/Users/Administrator/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
-const base='http://127.0.0.1:8765/';
+const {chromium}=require(process.env.PLAYWRIGHT_PATH || 'playwright');
+const base=process.env.TRIPWONDER_URL || 'http://127.0.0.1:8765/';
 const token=Buffer.from(JSON.stringify({cityId:'shenzhen',score:0})).toString('base64url');
 const artifacts=process.env.TRIPWONDER_TEST_ARTIFACTS;
 const shot=async(page,name)=>{if(artifacts){fs.mkdirSync(artifacts,{recursive:true});await page.screenshot({path:path.join(artifacts,name+'.png')});}};
@@ -24,7 +24,7 @@ async function gateImage(page,part){
   return {release,count:()=>requests};
 }
 (async()=>{
- const browser=await chromium.launch({executablePath:'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe',headless:true,args:['--enable-unsafe-swiftshader','--use-gl=angle','--use-angle=swiftshader']});
+ const browser=await chromium.launch({...(process.env.BROWSER_PATH?{executablePath:process.env.BROWSER_PATH}:{channel:'chrome'}),headless:true,args:['--enable-unsafe-swiftshader','--use-gl=angle','--use-angle=swiftshader']});
  const errors=[],report={};
  try{
   const page=await browser.newPage({viewport:{width:390,height:844},hasTouch:true});page.on('pageerror',e=>errors.push(e.message));
@@ -59,9 +59,9 @@ async function gateImage(page,part){
   await shot(page,'scene-zoom-3x');
   await page.locator('#app canvas').dblclick({position:{x:195,y:330}});await page.waitForFunction(()=>Number(document.querySelector('#app .photo-viewport').dataset.zoom)===1);
   await page.mouse.move(195,330);await page.mouse.wheel(0,-5000);await page.waitForFunction(()=>Number(document.querySelector('#app .photo-viewport').dataset.zoom)===3);report.zoom={pinch:3,wheel:3};
-  // Both inputs can now zoom past the original frame to the outer blur boundary.
+  // Sphere projection stops at 1x, keeping every ray inside the source photo.
   const minimum=Number(await page.locator('#app .photo-viewport').getAttribute('data-min-zoom'));
-  assert.ok(minimum>0&&minimum<1);
+  assert.equal(minimum,1);
   await page.mouse.wheel(0,5000);
   await page.waitForFunction(()=>{const d=document.querySelector('#app .photo-viewport').dataset;return Math.abs(Number(d.zoom)-Number(d.minZoom))<.001;});
   await shot(page,'scene-zoom-minimum');
