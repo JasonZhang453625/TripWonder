@@ -1,7 +1,7 @@
 /* Personal discovery overview. Only completed destinations contribute to the atlas. */
 (() => {
   'use strict';
-  function render({cities, order, daily, badges, itineraries, head, esc, icon}) {
+  function render({cities, order, daily, badges, itineraries, head, esc, icon, extra = ''}) {
     const {t, term} = window.I18N;
     const unlocked = cities.filter(city => daily[city.id]?.result);
     const completed = order.filter(id => daily[id]?.result);
@@ -26,7 +26,7 @@
             </div>
           </div>
           <div class="pf-stats"><div>${icon('trophy')}<span><b>${score}</b><small>${t('今日积分', 'Today’s points')}</small></span></div><div>${icon('spark')}<span><b>${medals}</b><small>${t('珍藏徽章', 'Badges collected')}</small></span></div></div>
-        </section>
+        </section>${extra}
         <section class="pf-library" aria-label="${t('探索档案', 'Your discoveries')}">
           <div class="pf-section-heading"><h2>${t('探索档案', 'Your collection')}</h2><span>${t('把发现好好收藏', 'Keep your discoveries close')}</span></div>
           <div class="pf-shortcuts">

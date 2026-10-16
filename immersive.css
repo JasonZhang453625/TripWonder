@@ -44,3 +44,10 @@
 .scene-video{position:absolute;inset:0;width:100%;height:100%;object-fit:fill;pointer-events:none;opacity:0}
 .scene-video.ready{opacity:1}
 .primary[aria-busy=true]{opacity:1;cursor:progress}
+
+/* Explore points take turns: the next unread one is full size, the rest stay small. */
+.photo-plane .hotspot{--hs:.58;transform:translate(-50%,-50%) scale(calc(var(--inverse-zoom,1) * var(--hs)));transition:background .18s,transform .35s cubic-bezier(.3,1.4,.5,1)}
+.photo-plane .hotspot:active{transform:translate(-50%,-50%) scale(calc(var(--inverse-zoom,1) * var(--hs)))}
+.photo-plane .hotspot.next{--hs:1}
+.photo-plane .hotspot:not(.next):before{animation:none;opacity:0}
+.photo-plane .hotspot:not(.next) .hotspot-dot{animation:none;opacity:.8}

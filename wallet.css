@@ -1,0 +1,86 @@
+/* Wonder Coins: result card, merchant slot, rewards page, redeem sheets and the profile entry (wallet.js). */
+.tw-coin{width:16px;height:16px;flex:none;vertical-align:-3px}
+.tw-coin.big{width:34px;height:34px;filter:drop-shadow(0 3px 6px #e8980f40)}
+.tw-sample{display:inline-block;padding:2px 6px;border-radius:4px;background:#f1f3f7;color:#7b8495;font-size:10px;font-weight:500;letter-spacing:.02em}
+.tw-owned{display:inline-block;margin-top:4px;padding:1px 6px;border-radius:4px;background:#e9f8ef;color:#16834a;font-size:10px}
+.tw-price{display:inline-flex;align-items:center;gap:4px;min-height:34px;padding:0 12px;border-radius:17px;background:#fff6dd;color:#9a5b00;font-size:14px;font-weight:700;flex:none;border:1px solid #ffe2a3}
+.tw-price:active{scale:.95}
+
+/* Result page */
+.result-page .tw-earned{padding:14px 14px 12px!important;margin:0 0 6px!important;border-radius:14px!important;background:linear-gradient(135deg,#fff8e4,#fff1cf)!important}
+.tw-earned-head{display:flex;align-items:center;gap:10px}
+.tw-earned-head>div{flex:1;display:grid}
+.tw-earned-head small{font-size:11px;color:#9a6a1a}
+.tw-earned-head b{font-size:21px;font-weight:750;color:#7a4300;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.tw-earned-head button{min-height:34px;padding:0 14px;border-radius:17px;background:#ff9f1c;color:#fff;font-size:13px;font-weight:650}
+.tw-earned-items{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.tw-earned-items span{padding:3px 8px;border-radius:10px;background:#ffffffb3;color:#8a5200;font-size:11px}
+.tw-earned p{margin:8px 0 0;font-size:10px;line-height:1.6;color:#a07a3c}
+.tw-slot{margin:6px 0 10px}
+.tw-earned.counting .tw-coin.big{animation:tw-coin-spin .9s ease-out}
+@keyframes tw-coin-spin{0%{transform:rotateY(0) scale(.6)}60%{transform:rotateY(540deg) scale(1.15)}100%{transform:rotateY(720deg) scale(1)}}
+
+/* Merchant card (mall and result slot) */
+.tw-sponsor{display:flex;align-items:center;gap:12px;padding:12px;margin:0 0 10px;border-radius:14px;background:#fff;border:1px solid #eef0f4}
+.tw-sponsor-art{width:52px;height:52px;flex:none;display:grid;place-items:center;border-radius:12px;background:linear-gradient(140deg,hsl(var(--hue) 85% 92%),hsl(var(--hue) 70% 80%));color:hsl(var(--hue) 55% 32%)}
+.tw-sponsor-art .icon{width:24px;height:24px}
+.tw-sponsor-copy{flex:1;min-width:0;display:grid;gap:2px}
+.tw-sponsor-copy strong{font-size:15px;color:#171e2b}
+.tw-sponsor-copy p{margin:0;font-size:11px;line-height:1.5;color:#6b7383}
+.tw-sponsor-copy b{font-size:12px;color:#e0245e;font-weight:650}
+.tw-sponsor-copy .tw-sample{justify-self:start}
+.tw-sponsor.compact{background:linear-gradient(120deg,#fff,hsl(var(--hue) 80% 97%))}
+
+/* Rewards page */
+.tw-mall-page{background:var(--bg,#f5f7fb);min-height:100%}
+.tw-mall-hero{margin:12px 16px 4px;padding:18px;border-radius:18px;background:linear-gradient(135deg,#2855f7,#5b7cff 60%,#7d9bff);color:#fff;position:relative;overflow:hidden}
+.tw-mall-hero::after{content:'';position:absolute;right:-30px;top:-30px;width:130px;height:130px;border-radius:50%;background:#ffffff1a}
+.tw-mall-balance{display:flex;align-items:center;gap:12px}
+.tw-mall-balance small{display:block;font-size:12px;opacity:.85}
+.tw-mall-balance b{font-size:34px;font-weight:750;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.tw-mall-hero p{margin:10px 0 0;font-size:11px;line-height:1.6;opacity:.9;max-width:260px}
+.tw-mall-history{position:absolute;right:14px;top:16px;z-index:1;min-height:30px;padding:0 12px;border-radius:15px;background:#ffffff2b;color:#fff;font-size:12px}
+.tw-mall-section{margin:18px 16px 0}
+.tw-mall-heading{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.tw-mall-heading h2{margin:0;font-size:17px;font-weight:700;color:#171e2b}
+.tw-coupon-grid{display:grid;gap:10px}
+.tw-coupon-card{display:flex;align-items:center;gap:12px;padding:0 12px 0 0;min-height:72px;border-radius:12px;background:#fff;border:1px solid #eef0f4;box-shadow:0 2px 8px #15223b0a;position:relative;overflow:hidden}
+.tw-coupon-amount{width:84px;align-self:stretch;flex:none;display:flex;align-items:center;justify-content:center;gap:1px;color:#e0245e;border-right:1px dashed #f5c6d5;background:#fff5f8}
+.tw-coupon-amount strong{font-size:26px;font-weight:750}
+.tw-coupon-amount span{font-size:12px;font-weight:650}
+.tw-coupon-info{flex:1;min-width:0;display:grid;gap:2px}
+.tw-coupon-info b{font-size:14px;color:#171e2b}
+.tw-coupon-info small{font-size:11px;color:#7b8495}
+.tw-coupon-info .tw-owned{justify-self:start}
+.tw-mall-locked{margin:4px 0 0;padding:12px;border-radius:12px;border:1px dashed #d5dbe6;text-align:center;font-size:12px;color:#7b8495}
+.tw-mall-page .demo-note{margin:18px 16px calc(24px + var(--safe-bottom,0px))}
+
+/* Redeem / history sheets */
+.tw-redeem{display:grid;gap:8px;text-align:center;padding-bottom:6px}
+.tw-redeem-title{margin:0;font-size:12px;color:#7b8495}
+.tw-redeem>strong{font-size:20px;color:#171e2b}
+.tw-redeem>small{font-size:12px;color:#7b8495}
+.tw-redeem-math{display:flex;justify-content:center;gap:18px;margin:8px 0 6px;font-size:13px;color:#555e6b}
+.tw-redeem-math span{display:inline-flex;align-items:center;gap:4px}
+.tw-redeem-short{margin:4px 0;color:#c2410c;font-size:13px}
+.tw-redeem-check{justify-self:center;width:52px;height:52px;display:grid;place-items:center;border-radius:50%;background:#e9f8ef;color:#16834a}
+.tw-redeem-check .icon{width:26px;height:26px}
+.tw-code{margin:6px 0;padding:12px;border-radius:12px;border:1px dashed #ffb800;background:#fffaf0}
+.tw-code small{display:block;font-size:11px;color:#a07a3c}
+.tw-code b{font-size:22px;letter-spacing:.12em;font-family:ui-monospace,Consolas,monospace;color:#7a4300}
+.tw-ledger{list-style:none;margin:0;padding:0;max-height:52vh;overflow:auto}
+.tw-ledger li{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid #eef0f4}
+.tw-ledger li div{display:grid;gap:2px;min-width:0}
+.tw-ledger b{font-size:13px;font-weight:600;color:#171e2b}
+.tw-ledger small{font-size:11px;color:#8a92a0}
+.tw-ledger .in{color:#d97706;font-weight:700}
+.tw-ledger .out{color:#7b8495;font-weight:700}
+
+/* Profile entry */
+.pf-wallet{display:flex;gap:10px;align-items:stretch;margin:14px 0 0}
+.pf-wallet-main{flex:1;display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:16px;background:linear-gradient(135deg,#fff8e4,#ffefc7);text-align:left}
+.pf-wallet-main span:first-of-type{flex:1;display:grid}
+.pf-wallet-main small{font-size:11px;color:#9a6a1a}
+.pf-wallet-main b{font-size:22px;color:#7a4300;font-weight:750}
+.pf-wallet-meta{font-size:11px;color:#9a6a1a}
+.pf-wallet-reset{flex:none;width:84px;padding:0 8px;border-radius:16px;background:#f1f3f7;color:#6b7383;font-size:11px;line-height:1.4}

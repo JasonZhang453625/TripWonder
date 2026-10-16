@@ -1,0 +1,9 @@
+/* Last ten seconds of the quiz (quiz-urgency.js). */
+#app .quiz-timer.final{color:#fff;background:linear-gradient(160deg,#ffffff38,#ffffff0a 55%),#e0412fe6;border-color:#ffc2b8}
+#app .quiz-timer.beat{animation:tw-timer-beat .46s cubic-bezier(.3,1.6,.5,1)}
+@keyframes tw-timer-beat{0%{scale:1}28%{scale:1.16}100%{scale:1}}
+/* ::after already holds the contrast gradient that QuizScene samples, so the edge glow uses ::before. */
+#app .quiz-backdrop::before{content:'';position:absolute;inset:0;z-index:1;pointer-events:none;opacity:0;box-shadow:inset 0 0 70px 6px #ff3b2a66;transition:opacity .4s}
+#app .quiz-page.final-countdown .quiz-backdrop::before{opacity:1;animation:tw-final-glow 1s ease-in-out infinite}
+@keyframes tw-final-glow{0%,100%{opacity:.55}50%{opacity:1}}
+@media (prefers-reduced-motion: reduce){#app .quiz-timer.beat{animation:none}#app .quiz-page.final-countdown .quiz-backdrop::before{animation:none;opacity:.7}}
