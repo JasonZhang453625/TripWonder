@@ -45,7 +45,7 @@
 #app>.guess-page{background:#edf3f9}
 #app>.guess-page .guess-top{background:#fff;border-bottom:1px solid #e7e9ee;padding-bottom:12px}
 #app>.guess-page :is(.glass,.guess-zoom button,.guess-card,.gm-dist){background:#fff;color:#171e2b;border:1px solid #e2e6ed;box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none}
-#app>.guess-page .guess-zoom button{border-radius:8px}
+#app>.page.guess-page .guess-zoom button{border-radius:8px;border-color:var(--blue)}
 #app>.guess-page .guess-card{border-radius:16px}
 #app>.guess-page .guess-recall button{border-radius:6px;box-shadow:none}
 #app>.guess-page .gm-pin i{background:#3264ff;box-shadow:none}
