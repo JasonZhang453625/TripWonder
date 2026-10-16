@@ -18,7 +18,9 @@ GitHub 仓库：[JasonZhang453625/TripWonder](https://github.com/JasonZhang45362
 | 优惠 / 徽章 / 奇境币 / PK / 排行 | 有 | 无 | 无 |
 | 标记 | — | 卡片显示城市徽章（领取后点亮） | 卡片盖「已挑战」戳 |
 
-挑战过的官方城市与玩过的 UGC 记在本机 `tripwonder-v2.challenged` / `ugcPlayed`，刷新后保留。UGC 卡片在挑战前只显示不含地名的挑战标题，完成后才揭晓地点。社区「+ 发布」目前是表单原型（本机校验，不上传）；正式 UGC 由后台「添加 Journey」选择「玩家 UGC」生成，审核通过后进入社区（见下文后台一节）。示例 UGC（厦门沙坡尾、重庆十八梯、成都东郊记忆）在 `content/ugc.js`，照片为 Wikimedia Commons 授权素材，署名见 `photo-library/ugc/ATTRIBUTION.md`，展示版本由 `node scripts/build-ugc-media.cjs` 生成。已知限制：直接双击 `index.html`（file://）时 UGC 场景无法载入球面画面，需通过 HTTP 预览。
+社区默认进入「广场」，混合展示已挑战的官方目的地与审核通过的玩家 Journey；可切换「已挑战」或「玩家 Journey」筛选。内容采用作者信息、关注、正文、照片、地点与评论互动区组成的帖子卡片，单图竖排、多图横排，右下角悬浮「+」进入发布表单。关注与帖子点赞只保存在本机 `tripwonder-v2`，不代表真实线上互动；评论入口打开该 Journey 的留言板，继续遵循挑战后解锁及发布者关闭留言的规则。
+
+挑战过的官方城市与玩过的 UGC 记在本机 `tripwonder-v2.challenged` / `ugcPlayed`，刷新后保留。UGC 帖子在挑战前使用不含地名的挑战标题，完成后才显示地点标签。社区「+ 发布」目前是表单原型（本机校验，不上传）；正式 UGC 由后台「添加 Journey」选择「玩家 UGC」生成，审核通过后进入社区（见下文后台一节）。示例 UGC（厦门沙坡尾、重庆十八梯、成都东郊记忆）在 `content/ugc.js`，照片为 Wikimedia Commons 授权素材，署名见 `photo-library/ugc/ATTRIBUTION.md`，展示版本由 `node scripts/build-ugc-media.cjs` 生成。已知限制：直接双击 `index.html`（file://）时 UGC 场景无法载入球面画面，需通过 HTTP 预览。
 
 ## 今日挑战
 

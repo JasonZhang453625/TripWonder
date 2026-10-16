@@ -69,7 +69,7 @@
     daily, benefits, badges:Object.fromEntries(Object.entries(challenged).filter(([,record])=>record?.badge).map(([id,record])=>[id,record.badge])), invitation, itineraries:{}, bookmarks:{}, rulesSeen:false, pk:null, mallBack:'home',
     // Entry split: challenge = today's official draw (rewards, no notes); browse = a community visit to a journey
     // (clues and notes, no quiz); ugc = a player journey's game (no rewards of any kind).
-    mode:'challenge', ugcResults:{}, journeyId:null, journeyBack:'feed', journeyReturn:null, feedTab:'official', boardFilter:'all', composeScene:null
+    mode:'challenge', ugcResults:{}, journeyId:null, journeyBack:'feed', journeyReturn:null, feedTab:'all', boardFilter:'all', composeScene:null
   };
   // Gameplay layer (tw-store.js): coins, simulated PK and scene notes, each switchable for the live demo.
   const feature = name => !!window.TW_FEATURES?.[name] && !!window.TWStore && !!{wallet:window.Wallet,pk:window.PKMode,bubbles:window.SceneBubbles}[name];
@@ -383,7 +383,7 @@
     if(!journeyById(id))return;
     // From a challenge result the detail page returns to that result; otherwise to the feed.
     if(s.view==='result'&&s.mode==='challenge'){s.journeyBack='result';s.journeyReturn=s.cityId;}else if(!['explore','cover','result','journey'].includes(s.view))s.journeyBack='feed';
-    s.journeyId=id;s.boardFilter='all';go('journey');
+    s.journeyId=id;s.boardFilter='all';return go('journey');
   }
   function leaveJourney() {
     if(s.journeyBack==='result'&&s.journeyReturn){const id=s.journeyReturn;s.journeyReturn=null;s.journeyBack='feed';activateCity(id,'challenge');go('result',{back:true});return;}
@@ -784,7 +784,7 @@
   // iOS Safari only applies :active pressed states when a touchstart listener exists.
   document.addEventListener('touchstart',()=>{},{passive:true});
   document.addEventListener('click',event=>{
-    const b=event.target.closest('button');if(!b||b.disabled)return;if(ChallengeMotion.busy){event.preventDefault();return;}if(event.detail===0&&['quiz','guess','result'].includes(s.view))ChallengeMotion.press(b);
+    const b=event.target.closest('button')||event.target.closest('.cm-post[data-journey]');if(!b||b.disabled)return;if(ChallengeMotion.busy){event.preventDefault();return;}if(event.detail===0&&['quiz','guess','result'].includes(s.view))ChallengeMotion.press(b);
     if(b.dataset.shareChannel){chooseShareOption(b);return;}
     if(b.dataset.city){selectCity(b.dataset.city);return;} if(b.dataset.go){go(b.dataset.go);return;}
     if(b.dataset.service){product(b.dataset.service);return;}if(b.dataset.product){product(b.dataset.product);return;}
@@ -800,7 +800,11 @@
     if(b.dataset.move){const [di,si,direction]=b.dataset.move.split('-'),list=s.route[Number(di)],from=Number(si),to=from+(direction==='up'?-1:1);if(to>=0&&to<list.length){[list[from],list[to]]=[list[to],list[from]];render();}return;}
     if(b.dataset.redeem){sheet(tr('兑换确认','Redeem'),Wallet.confirmMarkup(b.dataset.redeem));return;}
     // Community pages (community.js).
-    if(b.dataset.journey){openJourney(b.dataset.journey);return;}
+    if(b.dataset.journey||b.hasAttribute('data-post-open')){
+      const id=b.dataset.journey||b.closest('.cm-post')?.dataset.journey,opened=openJourney(id);
+      if(b.hasAttribute('data-feed-discuss'))Promise.resolve(opened).then(()=>{if(s.view==='journey'&&s.journeyId===id)app.querySelector('.cm-board')?.scrollIntoView({block:'start'});});
+      return;
+    }
     if(b.dataset.feedTab){s.feedTab=b.dataset.feedTab;render();return;}
     if(b.dataset.boardFilter){s.boardFilter=b.dataset.boardFilter;const y=app.scrollTop;render();app.scrollTop=y;return;}
     if(b.dataset.noteLike){const on=SceneBubbles.toggleLike(b.dataset.noteLike),count=b.querySelector('b');b.setAttribute('aria-pressed',String(on));if(count)count.textContent=Number(count.textContent)+(on?1:-1);return;}

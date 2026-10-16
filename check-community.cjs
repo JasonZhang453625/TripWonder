@@ -35,6 +35,18 @@ async function reveal(page){await idle(page);await page.locator('.guess-map').cl
     await page.locator('.th-wonder').click();await page.locator('.cm-hub').waitFor();await idle(page);
     assert.equal(await page.locator('.cm-entry').count(),2);await shot(page,'hub');
     await page.locator('.cm-entry[data-go="feed"]').click();await page.locator('.cm-feed').waitFor();await idle(page);
+    assert.equal(await page.locator('[data-feed-tab="all"]').getAttribute('aria-selected'),'true','the community opens on the square');
+    assert.equal(await page.locator('.cm-post').count(),pools.ugc.length,'approved player posts fill the first visit');
+    assert.equal(await page.locator('.cm-post-author,.cm-post-footer').count(),pools.ugc.length*2,'each post has author and social actions');
+    const follow=page.locator('[data-journey="ugc-shapowei"] .cm-follow'),like=page.locator('[data-feed-like="ugc-shapowei"]');
+    await follow.click();assert.equal(await follow.getAttribute('aria-pressed'),'true');
+    await like.click();assert.equal(await like.getAttribute('aria-pressed'),'true');
+    assert.equal(await page.locator('.cm-feed').count(),1,'social actions keep the feed open');
+    await like.click();assert.equal(await like.getAttribute('aria-pressed'),'false','a second tap removes the like');
+    await like.click();
+    assert.equal(await page.locator('[data-journey="ugc-dongjiao"] .cm-comment-entry').isDisabled(),true,'disabled boards have no comment action');
+    await shot(page,'feed-square');
+    await page.locator('[data-feed-tab="official"]').click();
     assert.equal(await page.locator('.cm-card').count(),0,'no official journey before any challenge');
     assert.equal(await page.locator('.cm-empty').count(),1);
     await page.locator('[data-feed-tab="ugc"]').click();assert.equal(await page.locator('.cm-card').count(),pools.ugc.length);
@@ -87,6 +99,9 @@ async function reveal(page){await idle(page);await page.locator('.guess-map').cl
     await page.reload();await ready(page);await page.evaluate(()=>window.HomePromo?.dismiss());
     await page.locator('.th-wonder').click();await page.locator('.cm-hub').waitFor();await idle(page);
     await page.locator('.cm-entry[data-go="feed"]').click();await page.locator('.cm-feed').waitFor();await idle(page);
+    assert.equal(await page.locator('[data-journey="ugc-shapowei"] .cm-follow').getAttribute('aria-pressed'),'true','following survives reload');
+    assert.equal(await page.locator('[data-feed-like="ugc-shapowei"]').getAttribute('aria-pressed'),'true','post likes survive reload');
+    await page.locator('[data-feed-tab="official"]').click();
     assert.equal(await page.locator(`.cm-card[data-journey="${cityId}"]`).count(),1,'challenged city stays in the feed after a reload');
     assert.equal(await page.locator('.cm-card').count(),1,'only challenged official cities are listed');
     assert.equal(medalReady,false,'a timed-out round scores below the badge line');
@@ -94,6 +109,7 @@ async function reveal(page){await idle(page);await page.locator('.guess-map').cl
     // A badge claimed on the result page is stored with the challenge record; the feed lights it after a reload.
     await page.evaluate(id=>TWStore.update(data=>{data.challenged[id]={...data.challenged[id],badge:{date:'2026-10-16'}};}),cityId);
     await page.reload();await ready(page);await page.evaluate(()=>window.HomePromo?.dismiss());await page.locator('.th-wonder').click();await page.locator('.cm-entry[data-go="feed"]').click();await page.locator('.cm-feed').waitFor();await idle(page);
+    await page.locator('[data-feed-tab="official"]').click();
     assert.equal(await page.locator(`.cm-card[data-journey="${cityId}"] .cm-medal.is-lit`).count(),1,'a claimed badge lights the mark');
     await shot(page,'feed-official');
 

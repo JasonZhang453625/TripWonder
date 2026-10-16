@@ -43,25 +43,50 @@
     </div>`;
   }
 
-  function officialCard(ctx, c) {
-    const record = ctx.challenged[c.id], badge = ctx.badges[c.id];
-    const medal = window.RewardMedal?.medal ? window.RewardMedal.medal(c) : '';
-    return `<button class="cm-card" data-journey="${esc(c.id)}"><span class="cm-thumb">${thumb(ctx, c)}</span><span class="cm-card-body"><strong>${esc(f(c, 'name'))}</strong><small>${esc(f(c, 'region'))} · ${t(`${c.scenes.length} 处实景`, `${c.scenes.length} scenes`)}</small><small class="cm-card-stats">${icon('message')}${noteCount(c)}${record ? ` · ${t(`最高 ${record.score} 分`, `Best ${record.score}`)}` : ''}</small></span><span class="cm-mark cm-medal${badge ? ' is-lit' : ''}" title="${badge ? t('已点亮徽章', 'Badge earned') : t('已挑战', 'Challenged')}"><span class="cm-medal-art" aria-hidden="true">${medal}</span><b>${badge ? t('已点亮', 'Badge') : t('已挑战', 'Played')}</b></span></button>`;
+  const feedIcon = name => `<svg class="cm-feed-icon" viewBox="0 0 28 28" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${name === 'like'
+    ? '<path d="M9 12c3-2 4-5 4-9 0-1 3-1 4 2 1 2 0 5-1 7h7c2 0 3 1 2 3l-2 9c0 1-1 2-3 2H9V12ZM3 12h6v14H3z"/>'
+    : '<path d="M24 20c2-2 3-5 2-8C25 6 21 3 15 3 8 3 3 7 3 13s5 10 11 10c2 0 4 0 5-1l6 3-1-5Z"/><path d="M9 11h10M9 16h8"/>'}</svg>`;
+  const commentAvatar = () => '<span class="cm-comment-avatar" aria-hidden="true"><svg viewBox="0 0 32 32"><circle cx="16" cy="16" r="15" fill="#fffdf5"/><path d="M7 23h18v3H7z" fill="#c7b98d"/><path d="M9 22v-7c0-6 14-6 14 0v7" fill="#abc56b" stroke="#829a4c"/><circle cx="12" cy="12" r="4" fill="#f5fae6" stroke="#829a4c"/><circle cx="20" cy="12" r="4" fill="#f5fae6" stroke="#829a4c"/><circle cx="12" cy="12" r="1.2" fill="#414d32"/><circle cx="20" cy="12" r="1.2" fill="#414d32"/><path d="M13 18q3 3 6 0" fill="none" stroke="#667b3a" stroke-linecap="round"/></svg></span>';
+  function postAge(value) {
+    const at = Date.parse(value), days = Math.floor((Date.now() - at) / 86400000);
+    if (!Number.isFinite(at)) return '';
+    if (days <= 0) return t('今天', 'Today');
+    return days < 30 ? t(`${days}天前`, `${days}d ago`) : new Date(at).toLocaleDateString(isEn() ? 'en-US' : 'zh-CN', {month: 'numeric', day: 'numeric'});
   }
-  function ugcCard(ctx, c) {
-    const played = ctx.played[c.id];
-    return `<button class="cm-card" data-journey="${esc(c.id)}"><span class="cm-thumb">${thumb(ctx, c)}</span><span class="cm-card-body"><strong>${esc(label(c, played))}</strong><small>${esc(f(c.author, 'name'))} · ${t(`${c.scenes.length} 处实景`, `${c.scenes.length} scenes`)}</small><small class="cm-card-stats">${c.boardEnabled ? `${icon('message')}${t('留言板已开启', 'Board on')}` : t('留言板未开启', 'Board off')}</small></span>${played ? `<span class="cm-mark cm-stamp">${icon('check')}<b>${t('已挑战', 'Played')}</b><small>${t(`${played.score} 分`, `${played.score} pts`)}</small></span>` : `<span class="cm-mark cm-new">${t('去挑战', 'Play')}</span>`}</button>`;
+  function postCard(ctx, c) {
+    const userJourney = isUgc(c), played = userJourney ? ctx.played[c.id] : ctx.challenged[c.id];
+    const revealed = !userJourney || !!played;
+    const author = userJourney ? f(c.author, 'name') : 'TripWonder';
+    const authorId = userJourney ? `player:${c.author.name}` : 'tripwonder-official';
+    const following = !!window.TWStore?.get().prefs.communityFollowing?.[authorId];
+    const liked = !!window.TWStore?.get().likes[`feed:${c.id}`];
+    const story = userJourney ? null : window.ResultReveal?.destination?.(c);
+    const text = userJourney ? f(c, 'intro') : f(story, 'description') || t('分享这一路看见的风景，也想听听你的旅行故事。', 'Sharing the views along the way. What is your travel story?');
+    const age = postAge(c.publishedAt || played?.date);
+    const title = userJourney ? f(c, 'title') : f(c, 'name');
+    const photos = c.scenes.slice(0, 3).map((scene, i) => `<span class="cm-post-photo">${thumb(ctx, c, i)}</span>`).join('');
+    const medal = !userJourney && window.RewardMedal?.medal ? window.RewardMedal.medal(c) : '';
+    const mark = !userJourney ? `<span class="cm-mark cm-medal${ctx.badges[c.id] ? ' is-lit' : ''}" title="${ctx.badges[c.id] ? t('已点亮徽章', 'Badge earned') : t('已挑战', 'Challenged')}"><span class="cm-medal-art" aria-hidden="true">${medal}</span><b>${ctx.badges[c.id] ? t('已点亮', 'Badge') : t('已挑战', 'Played')}</b></span>`
+      : played ? `<span class="cm-mark cm-stamp">${icon('check')}<b>${t('已挑战', 'Played')}</b><small>${t(`${played.score} 分`, `${played.score} pts`)}</small></span>` : '';
+    const commentsOn = !userJourney || c.boardEnabled;
+    const comments = commentsOn ? noteCount(c) : 0;
+    return `<article class="cm-card cm-post" data-journey="${esc(c.id)}" aria-label="${esc(title)}">
+      <header class="cm-post-author"><span class="cm-post-avatar" aria-hidden="true">${thumb(ctx, c)}</span><div class="cm-post-byline"><div><b>${esc(author)}</b>${age ? `<span class="cm-post-age"><i>·</i>${esc(age)}</span>` : ''}</div><span class="cm-post-status${userJourney ? '' : ' is-local'}">${userJourney ? t('🚗 在路上', '🚗 On the road') : t('🏡 目的地分享', '🏡 Destination stories')}</span></div><button class="cm-follow" data-feed-follow="${esc(authorId)}" aria-pressed="${following}" aria-label="${esc(t(`关注 ${author}`, `Follow ${author}`))}">${following ? t('已关注', 'Following') : t('关注', 'Follow')}</button></header>
+      <button class="cm-post-copy" data-post-open><strong>${esc(title)}</strong><span>${esc(text)}</span></button>
+      <button class="cm-post-gallery${c.scenes.length === 1 ? ' is-single' : c.scenes.length === 2 ? ' is-pair' : ''}" data-post-open aria-label="${esc(t(`查看${title}的照片与 Journey`, `View photos and journey: ${title}`))}">${photos}${c.scenes.length > 3 ? `<span class="cm-photo-count">${t(`${c.scenes.length}图`, `${c.scenes.length} photos`)}</span>` : ''}</button>
+      ${revealed ? `<div class="cm-post-place-row"><button class="cm-post-place" data-post-open>${icon('pin')}<span>${esc(f(c, 'region'))}<i>｜</i>${esc(f(c, 'name'))}</span>${icon('next')}</button>${mark}</div>` : ''}
+      <footer class="cm-post-footer"><button class="cm-comment-entry" data-post-open data-feed-discuss${commentsOn ? '' : ' disabled'} title="${commentsOn && !revealed ? t('完成挑战后可评论', 'Comment after completing the challenge') : ''}">${commentAvatar()}<span>${commentsOn ? t('发表评论', 'Add a comment') : t('评论已关闭', 'Comments off')}</span></button><button class="cm-post-reaction" data-feed-like="${esc(c.id)}" aria-pressed="${liked}" aria-label="${t('点赞', 'Like')}">${feedIcon('like')}<span data-feed-like-count>${liked ? 1 : ''}</span></button><button class="cm-post-reaction" data-post-open data-feed-discuss aria-label="${t(`查看 ${comments} 条评论`, `View ${comments} comments`)}"${commentsOn ? '' : ' disabled'}>${feedIcon('comment')}<span>${comments || ''}</span></button></footer>
+    </article>`;
   }
   function feed(ctx) {
     const officials = ctx.cities.filter(c => ctx.challenged[c.id]);
-    const tab = ctx.tab === 'ugc' ? 'ugc' : 'official';
-    const tabs = [['official', t('官方目的地', 'Official'), officials.length], ['ugc', t('玩家 Journey', 'Player journeys'), ugc.length]]
+    const tab = ['ugc', 'official'].includes(ctx.tab) ? ctx.tab : 'all';
+    const tabs = [['all', t('广场', 'Square'), officials.length + ugc.length], ['official', t('已挑战', 'Played'), officials.length], ['ugc', t('玩家 Journey', 'Player journeys'), ugc.length]]
       .map(([id, name, count]) => `<button role="tab" aria-selected="${tab === id}" class="${tab === id ? 'active' : ''}" data-feed-tab="${id}">${name}<small>${count}</small></button>`).join('');
     const list = tab === 'official'
-      ? (officials.length ? officials.map(c => officialCard(ctx, c)).join('') : `<div class="cm-empty"><p>${t('完成今日挑战后，你去过的目的地会出现在这里，可以看看大家的留言。', 'Finish today’s challenge and the destinations you’ve been to will appear here, with everyone’s notes.')}</p><button class="primary" data-go="today">${t('去今日挑战', 'Go to today’s challenge')}</button></div>`)
-      : ugc.map(c => ugcCard(ctx, c)).join('');
-    const publish = `<button class="head-action cm-publish-btn" data-go="publish">${t('+ 发布', '+ Post')}</button>`;
-    return `<div class="page cm-page cm-feed">${ctx.head(t('社区', 'Community'), 'hub', publish)}<div class="cm-tabs" role="tablist">${tabs}</div><p class="cm-note-line">${tab === 'official' ? t('只展示你挑战过的官方目的地，防止剧透。', 'Only official destinations you’ve challenged are shown, to avoid spoilers.') : t('玩家上传的小众目的地，审核通过后可见。社区挑战不参与优惠与成就。', 'Lesser-known places shared by players, shown after review. Community challenges earn no perks or achievements.')}</p><div class="cm-list">${list}</div></div>`;
+      ? (officials.length ? officials.map(c => postCard(ctx, c)).join('') : `<div class="cm-empty"><p>${t('完成今日挑战后，你去过的目的地会出现在这里，可以看看大家的留言。', 'Finish today’s challenge and the destinations you’ve been to will appear here, with everyone’s notes.')}</p><button class="primary" data-go="today">${t('去今日挑战', 'Go to today’s challenge')}</button></div>`)
+      : [...(tab === 'all' ? officials : []), ...ugc].map(c => postCard(ctx, c)).join('');
+    return `<div class="page cm-page cm-feed">${ctx.head(t('社区', 'Community'), 'hub')}<div class="cm-tabs" role="tablist" aria-label="${t('社区分类', 'Community categories')}">${tabs}</div><div class="cm-feed-scroll"><div class="cm-list">${list || `<div class="cm-empty">${t('还没有新的分享，来发布第一篇吧。', 'No stories yet. Share the first one.')}</div>`}</div></div><button class="cm-publish-fab" data-go="publish" aria-label="${t('发布 Journey', 'Post a journey')}"><span aria-hidden="true">+</span></button></div>`;
   }
 
   function board(ctx, c, played) {
@@ -131,6 +156,34 @@
     box.querySelectorAll('img').forEach(img => URL.revokeObjectURL(img.src));
     box.innerHTML = [...input.files].slice(0, 5).map((file, i) => `<span class="cm-preview"><img src="${URL.createObjectURL(file)}" alt=""><b>${i + 1}</b></span>`).join('') + (input.files.length > 5 ? `<p class="cm-hint">${t('只会使用前 5 张', 'Only the first five are used')}</p>` : '');
   }
+
+  // Feed reactions use the same device-local store and reset as the rest of the prototype.
+  document.addEventListener('click', event => {
+    const button = event.target.closest('.cm-feed button');
+    if (!button || button.disabled || window.ChallengeMotion?.busy) return;
+    const authorId = button.dataset.feedFollow, journeyId = button.dataset.feedLike;
+    if (authorId) {
+      const on = window.TWStore.update(data => {
+        data.prefs.communityFollowing ||= {};
+        if (data.prefs.communityFollowing[authorId]) delete data.prefs.communityFollowing[authorId];
+        else data.prefs.communityFollowing[authorId] = true;
+        return !!data.prefs.communityFollowing[authorId];
+      });
+      document.querySelectorAll('[data-feed-follow]').forEach(other => {
+        if (other.dataset.feedFollow !== authorId) return;
+        other.setAttribute('aria-pressed', String(on));
+        other.textContent = on ? t('已关注', 'Following') : t('关注', 'Follow');
+      });
+    } else if (journeyId) {
+      const on = window.TWStore.update(data => {
+        const key = `feed:${journeyId}`;
+        if (data.likes[key]) delete data.likes[key]; else data.likes[key] = true;
+        return !!data.likes[key];
+      });
+      button.setAttribute('aria-pressed', String(on));
+      button.querySelector('[data-feed-like-count]').textContent = on ? '1' : '';
+    }
+  });
 
   let activePress=null;
   const cancelledClicks=new WeakSet();
