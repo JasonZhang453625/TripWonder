@@ -1,25 +1,155 @@
 'use strict';
-const $ = id => document.getElementById(id);
-const stage = $('stage'), canvas = $('view');
+const stage = document.getElementById('stage');
+const canvas = document.getElementById('view');
 const reduced = matchMedia('(prefers-reduced-motion: reduce)');
-let gl, program, texture, depthTexture, ready = false, spatial = true, strength = .55;
-let target = [0, 0], camera = [0, 0], dragging = false, last = [0, 0], previous = 0;
-// Hand-authored approximate depth, not a measured reconstruction of the location.
-const depth = document.createElement('canvas'); depth.width=512;depth.height=256;
-const dc=depth.getContext('2d');
-const gradient=dc.createLinearGradient(0,0,0,256);gradient.addColorStop(0,'#101010');gradient.addColorStop(.28,'#242424');gradient.addColorStop(1,'#dfdfdf');dc.fillStyle=gradient;dc.fillRect(0,0,512,256);
-function peak(coords,color){dc.fillStyle=color;dc.beginPath();coords.forEach(([x,y],i)=>i?dc.lineTo(x*512,y*256):dc.moveTo(x*512,y*256));dc.closePath();dc.fill();}
-dc.filter='blur(5px)';
-peak([[0,.15],[.09,.22],[.16,.53],[.178,.27],[.216,.25],[.24,.57],[.30,.60],[.36,1],[0,1]],'#bdbdbd');
-peak([[.43,.68],[.46,.45],[.49,.4],[.51,.63],[.54,.5],[.57,.56],[.59,.48],[.62,.55],[.65,.78],[.69,.5],[.73,.44],[.75,.75],[.81,1],[.4,1]],'#a5a5a5');
-peak([[.69,.59],[.74,.29],[.80,.25],[.86,.21],[.92,.18],[1,.17],[1,1],[.82,1]],'#929292');
-function compile(type,source){const s=gl.createShader(type);gl.shaderSource(s,source);gl.compileShader(s);if(!gl.getShaderParameter(s,gl.COMPILE_STATUS))throw Error(gl.getShaderInfoLog(s));return s;}
-function createTexture(unit,source){const tex=gl.createTexture();gl.activeTexture(gl.TEXTURE0+unit);gl.bindTexture(gl.TEXTURE_2D,tex);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,false);gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,source);return tex;}
-const image=new Image();
-function fail(){ready=false;canvas.style.opacity='0';}
-async function init(){try{gl=canvas.getContext('webgl',{alpha:false,antialias:false});if(!gl)throw Error('WebGL unavailable');const max=gl.getParameter(gl.MAX_TEXTURE_SIZE);image.src=max>=8841?'../../photo-library/zhangjiajie/tianzishan/immersive-blur/photo.jpg':'../../photo-library/zhangjiajie/tianzishan/detail.webp';await image.decode();program=gl.createProgram();gl.attachShader(program,compile(gl.VERTEX_SHADER,'attribute vec2 p; varying vec2 uv; void main(){uv=vec2((p.x+1.)*.5,(1.-p.y)*.5);gl_Position=vec4(p,0.,1.);}'));gl.attachShader(program,compile(gl.FRAGMENT_SHADER,`precision highp float;
-varying vec2 uv;uniform sampler2D photo;uniform sampler2D depth;uniform vec2 camera;uniform vec2 fit;uniform vec2 pan;uniform float power;
-void main(){vec2 base=(uv-.5)*fit+.5+pan;vec2 sampleUV=base;for(int i=0;i<4;i++){float d=texture2D(depth,sampleUV).r;sampleUV=base+camera*(.004+power*.018*d);}gl_FragColor=texture2D(photo,sampleUV);}`));gl.linkProgram(program);if(!gl.getProgramParameter(program,gl.LINK_STATUS))throw Error('Shader linking failed');gl.useProgram(program);const buf=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,buf);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,-1,1,1,-1,1,1]),gl.STATIC_DRAW);const pos=gl.getAttribLocation(program,'p');gl.enableVertexAttribArray(pos);gl.vertexAttribPointer(pos,2,gl.FLOAT,false,0,0);texture=createTexture(0,image);depthTexture=createTexture(1,depth);gl.uniform1i(gl.getUniformLocation(program,'photo'),0);gl.uniform1i(gl.getUniformLocation(program,'depth'),1);ready=true;canvas.style.opacity='1';requestAnimationFrame(frame);}catch(e){console.warn('Photo demo fallback:',e);fail();}}
-function frame(time){if(!ready)return;const dt=Math.min((time-previous)/1000,.06);previous=time;const ease=reduced.matches?1:1-Math.exp(-dt*9);camera=camera.map((v,i)=>v+(target[i]-v)*ease);const r=stage.getBoundingClientRect(),dpr=Math.min(devicePixelRatio,2);const w=Math.round(r.width*dpr),h=Math.round(r.height*dpr);if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;gl.viewport(0,0,w,h);}const ratio=image.naturalWidth/image.naturalHeight,screen=r.width/r.height;let fx=1,fy=1;if(screen<ratio)fx=screen/ratio;else fy=ratio/screen;const crop=spatial?.94:1;fx*=crop;fy*=crop;const power=spatial?strength:0;const cam=spatial?camera:[0,0];gl.uniform2f(gl.getUniformLocation(program,'fit'),fx,fy);gl.uniform2f(gl.getUniformLocation(program,'camera'),...cam);gl.uniform2f(gl.getUniformLocation(program,'pan'),cam[0]*Math.max(0,1-fx)*.48,cam[1]*Math.max(0,1-fy)*.48);gl.uniform1f(gl.getUniformLocation(program,'power'),power);gl.drawArrays(gl.TRIANGLES,0,6);requestAnimationFrame(frame);}
-stage.addEventListener('pointerdown',e=>{if(e.target.closest('button'))return;dragging=true;last=[e.clientX,e.clientY];stage.setPointerCapture(e.pointerId);});stage.addEventListener('pointermove',e=>{if(!dragging)return;target=target.map((v,i)=>Math.max(-1,Math.min(1,v-([e.clientX,e.clientY][i]-last[i])/150)));last=[e.clientX,e.clientY];});['pointerup','pointercancel','lostpointercapture'].forEach(name=>stage.addEventListener(name,()=>dragging=false));stage.addEventListener('keydown',e=>{const keys={ArrowLeft:[-.2,0],ArrowRight:[.2,0],ArrowUp:[0,-.2],ArrowDown:[0,.2]};if(!keys[e.key]||e.target!==stage)return;e.preventDefault();target=target.map((v,i)=>Math.max(-1,Math.min(1,v+keys[e.key][i])));});
-stage.addEventListener('dblclick',()=>{target=[0,0];});canvas.addEventListener('webglcontextlost',e=>{e.preventDefault();fail();});init();
+const radians = degrees => degrees * Math.PI / 180;
+const verticalFov = radians(58);
+const horizontalSpan = radians(150);
+const image = new Image();
+let gl, program, ready = false, previous = 0;
+let target = [0, 0], camera = [0, 0], dragging = false, last = [0, 0];
+let verticalSpan, yawLimit = 0, pitchLimit = 0;
+let cameraUniform, aspectUniform, spanUniform, fovUniform;
+
+function compile(type, source) {
+  const shader = gl.createShader(type);
+  gl.shaderSource(shader, source);
+  gl.compileShader(shader);
+  if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) throw Error(gl.getShaderInfoLog(shader));
+  return shader;
+}
+
+function fail() {
+  ready = false;
+  canvas.style.opacity = '0';
+}
+
+async function init() {
+  try {
+    gl = canvas.getContext('webgl', { alpha: false, antialias: false });
+    if (!gl) throw Error('WebGL unavailable');
+    const max = gl.getParameter(gl.MAX_TEXTURE_SIZE);
+    image.src = max >= 8841
+      ? '../../photo-library/zhangjiajie/tianzishan/immersive-blur/photo.jpg'
+      : '../../photo-library/zhangjiajie/tianzishan/detail.webp';
+    await image.decode();
+    // A rectangular photograph covers a finite patch of the sphere's inner wall.
+    // All rays originate at its center: no translation, depth map or generated scenery.
+    verticalSpan = horizontalSpan / (image.naturalWidth / image.naturalHeight);
+    program = gl.createProgram();
+    gl.attachShader(program, compile(gl.VERTEX_SHADER, `
+      attribute vec2 p;
+      varying vec2 uv;
+      void main() {
+        uv = (p + 1.0) * 0.5;
+        gl_Position = vec4(p, 0.0, 1.0);
+      }
+    `));
+    gl.attachShader(program, compile(gl.FRAGMENT_SHADER, `
+      precision highp float;
+      varying vec2 uv;
+      uniform sampler2D photo;
+      uniform vec2 camera;
+      uniform vec2 span;
+      uniform float aspect;
+      uniform float tanHalfFov;
+      void main() {
+        vec2 screen = (uv * 2.0 - 1.0) * tanHalfFov;
+        vec3 ray = normalize(vec3(screen.x * aspect, screen.y, 1.0));
+        float cp = cos(camera.y), sp = sin(camera.y);
+        ray = vec3(ray.x, cp * ray.y + sp * ray.z, -sp * ray.y + cp * ray.z);
+        float cy = cos(camera.x), sy = sin(camera.x);
+        ray = vec3(cy * ray.x + sy * ray.z, ray.y, -sy * ray.x + cy * ray.z);
+        vec2 photoUV = vec2(0.5 + atan(ray.x, ray.z) / span.x,
+                            0.5 - asin(clamp(ray.y, -1.0, 1.0)) / span.y);
+        gl_FragColor = texture2D(photo, photoUV);
+      }
+    `));
+    gl.linkProgram(program);
+    if (!gl.getProgramParameter(program, gl.LINK_STATUS)) throw Error('Shader linking failed');
+    gl.useProgram(program);
+    const buffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 1,-1, -1,1, -1,1, 1,-1, 1,1]), gl.STATIC_DRAW);
+    const position = gl.getAttribLocation(program, 'p');
+    gl.enableVertexAttribArray(position);
+    gl.vertexAttribPointer(position, 2, gl.FLOAT, false, 0, 0);
+    const texture = gl.createTexture();
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D, texture);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+    gl.uniform1i(gl.getUniformLocation(program, 'photo'), 0);
+    cameraUniform = gl.getUniformLocation(program, 'camera');
+    aspectUniform = gl.getUniformLocation(program, 'aspect');
+    spanUniform = gl.getUniformLocation(program, 'span');
+    fovUniform = gl.getUniformLocation(program, 'tanHalfFov');
+    ready = true;
+    requestAnimationFrame(frame);
+  } catch (error) {
+    console.warn('Spherical photo fallback:', error);
+    fail();
+  }
+}
+
+function frame(time) {
+  if (!ready) return;
+  const dt = Math.min((time - previous) / 1000, .06);
+  previous = time;
+  const rect = stage.getBoundingClientRect();
+  const aspect = rect.width / rect.height;
+  const dpr = Math.min(devicePixelRatio, 2);
+  const width = Math.round(rect.width * dpr), height = Math.round(rect.height * dpr);
+  if (canvas.width !== width || canvas.height !== height) {
+    canvas.width = width;
+    canvas.height = height;
+    gl.viewport(0, 0, width, height);
+  }
+  // Keep every corner of the perspective viewport inside the original photograph.
+  pitchLimit = Math.max(0, (verticalSpan - verticalFov) / 2 - radians(.5));
+  const ty = Math.tan(verticalFov / 2);
+  const cornerYaw = Math.atan2(ty * aspect, Math.cos(pitchLimit) - ty * Math.sin(pitchLimit));
+  yawLimit = Math.max(0, horizontalSpan / 2 - cornerYaw - radians(.5));
+  target = [Math.max(-yawLimit, Math.min(yawLimit, target[0])),
+            Math.max(-pitchLimit, Math.min(pitchLimit, target[1]))];
+  const ease = reduced.matches ? 1 : 1 - Math.exp(-dt * 12);
+  camera = camera.map((value, i) => value + (target[i] - value) * ease);
+  gl.uniform2f(cameraUniform, ...camera);
+  gl.uniform2f(spanUniform, horizontalSpan, verticalSpan);
+  gl.uniform1f(aspectUniform, aspect);
+  gl.uniform1f(fovUniform, ty);
+  gl.drawArrays(gl.TRIANGLES, 0, 6);
+  canvas.style.opacity = '1';
+  requestAnimationFrame(frame);
+}
+
+stage.addEventListener('pointerdown', event => {
+  if (event.isPrimary === false) return;
+  dragging = true;
+  last = [event.clientX, event.clientY];
+  stage.setPointerCapture(event.pointerId);
+});
+stage.addEventListener('pointermove', event => {
+  if (!dragging || event.isPrimary === false) return;
+  const scale = verticalFov / stage.clientHeight;
+  target[0] -= (event.clientX - last[0]) * scale;
+  target[1] += (event.clientY - last[1]) * scale;
+  target[0] = Math.max(-yawLimit, Math.min(yawLimit, target[0]));
+  target[1] = Math.max(-pitchLimit, Math.min(pitchLimit, target[1]));
+  last = [event.clientX, event.clientY];
+});
+['pointerup', 'pointercancel', 'lostpointercapture'].forEach(name =>
+  stage.addEventListener(name, () => { dragging = false; }));
+stage.addEventListener('keydown', event => {
+  const keys = { ArrowLeft: [-.06, 0], ArrowRight: [.06, 0], ArrowUp: [0, .04], ArrowDown: [0, -.04] };
+  if (!keys[event.key]) return;
+  event.preventDefault();
+  target = target.map((value, i) => value + keys[event.key][i]);
+});
+stage.addEventListener('dblclick', () => { target = [0, 0]; });
+canvas.addEventListener('webglcontextlost', event => { event.preventDefault(); fail(); });
+init();
