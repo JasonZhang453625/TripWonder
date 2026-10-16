@@ -1,14 +1,10 @@
-/* Floating notes over the explore scene: what earlier travellers left here, tagged "been" or "not yet".
-   Each note is anchored to a photo position (like a hotspot) and follows the view as it is dragged:
-   the flat viewer scales the plane, and the immersive viewer projects them with its own hotspot markers.
-   A few notes float at a time and take turns. New notes go where the user taps the view.
-   Notes live on this device (TWStore); samples come from content/bubble-seed.js. */
+/* Spatial note clusters: each wooden sign stays at its photo location. Hover/tap opens only that spot’s list.
+   Existing device-local notes, filters, likes and placement coordinates stay intact. */
 (() => {
   'use strict';
   const t = (zh, en) => window.I18N.t(zh, en), isEn = () => window.I18N.isEn();
   const esc = value => String(value ?? '').replace(/[&<>"']/g, char => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[char]));
   const FILTERS = ['all', 'been', 'want', 'off'], PREF = 'tripwonder-bubble-filter', MAX_LENGTH = 40;
-  const MAX_VISIBLE = 3, ROTATE_MS = 4200, SNIPPET = 15;
   const readPref = () => { try { const v = localStorage.getItem(PREF); return FILTERS.includes(v) ? v : 'all'; } catch { return 'all'; } };
   const writePref = value => { try { localStorage.setItem(PREF, value); } catch {} };
   const kindLabel = kind => kind === 'been' ? t('去过', 'Been') : t('没去过', 'Not yet');
@@ -44,141 +40,139 @@
   // A small coloured initial stands in for a profile picture.
   const hueOf = text => { let h = 0; for (const c of String(text)) h = (h * 31 + c.codePointAt(0)) % 360; return h; };
 
+  // Group in photo space, never by a fixed corner or by transient screen overlap.
+  // Each group is bounded in diameter, so a chain cannot merge separate landmarks.
+  function groupNotes(items, aspect = 1) {
+    const scale = Number.isFinite(aspect) && aspect > 0 ? aspect : 1;
+    const distance = (a, b) => Math.hypot(a.u-b.u, (a.v-b.v)/scale);
+    const groups = [];
+    for (const note of [...items].filter(n => Number.isFinite(n.u) && Number.isFinite(n.v) && n.u>=0 && n.u<=1 && n.v>=0 && n.v<=1).sort((a,b) => a.u-b.u || a.v-b.v || String(a.id).localeCompare(String(b.id)))) {
+      const group = groups.find(g => g.notes.every(other => distance(note, other) <= .045));
+      if (group) group.notes.push(note);
+      else groups.push({u: note.u, v: note.v, notes: [note]});
+    }
+    return groups;
+  }
+
   function mount({root, viewer, scene, hiddenNames = [], onCompose}) {
     const page = root.closest('.page'), plane = root.querySelector('.photo-plane');
     if (!page || !plane) return {destroy() {}};
-    // Anything a note says that would name the destination is shown as "here" before the map guess.
-    const pattern = hiddenNames.filter(n => n && n.length > 1).sort((a, b) => b.length - a.length).map(n => n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
-    const mask = text => pattern.length ? text.replace(new RegExp(pattern.join('|'), 'gi'), t('这里', 'here')) : text;
+    const pattern = hiddenNames.filter(n => n && n.length > 1).sort((a,b) => b.length-a.length).map(n => n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+    const mask = text => pattern.length ? String(text || '').replace(new RegExp(pattern.join('|'), 'gi'), t('这里', 'here')) : String(text || '');
     const textOf = note => mask(note.mine ? note.text : isEn() ? note.textEn : note.text);
     const nameOf = note => note.mine ? t('我', 'Me') : isEn() ? note.nameEn : note.name;
-    let filter = readPref(), list = [], shown = [], cursor = 0, timer = 0, destroyed = false, placing = null, freshId = null;
-
-    const bar = document.createElement('div');
-    bar.className = 'tw-bubble-bar';
-    page.append(bar);
-    const paintBar = () => {
-      const count = notes(scene.id).filter(n => filter === 'all' || n.kind === filter).length;
-      bar.innerHTML = `<button class="tw-bubble-filter" data-bubble-filter aria-label="${t(`切换留言显示，当前：${filterLabel(filter)}`, `Change which notes show. Now: ${filterLabel(filter)}`)}">${icon('message')}<span>${filterLabel(filter)}${filter === 'off' ? '' : ` ${count}`}</span></button><button class="tw-bubble-new" data-bubble-new aria-label="${t('在这个场景留言', 'Leave a note here')}">${icon('spark')}<span>${t('留言', 'Note')}</span></button>`;
-    };
-
+    let filter = readPref(), destroyed = false, placing = null, picked = null, down = null;
+    let active = null, pinned = false, closeTimer = 0;
+    const placementPointers = new Set();
+    const bar = document.createElement('div'), panel = document.createElement('section');
+    bar.className = 'tw-bubble-bar'; panel.className = 'tw-notes-panel'; panel.hidden = true;
+    panel.id = 'tw-place-notes-' + scene.id.replace(/[^a-z0-9-]/gi, '-');
+    panel.setAttribute('aria-label', t('这个位置的留言', 'Notes at this spot'));
+    page.append(bar, panel);
+    const stopClose = () => { clearTimeout(closeTimer); closeTimer = 0; };
+    function closePanel() {
+      stopClose(); panel.hidden = true; pinned = false;
+      active?.element.classList.remove('open');
+      active?.element.querySelector('button').setAttribute('aria-expanded', 'false');
+      active = null;
+    }
+    function scheduleClose() {
+      stopClose();
+      closeTimer = setTimeout(() => { if (!pinned && !panel.contains(document.activeElement)) closePanel(); }, 240);
+    }
+    function positionPanel() {
+      if (!active || panel.hidden) return;
+      const a = active.element.querySelector('button').getBoundingClientRect(), p = page.getBoundingClientRect();
+      panel.style.maxHeight = Math.max(100, Math.min(330, p.height-100))+'px';
+      const w = panel.offsetWidth, h = panel.offsetHeight;
+      panel.style.left = clamp(a.left+a.width/2-p.left-w/2, 10, Math.max(10,p.width-w-10))+'px';
+      const below = a.bottom-p.top+10;
+      panel.style.top = clamp(below+h<=p.height-12 ? below : a.top-p.top-h-10, 12, Math.max(12,p.height-h-12))+'px';
+    }
+    function openGroup(group, element) {
+      if (destroyed || placing) return;
+      stopClose();
+      if (active?.element === element && !panel.hidden) return;
+      closePanel(); active = {group, element};
+      element.classList.add('open'); element.querySelector('button').setAttribute('aria-expanded','true');
+      panel.innerHTML = `<div class="tw-notes-heading"><strong>${t('此处留言', 'Notes at this spot')} · ${group.notes.length}</strong><button type="button" data-notes-close aria-label="${t('关闭列表','Close notes')}">×</button></div><div class="tw-notes-list">${group.notes.map(note => `<article class="tw-note-row" data-id="${esc(note.id)}"><button type="button" class="tw-note-summary" aria-expanded="false"><span class="tw-bubble-avatar" aria-hidden="true">${esc([...nameOf(note)][0] || '')}</span><span class="tw-note-author">${esc(nameOf(note))}<small>${kindLabel(note.kind)}${note.seed ? ' · '+t('示例','Sample') : ''}</small></span><span class="tw-note-read">${t('展开','Read')} ›</span></button><div class="tw-note-detail" hidden><p>${esc(textOf(note))}</p><button type="button" class="tw-bubble-like" aria-pressed="${liked(note)}" aria-label="${t('点赞','Like')}">♥ <b>${likes(note)}</b></button></div></article>`).join('')}</div>`;
+      panel.hidden = false; positionPanel();
+    }
     function markers() {
       if (!Array.isArray(viewer?.markers)) return;
-      viewer.markers = viewer.markers.filter(m => !m.element.classList.contains('tw-bubble') && !m.element.classList.contains('tw-pin'));
-      plane.querySelectorAll('.tw-bubble, .tw-pin').forEach(element => viewer.markers.push({element, u: Number(element.dataset.u), v: Number(element.dataset.v), x: NaN, y: NaN, hidden: null}));
+      viewer.markers = viewer.markers.filter(m => !m.element.classList.contains('tw-note-cluster') && !m.element.classList.contains('tw-pin'));
+      plane.querySelectorAll('.tw-note-cluster, .tw-pin').forEach(element => viewer.markers.push({element, u:Number(element.dataset.u), v:Number(element.dataset.v), x:NaN, y:NaN, hidden:null}));
       viewer.projectMarkers?.();
     }
     function build() {
-      plane.querySelectorAll('.tw-bubble:not(.tw-pin)').forEach(el => el.remove());
-      list = filter === 'off' ? [] : notes(scene.id).filter(n => filter === 'all' || n.kind === filter);
-      plane.insertAdjacentHTML('beforeend', list.map((note, i) => `<div class="tw-bubble kind-${note.kind}${note.mine ? ' mine' : ''}" data-id="${esc(note.id)}" data-u="${note.u}" data-v="${note.v}" style="left:${(note.u * 100).toFixed(2)}%;top:${(note.v * 100).toFixed(2)}%"><div class="tw-bubble-float" style="--float-delay:${(-i * 1.37).toFixed(2)}s"><button class="tw-bubble-body" aria-expanded="false"><span class="tw-bubble-avatar" style="--hue:${note.mine ? 222 : hueOf(note.id)}" aria-hidden="true">${esc([...nameOf(note)][0] || '')}</span><span class="tw-bubble-text">${esc([...textOf(note)].length > SNIPPET ? [...textOf(note)].slice(0, SNIPPET).join('') + '…' : textOf(note))}</span></button><div class="tw-bubble-more"><p>${esc(textOf(note))}</p><div class="tw-bubble-meta"><span>${esc(nameOf(note))}${note.seed ? ` · ${t('示例', 'Sample')}` : ''}</span><button class="tw-bubble-like" aria-pressed="${liked(note)}" aria-label="${t('点赞', 'Like')}">♥ <b>${likes(note)}</b></button></div></div></div></div>`).join(''));
-      shown = []; cursor = 0;
-      const first = list.slice(0, MAX_VISIBLE).map(n => n.id);
-      if (freshId && !first.includes(freshId)) first[first.length - 1] = freshId;
-      first.forEach(show);
-      if (viewer?.ready) Promise.resolve(viewer.ready).then(() => { if (!destroyed) markers(); }, () => {}); else markers();
-      paintBar();
-    }
-    const el = id => plane.querySelector(`.tw-bubble[data-id="${CSS.escape(id)}"]`);
-    function show(id) { const node = el(id); if (!node) return; node.classList.add('on'); shown.push(id); }
-    function hide(id) { const node = el(id); node?.classList.remove('on', 'open'); node?.querySelector('.tw-bubble-body')?.setAttribute('aria-expanded', 'false'); shown = shown.filter(x => x !== id); }
-    function rotate() {
-      if (destroyed || document.hidden || placing || list.length <= MAX_VISIBLE || plane.querySelector('.tw-bubble.open')) return;
-      const out = shown.find(id => id !== freshId);
-      const candidates = list.map(n => n.id).filter(id => !shown.includes(id));
-      if (!out || !candidates.length) return;
-      hide(out); show(candidates[cursor++ % candidates.length]);
-    }
-
-    function toggleOpen(node) {
-      const open = !node.classList.contains('open');
-      plane.querySelectorAll('.tw-bubble.open').forEach(other => { other.classList.remove('open'); other.querySelector('.tw-bubble-body').setAttribute('aria-expanded', 'false'); });
-      node.classList.toggle('open', open);
-      node.querySelector('.tw-bubble-body').setAttribute('aria-expanded', String(open));
-    }
-    function like(node, button) {
-      const id = node.dataset.id, on = window.TWStore.update(data => { if (data.likes[id]) delete data.likes[id]; else data.likes[id] = true; return !!data.likes[id]; });
-      const note = notes(scene.id).find(n => n.id === id);
-      button.setAttribute('aria-pressed', String(on)); button.querySelector('b').textContent = likes(note);
-      if (on) { button.classList.remove('pop'); void button.offsetWidth; button.classList.add('pop'); }
-    }
-
-    let picked = null, down = null;
-    const setPin = (u, v) => {
-      picked = {u, v};
-      let pin = plane.querySelector('.tw-pin');
-      if (!pin) {
-        plane.insertAdjacentHTML('beforeend', `<div class="tw-pin"><div class="tw-bubble-float"><span class="tw-bubble-body"><span class="tw-bubble-avatar" style="--hue:222" aria-hidden="true">${t('我', 'Me')}</span><span class="tw-bubble-text">${t('我的留言', 'My note')}</span></span></div></div>`);
-        pin = plane.querySelector('.tw-pin');
+      closePanel();
+      plane.querySelectorAll('.tw-note-cluster').forEach(node => node.remove());
+      const list = filter === 'off' ? [] : notes(scene.id).filter(n => filter === 'all' || n.kind === filter);
+      const aspect = scene.photo?.width / scene.photo?.height;
+      for (const group of groupNotes(list, aspect)) {
+        const element = document.createElement('div');
+        element.className = 'tw-note-cluster'; element.dataset.u = group.u; element.dataset.v = group.v;
+        element.style.left = `${group.u*100}%`; element.style.top = `${group.v*100}%`;
+        element.innerHTML = `<button type="button" class="tw-wood-sign" aria-expanded="false" aria-controls="${panel.id}" aria-label="${t(`此处有${group.notes.length}条留言`,`${group.notes.length} notes at this spot`)}"><span class="tw-wood-leaf" aria-hidden="true">♧</span><b>${group.notes.length}</b></button>`;
+        element.addEventListener('pointerenter', event => { if(event.pointerType==='mouse') openGroup(group, element); });
+        element.addEventListener('pointerleave', scheduleClose);
+        element.querySelector('button').onclick = () => {
+          if (active?.element===element && pinned) { closePanel(); return; }
+          openGroup(group, element); pinned = true;
+        };
+        plane.append(element);
       }
-      pin.dataset.u = u; pin.dataset.v = v;
-      pin.style.left = `${(u * 100).toFixed(2)}%`; pin.style.top = `${(v * 100).toFixed(2)}%`;
-      markers();
-      placing?.querySelector('[data-place-ok]')?.removeAttribute('disabled');
-    };
-    // A tap (not a drag) on the view drops the pin there.
-    const onDown = event => { down = event.target.closest('.tw-place-actions') ? null : {x: event.clientX, y: event.clientY}; };
-    const onUp = event => {
-      if (!placing || !down) return;
-      const moved = Math.hypot(event.clientX - down.x, event.clientY - down.y); down = null;
-      if (moved > 8) return;
-      const {u, v} = pointUV(root, viewer, event.clientX, event.clientY);
-      if (u >= 0 && u <= 1 && v >= 0 && v <= 1) setPin(clamp(u, .04, .96), clamp(v, .1, .9));
-    };
-    function startPlacing() {
-      if (placing) return;
-      page.classList.add('tw-placing');
-      placing = document.createElement('div');
-      placing.className = 'tw-place';
-      placing.innerHTML = `<p class="tw-place-hint">${t('点击画面，选一个想留言的位置', 'Tap the view to choose where your note goes')}</p><div class="tw-place-actions"><button class="tw-place-cancel" data-place-cancel>${t('取消', 'Cancel')}</button><button class="tw-place-ok" data-place-ok disabled>${t('放在这里', 'Place here')}</button></div>`;
-      page.append(placing);
-      page.addEventListener('pointerdown', onDown, true);
-      page.addEventListener('pointerup', onUp, true);
+      bar.innerHTML = `<button type="button" data-bubble-filter>${t('留言','Notes')} · ${filterLabel(filter)}</button><button type="button" data-bubble-new>＋ ${t('选点留言','Pick a spot')}</button>`;
+      if(viewer?.ready)Promise.resolve(viewer.ready).then(()=>{if(!destroyed)markers();},()=>{});else markers();
     }
-    function stopPlacing() {
-      placing?.remove(); placing = null; picked = null; down = null; page.classList.remove('tw-placing');
-      page.removeEventListener('pointerdown', onDown, true); page.removeEventListener('pointerup', onUp, true);
-      plane.querySelector('.tw-pin')?.remove(); markers();
-    }
-    function confirmPlace() {
-      if (!picked) return;
-      let {u, v} = picked;
-      // Keep clear of the clue hotspots so a note never covers one.
-      if (scene.hotspots.some(h => Math.hypot(h.x / 100 - u, (h.y / 100 - v) * .7) < .07)) v = clamp(v + .1, .1, .9);
-      stopPlacing();
-      onCompose?.({u, v});
-    }
-    function add({u, v, kind, text}) {
-      const id = `me-${Date.now().toString(36)}`;
-      window.TWStore.update(data => { (data.bubbles[scene.id] ||= []).unshift({id, u, v, kind, text: [...text].slice(0, MAX_LENGTH).join(''), at: Date.now(), likes: 0}); });
-      if (filter === 'off' || (filter !== 'all' && filter !== kind)) { filter = 'all'; writePref(filter); }
-      freshId = id; build();
-      const node = el(id);
-      if (node) { node.classList.add('fresh'); toggleOpen(node); }
-    }
-
-    const onClick = event => {
-      const target = event.target;
-      if (target.closest('[data-bubble-filter]')) { filter = FILTERS[(FILTERS.indexOf(filter) + 1) % FILTERS.length]; writePref(filter); build(); return; }
-      if (target.closest('[data-bubble-new]')) { startPlacing(); return; }
-      if (target.closest('[data-place-cancel]')) { stopPlacing(); return; }
-      if (target.closest('[data-place-ok]')) { confirmPlace(); return; }
-      const node = target.closest('.tw-bubble');
-      if (!node) return;
-      const likeButton = target.closest('.tw-bubble-like');
-      if (likeButton) like(node, likeButton); else if (target.closest('.tw-bubble-body')) toggleOpen(node);
+    const onOutside = event => { if (!panel.contains(event.target) && !event.target.closest('.tw-note-cluster')) closePanel(); };
+    const onKey = event => { if(event.key==='Escape' && active){const button=active.element.querySelector('button');event.preventDefault();closePanel();button.focus();} };
+    const onPanelClick = event => {
+      if(event.target.closest('[data-notes-close]')){closePanel();return;}
+      const row = event.target.closest('.tw-note-row'); if(!row)return;
+      const note = active?.group.notes.find(n=>n.id===row.dataset.id);if(!note)return;
+      const likeButton=event.target.closest('.tw-bubble-like');
+      if(likeButton){const id=note.id;window.TWStore.update(data=>{if(data.likes[id])delete data.likes[id];else data.likes[id]=true;});likeButton.setAttribute('aria-pressed',String(liked(note)));likeButton.querySelector('b').textContent=likes(note);return;}
+      if(event.target.closest('.tw-note-summary')){
+        const detail=row.querySelector('.tw-note-detail'),open=detail.hidden;
+        panel.querySelectorAll('.tw-note-row').forEach(other=>{other.querySelector('.tw-note-detail').hidden=true;other.querySelector('.tw-note-summary').setAttribute('aria-expanded','false');});
+        detail.hidden=!open;row.querySelector('.tw-note-summary').setAttribute('aria-expanded',String(open));pinned=true;positionPanel();
+      }
     };
-    page.addEventListener('click', onClick);
-    build();
-    timer = setInterval(rotate, ROTATE_MS);
-    return {
-      add,
-      destroy() { destroyed = true; clearInterval(timer); page.removeEventListener('click', onClick); stopPlacing(); bar.remove(); plane.querySelectorAll('.tw-bubble').forEach(node => node.remove()); }
+    panel.addEventListener('pointerenter', stopClose); panel.addEventListener('pointerleave',scheduleClose);panel.addEventListener('click',onPanelClick);
+    page.addEventListener('keydown',onKey);document.addEventListener('pointerdown',onOutside);root.addEventListener('wheel',closePanel,{passive:true});window.addEventListener('resize',closePanel);
+    function setPin(u,v){
+      picked={u,v};let pin=plane.querySelector('.tw-pin');
+      if(!pin){plane.insertAdjacentHTML('beforeend',`<div class="tw-pin"><div class="tw-bubble-float"><span class="tw-bubble-body">${t('我的留言','My note')}</span></div></div>`);pin=plane.querySelector('.tw-pin');}
+      pin.dataset.u=u;pin.dataset.v=v;pin.style.left=`${u*100}%`;pin.style.top=`${v*100}%`;markers();placing?.querySelector('[data-place-ok]')?.removeAttribute('disabled');
+    }
+    const onDown=event=>{placementPointers.add(event.pointerId);if(placementPointers.size>1){if(down)down.moved=true;return;}down=event.target.closest('button')?null:{id:event.pointerId,x:event.clientX,y:event.clientY,moved:false};};
+    const onMove=event=>{if(down&&(event.pointerId!==down.id||Math.hypot(event.clientX-down.x,event.clientY-down.y)>8))down.moved=true;};
+    const onUp=event=>{placementPointers.delete(event.pointerId);const start=down;down=null;if(!placing||!start||start.moved||start.id!==event.pointerId||Math.hypot(event.clientX-start.x,event.clientY-start.y)>8)return;const {u,v}=pointUV(root,viewer,event.clientX,event.clientY);if(u>=0&&u<=1&&v>=0&&v<=1)setPin(u,v);};
+    const cancelPointer=()=>{down=null;placementPointers.clear();};
+    function startPlacing(){
+      if(placing)return;closePanel();page.classList.add('tw-placing');placing=document.createElement('div');placing.className='tw-place';
+      placing.innerHTML=`<p class="tw-place-hint">${t('点击画面，选一个想留言的位置','Tap the view to choose your note’s location')}</p><div class="tw-place-actions"><button type="button" class="tw-place-cancel" data-place-cancel>${t('取消','Cancel')}</button><button type="button" class="tw-place-ok" data-place-ok disabled>${t('放在这里','Place here')}</button></div>`;
+      page.append(placing);page.addEventListener('pointerdown',onDown,true);page.addEventListener('pointermove',onMove,true);page.addEventListener('pointerup',onUp,true);page.addEventListener('pointercancel',cancelPointer,true);
+    }
+    function stopPlacing(){placing?.remove();placing=null;picked=null;down=null;placementPointers.clear();page.classList.remove('tw-placing');page.removeEventListener('pointerdown',onDown,true);page.removeEventListener('pointermove',onMove,true);page.removeEventListener('pointerup',onUp,true);page.removeEventListener('pointercancel',cancelPointer,true);plane.querySelector('.tw-pin')?.remove();markers();}
+    function add({u,v,kind,text}){
+      const id=`me-${Date.now().toString(36)}-${Math.random().toString(36).slice(2,6)}`;
+      window.TWStore.update(data=>{(data.bubbles[scene.id]||=[]).unshift({id,u,v,kind,text:[...text].slice(0,MAX_LENGTH).join(''),at:Date.now(),likes:0});});
+      if(filter==='off'||(filter!=='all'&&filter!==kind)){filter='all';writePref(filter);}build();
+    }
+    const onClick=event=>{
+      if(event.target.closest('[data-bubble-filter]')){filter=FILTERS[(FILTERS.indexOf(filter)+1)%FILTERS.length];writePref(filter);build();return;}
+      if(event.target.closest('[data-bubble-new]')){startPlacing();return;}
+      if(event.target.closest('[data-place-cancel]')){stopPlacing();return;}
+      if(event.target.closest('[data-place-ok]')&&picked){const point={...picked};stopPlacing();onCompose?.(point);}
     };
+    page.addEventListener('click',onClick);build();
+    return {add,destroy(){destroyed=true;closePanel();document.removeEventListener('pointerdown',onOutside);page.removeEventListener('keydown',onKey);page.removeEventListener('click',onClick);root.removeEventListener('wheel',closePanel);window.removeEventListener('resize',closePanel);stopPlacing();plane.querySelectorAll('.tw-note-cluster').forEach(node=>node.remove());markers();panel.remove();bar.remove();}};
   }
 
   function composeMarkup() {
-    return `<div class="tw-compose"><p class="tw-compose-lead">${t('留给之后来到这里的旅人', 'For the travellers who come here next')}</p><div class="tw-compose-kinds" role="radiogroup" aria-label="${t('你去过这里吗', 'Have you been here?')}"><button role="radio" aria-checked="false" data-compose-kind="been">${t('我去过', 'I’ve been')}</button><button role="radio" aria-checked="false" data-compose-kind="want">${t('还没去过', 'Not yet')}</button></div><textarea maxlength="${MAX_LENGTH}" rows="3" aria-label="${t('留言内容', 'Your note')}" placeholder="${t('写一句话，比如：清晨来人最少', 'One line, e.g. “Come early, it’s quiet”')}"></textarea><div class="tw-compose-foot"><small><span data-compose-count>0</span>/${MAX_LENGTH} · ${t('只保存在本机', 'Saved on this device only')}</small><button class="primary tw-compose-submit" data-compose-submit disabled>${t('放上气泡', 'Post')}</button></div></div>`;
+    return `<div class="tw-compose"><p class="tw-compose-lead">${t('留给之后来到这里的旅人', 'For the travellers who come here next')}</p><div class="tw-compose-kinds" role="radiogroup" aria-label="${t('你去过这里吗', 'Have you been here?')}"><button role="radio" aria-checked="false" data-compose-kind="been">${t('我去过', 'I’ve been')}</button><button role="radio" aria-checked="false" data-compose-kind="want">${t('还没去过', 'Not yet')}</button></div><textarea maxlength="${MAX_LENGTH}" rows="3" aria-label="${t('留言内容', 'Your note')}" placeholder="${t('写一句话，比如：清晨来人最少', 'One line, e.g. “Come early, it’s quiet”')}"></textarea><div class="tw-compose-foot"><small><span data-compose-count>0</span>/${MAX_LENGTH} · ${t('只保存在本机', 'Saved on this device only')}</small><button class="primary tw-compose-submit" data-compose-submit disabled>${t('放进留言簿', 'Post note')}</button></div></div>`;
   }
   function bindCompose(sheet, onSubmit) {
     const field = sheet.querySelector('textarea'), submit = sheet.querySelector('[data-compose-submit]'), count = sheet.querySelector('[data-compose-count]');
@@ -192,5 +186,5 @@
     field.addEventListener('input', sync);
   }
 
-  window.SceneBubbles = Object.freeze({mount, composeMarkup, bindCompose});
+  window.SceneBubbles = Object.freeze({mount, composeMarkup, bindCompose, groupNotes});
 })();
