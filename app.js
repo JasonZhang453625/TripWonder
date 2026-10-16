@@ -558,7 +558,8 @@
     }
     if(['home','hub','journey'].includes(previous)&&view==='cover'){
       const destinationPhoto=city().scenes[0].photo;
-      return ChallengeMotion.slide(ready=>{s.view='cover';render(ready,undefined,{deferRules:true});},{force,prepare:()=>{
+      const motion=previous==='hub'?ChallengeMotion.expand:ChallengeMotion.slide;
+      return motion(ready=>{s.view='cover';render(ready,undefined,{deferRules:true});},{force,source:app.querySelector('.cm-entry-challenge'),prepare:()=>{
         cancelPending();SceneMedia.retain([SceneMedia.source(destinationPhoto,true).src]);
         return SceneMedia.prepare(destinationPhoto);
       }}).then(shown=>{if(shown&&s.view==='cover'&&!s.rulesSeen){s.rulesSeen=true;showRules();}}).catch(error=>{if(error.name!=='AbortError')toast(tr('场景暂未载入，请重试','This scene didn’t load. Please try again.'));});
@@ -571,7 +572,8 @@
     if(view==='mall'||previous==='mall')return ChallengeMotion.slide(commit,{force,back:previous==='mall'});
     if((previous==='profile'&&['atlas','ranking','itinerary'].includes(view))||(view==='profile'&&['atlas','ranking','itinerary'].includes(previous)))return ChallengeMotion.slide(commit,{force,back:view==='profile'});
     if((previous==='home'&&['atlas','ranking','profile'].includes(view))||(view==='home'&&['atlas','ranking','cover','result','profile'].includes(previous)))return ChallengeMotion.slide(commit,{force,back:view==='home'});
-    // The TripWonder hub and community pages slide like a page stack: home → hub → feed → journey / publish.
+    if(previous==='hub'&&['feed','result'].includes(view))return ChallengeMotion.expand(commit,{force,source:app.querySelector(view==='feed'?'.cm-entry-community':'.cm-entry-challenge')});
+    // Other community routes keep their page-stack navigation and back gesture.
     const depth={home:0,hub:1,feed:2,journey:3,publish:3};
     if(view in depth&&previous in depth&&view!==previous)return ChallengeMotion.slide(commit,{force,back:depth[view]<depth[previous]});
     if(['hub','journey','feed'].includes(view)&&['cover','result','atlas','ranking','profile','guess','explore'].includes(previous))return ChallengeMotion.slide(commit,{force,back:view!=='feed'});

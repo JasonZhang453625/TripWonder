@@ -38,10 +38,8 @@
     const done = ctx.order.filter(id => ctx.daily[id]?.result).length, first = ctx.cities.find(c => c.id === ctx.order.find(id => !ctx.daily[id]?.result) || ctx.order[0]);
     const collage = ugc.slice(0, 3).map(c => `<i>${thumb(ctx, c)}</i>`).join('');
     return `<div class="page cm-page cm-hub">${ctx.head('TripWonder', 'home')}
-      <section class="cm-hub-intro"><span class="cm-kicker">${t('TRIPWONDER · 携程奇境', 'TRIPWONDER · TRIP.COM')}</span><h1>${t('今天想怎么玩？', 'How do you want to play today?')}</h1><p>${t('挑战官方目的地赢优惠，或者去社区看看大家去过的地方。', 'Take on today’s official destinations for perks, or see where other travellers have been.')}</p></section>
       <button class="cm-entry cm-entry-challenge" data-go="today"><span class="cm-entry-art">${first ? thumb(ctx, first) : ''}</span><span class="cm-entry-copy"><b class="cm-entry-tag">${t('官方', 'Official')}</b><strong>${t('今日挑战', 'Today’s challenge')}</strong><small>${t(`今日 ${ctx.order.length} 城 · 已完成 ${done}`, `${ctx.order.length} cities today · ${done} done`)}</small><span class="cm-entry-perks">${icon('ticket')}${t('赢目的地优惠 · 点亮徽章', 'Win destination perks · Earn badges')}</span></span>${icon('next')}</button>
       <button class="cm-entry cm-entry-community" data-go="feed"><span class="cm-entry-art cm-collage">${collage}</span><span class="cm-entry-copy"><b class="cm-entry-tag">${t('社区', 'Community')}</b><strong>${t('社区', 'Community')}</strong><small>${t(`去过的目的地 · ${ugc.length} 个玩家 Journey`, `Places you’ve been · ${ugc.length} player journeys`)}</small><span class="cm-entry-perks">${icon('message')}${t('留言讨论 · 玩家出题', 'Notes and player-made challenges')}</span></span>${icon('next')}</button>
-      <p class="cm-foot">${t('社区内容不参与优惠与成就；今日挑战不显示留言，避免剧透。', 'Community content earns no perks or achievements. Today’s challenge hides notes to avoid spoilers.')}</p>
     </div>`;
   }
 

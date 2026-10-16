@@ -58,7 +58,11 @@ window.ChallengeMotion=(()=>{
   }
   // Prepare media while the current page stays visible, then commit synchronously.
   // Both page nodes remain under #app so their existing scoped styles keep working.
-  async function slide(commit,{back=false,force=false,prepare,restoreScroll=back}={}){
+  function expand(commit,{source,...options}={}){
+    const rect=source?.getBoundingClientRect();
+    return slide(commit,{...options,origin:rect?{x:rect.left+rect.width/2,y:rect.top+rect.height/2}:{}});
+  }
+  async function slide(commit,{back=false,force=false,prepare,restoreScroll=back,origin=null}={}){
     if(busy&&!force)return false;
     cancel();const ticket=serial;setBusy(true);
     const app=document.querySelector('#app');
@@ -130,6 +134,17 @@ window.ChallengeMotion=(()=>{
       remember(outgoing,'aria-hidden');outgoing.setAttribute('aria-hidden','true');
       for(const element of [outgoing,...outgoing.querySelectorAll('[id]')])if(element.id){remember(element,'id');element.removeAttribute('id');}
       app.append(outgoing);app.scrollTop=targetScroll.top;app.scrollLeft=targetScroll.left;
+      if(origin){
+        // Reveal the ready page radially from the selected card's centre. Keep
+        // the hub stationary beneath it, including its header and equal halves.
+        const box=incoming.getBoundingClientRect();
+        const x=Math.max(0,Math.min(box.width,(origin.x??box.left+box.width/2)-box.left));
+        const y=Math.max(0,Math.min(box.height,(origin.y??box.top+box.height/2)-box.top));
+        const radius=Math.ceil(Math.hypot(Math.max(x,box.width-x),Math.max(y,box.height-y)))+1;
+        style(incoming,{'will-change':'clip-path','z-index':'2'});
+        await track(incoming,[{clipPath:`circle(0px at ${x}px ${y}px)`},{clipPath:`circle(${radius}px at ${x}px ${y}px)`}],{duration:560,easing:'cubic-bezier(.22,.7,.2,1)',fill:'both'});
+        return ticket===serial;
+      }
       const front=back?outgoing:incoming;
       style(front,{'box-shadow':'-10px 0 28px rgba(18,31,53,.12)'});
       const options={duration:420,easing:'cubic-bezier(.32,.72,0,1)',fill:'both'};
@@ -197,5 +212,5 @@ window.ChallengeMotion=(()=>{
     ]);
     if(overlay.isConnected)done();
   }
-  return {run,slide,cancel,press,hold,select,activate,update,reveal,dialogIn,dialogOut,get busy(){return busy;}};
+  return {run,slide,expand,cancel,press,hold,select,activate,update,reveal,dialogIn,dialogOut,get busy(){return busy;}};
 })();
