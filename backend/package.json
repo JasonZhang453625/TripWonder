@@ -1,0 +1,21 @@
+{
+  "name": "tripwonder-journey-database",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "test": "node --test tests/*.test.mjs",
+    "db:init": "node scripts/database.mjs init",
+    "db:seed": "node scripts/database.mjs seed",
+    "db:get": "node scripts/database.mjs get"
+  },
+  "dependencies": {
+    "@neondatabase/serverless": "1.2.0"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "0.5.10"
+  }
+}
