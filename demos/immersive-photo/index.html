@@ -4,14 +4,12 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>TripWonder · 实景探索</title>
 <link rel="stylesheet" href="demo.css">
-<!-- Photo: chensiyuan / Wikimedia Commons, CC BY-SA 4.0.
-https://commons.wikimedia.org/wiki/File:1_tianzishan_wulingyuan_zhangjiajie_2012.jpg
-Photo-derived visual effect: CC BY-SA 4.0. Spherical interior projection, fixed viewpoint at sphere center.
--->
-<main id="stage" tabindex="0" aria-label="山谷实景，拖动或使用方向键观察，双击复位" aria-describedby="credit">
-<img id="fallback" src="../../photo-library/zhangjiajie/tianzishan/detail.webp" alt="森林与石柱状山峰交错的山谷实景">
+<main id="stage" tabindex="0" aria-label="目的地实景，拖动或使用方向键观察，双击复位" aria-describedby="credit">
+<img id="fallback" alt="目的地实景">
 <canvas id="view" aria-hidden="true"></canvas>
 </main>
-<p id="credit" class="sr-only">摄影：chensiyuan，Wikimedia Commons。天子山实景照片，以球心视点观看球面内壁贴图。<a href="https://commons.wikimedia.org/wiki/File:1_tianzishan_wulingyuan_zhangjiajie_2012.jpg">照片来源</a>，<a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>；照片视觉衍生效果沿用该许可。</p>
+<p id="credit" class="sr-only"></p>
+<script src="scenes.js"></script>
+<script src="sphere-math.js"></script>
 <script src="demo.js"></script>
 </html>

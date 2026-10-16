@@ -2,9 +2,21 @@
 const stage = document.getElementById('stage');
 const canvas = document.getElementById('view');
 const reduced = matchMedia('(prefers-reduced-motion: reduce)');
-const radians = degrees => degrees * Math.PI / 180;
-const verticalFov = radians(58);
-const horizontalSpan = radians(150);
+const scenes = window.SPHERE_SCENES;
+const sceneId = new URLSearchParams(location.search).get('scene');
+const scene = scenes.find(item => item.id === sceneId) || scenes[0];
+const fallback = document.getElementById('fallback');
+fallback.src = scene.fallback.src;
+fallback.alt = scene.name || '目的地实景';
+const credit = document.getElementById('credit');
+credit.replaceChildren(document.createTextNode(`${scene.credit}；${scene.license}。照片以球面投影呈现。`));
+function creditLink(label, value) {
+  if (!value || !/^https?:\/\//i.test(value)) return;
+  const link = document.createElement('a'); link.textContent = label; link.href = value; credit.append(link);
+}
+creditLink('照片来源', scene.source);
+creditLink('照片许可', scene.licenseUrl);
+let verticalFov, horizontalSpan;
 const image = new Image();
 let gl, program, ready = false, previous = 0;
 let target = [0, 0], camera = [0, 0], dragging = false, last = [0, 0];
@@ -29,13 +41,27 @@ async function init() {
     gl = canvas.getContext('webgl', { alpha: false, antialias: false });
     if (!gl) throw Error('WebGL unavailable');
     const max = gl.getParameter(gl.MAX_TEXTURE_SIZE);
-    image.src = max >= 8841
-      ? '../../photo-library/zhangjiajie/tianzishan/immersive-blur/photo.jpg'
-      : '../../photo-library/zhangjiajie/tianzishan/detail.webp';
-    await image.decode();
-    // A rectangular photograph covers a finite patch of the sphere's inner wall.
-    // All rays originate at its center: no translation, depth map or generated scenery.
-    verticalSpan = horizontalSpan / (image.naturalWidth / image.naturalHeight);
+    const full = scene.image;
+    const preview = scene.fallback;
+    image.src = Math.max(full.width, full.height) <= max ? full.src : preview.src;
+    try { await image.decode(); }
+    catch (error) {
+      if (image.src === new URL(preview.src, location.href).href) throw error;
+      image.src = preview.src;
+      await image.decode();
+    }
+    if (image.naturalWidth <= image.naturalHeight) throw Error('Expected a landscape photograph');
+    // Resize only when even the fallback exceeds this device's texture limit.
+    let textureSource = image;
+    if (Math.max(image.naturalWidth, image.naturalHeight) > max) {
+      const scaled = document.createElement('canvas');
+      const factor = max / Math.max(image.naturalWidth, image.naturalHeight);
+      scaled.width = Math.max(1, Math.floor(image.naturalWidth * factor));
+      scaled.height = Math.max(1, Math.floor(image.naturalHeight * factor));
+      scaled.getContext('2d').drawImage(image, 0, 0, scaled.width, scaled.height);
+      textureSource = scaled;
+    }
+    // The camera remains at the center; the image covers a finite spherical patch.
     program = gl.createProgram();
     gl.attachShader(program, compile(gl.VERTEX_SHADER, `
       attribute vec2 p;
@@ -82,7 +108,7 @@ async function init() {
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
     gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, textureSource);
     gl.uniform1i(gl.getUniformLocation(program, 'photo'), 0);
     cameraUniform = gl.getUniformLocation(program, 'camera');
     aspectUniform = gl.getUniformLocation(program, 'aspect');
@@ -109,11 +135,9 @@ function frame(time) {
     canvas.height = height;
     gl.viewport(0, 0, width, height);
   }
-  // Keep every corner of the perspective viewport inside the original photograph.
-  pitchLimit = Math.max(0, (verticalSpan - verticalFov) / 2 - radians(.5));
-  const ty = Math.tan(verticalFov / 2);
-  const cornerYaw = Math.atan2(ty * aspect, Math.cos(pitchLimit) - ty * Math.sin(pitchLimit));
-  yawLimit = Math.max(0, horizontalSpan / 2 - cornerYaw - radians(.5));
+  const projection = window.SphereMath.projection(image.naturalWidth / image.naturalHeight, aspect);
+  ({ verticalFov, horizontalSpan, verticalSpan, yawLimit, pitchLimit } = projection);
+  const ty = projection.ty;
   target = [Math.max(-yawLimit, Math.min(yawLimit, target[0])),
             Math.max(-pitchLimit, Math.min(pitchLimit, target[1]))];
   const ease = reduced.matches ? 1 : 1 - Math.exp(-dt * 12);
