@@ -33,7 +33,7 @@ function dropPixels(entry) {
   if (entry.images) {
     entry.images.sourceImage.removeAttribute('src');
     if (entry.images.atlasImage instanceof HTMLImageElement) entry.images.atlasImage.removeAttribute('src');
-    else entry.images.atlasImage.width = entry.images.atlasImage.height = 1;
+    else if (entry.images.atlasImage) entry.images.atlasImage.width = entry.images.atlasImage.height = 1;
     entry.images = null;
   }
 }
@@ -91,9 +91,12 @@ function embeddedAssets(config, signal, priority) {
   });
 }
 
+const configKey = config => JSON.stringify([config.id, config.sourceUrl, config.assetScript, config.atlasUrl, config.projection, config.periphery]);
 function download(config, priority) {
-  if (entries.has(config.id)) return entries.get(config.id);
-  const entry = {controller:new AbortController(), urls:[], readers:0, foreground:0};
+  const previous = entries.get(config.id);
+  if (previous?.key === configKey(config)) return previous;
+  if (previous) { entries.delete(config.id); dispose(previous); }
+  const entry = {key:configKey(config), controller:new AbortController(), urls:[], readers:0, foreground:0};
   const {signal} = entry.controller;
   const timeout = setTimeout(() => entry.controller.abort(new Error('Scene asset load timed out')), 45000);
   const imageFile = async url => {
@@ -118,7 +121,7 @@ function download(config, priority) {
     return objectUrl;
   };
   entry.promise = (async () => {
-    if (config.sourceUrl && location.protocol !== 'file:' && (config.periphery === 'blur' || config.atlasUrl)) {
+    if (config.sourceUrl && location.protocol !== 'file:' && (config.periphery === 'blur' || config.periphery === 'sphere' || config.projection === 'sphere' || config.atlasUrl)) {
       const [source, atlas] = await Promise.all([
         imageFile(config.sourceUrl),
         config.atlasUrl ? imageFile(config.atlasUrl) : undefined
@@ -164,7 +167,8 @@ function decoded(entry, config, assets, pixelBudget) {
     let atlasImage;
     try {
       signal.throwIfAborted();
-      atlasImage = config.periphery === 'blur' ? blurredPeriphery(sourceImage) : await decodeImage(assets.atlas, signal);
+      atlasImage = config.projection === 'sphere' || config.periphery === 'sphere' ? null
+        : config.periphery === 'blur' ? blurredPeriphery(sourceImage) : await decodeImage(assets.atlas, signal);
       signal.throwIfAborted();
       return entry.images = {sourceImage, atlasImage};
     } catch (error) {
@@ -182,9 +186,10 @@ function decoded(entry, config, assets, pixelBudget) {
 
 export const ImmersiveSceneMedia = {
   setDestination(id, configs) {
-    if (destination?.id === id) return;
+    const key = configs.map(configKey).join('\n');
+    if (destination?.id === id && destination.key === key) return;
     clear();
-    destination = {id, configs, started:false};
+    destination = {id, key, configs, started:false};
   },
   prefetchCover(id, configs, first) {
     this.setDestination(id, configs);
