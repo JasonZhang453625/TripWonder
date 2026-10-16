@@ -144,11 +144,10 @@
     + `<button class="th-recent" data-go="today"><img src="${h}westlake.png" alt="${tr('西湖','West Lake')}"><span><strong>${tr('西湖','West Lake')}</strong><small>${tr('杭州','Hangzhou')}<i></i><b>4.7</b>/5</small></span></button>`
     + `<div class="th-banners"><button class="th-banner th-banner-photo" data-go="today">${img('bj-beihai','')}<span><small>${tr('探索','Explore')}</small><strong>${tr('华北<br>风光','North<br>China')}</strong></span></button><button class="th-banner th-banner-tuesday" data-action="home-coupon"><strong class="th-tt">Trip<i>.</i>Tuesday</strong><span class="th-tt-coupon"><b>$40</b>${tr('优惠券<br>可领取','COUPON<br>AVAILABLE')}</span><strong class="th-tt-copy">${tr('加拿大、日本<br>特价出发','Canada<br>and Japan from')}</strong></button></div></div>`
     + `<button class="th-ai" data-action="home-ai"><img src="${h}ai.png" alt=""><span>${tr('问问 AI，或按住说话','Ask AI or hold to speak')}</span></button>${homeNav()}</div>`; }
-  const timeLimit = () => tr(`限时 ${mmss(quizMs())}`,`${mmss(quizMs())} limit`);
   function cover() {
     const c=city(),record=current(),friend=s.invitation?.cityId===c.id,index=order.indexOf(c.id);
     const enter=s.exploring&&s.deadline?tr('继续挑战','Continue'):friend?tr('接受好友挑战','Accept friend’s challenge'):record.result?tr('查看挑战结果','View results'):tr('开始挑战','Start');
-    const cta=`<button class="primary cover-enter" data-action="${record.result&&!friend?'show-result':'start'}"><span>${enter}</span>${record.result&&!friend?'':`<small class="cover-limit">${s.exploring&&s.deadline?tr(`剩余 ${mmss(remaining())}`,`${mmss(remaining())} left`):timeLimit()}</small>`}${icon('next')}</button>`;
+    const cta=`<button class="primary cover-enter" data-action="${record.result&&!friend?'show-result':'start'}"><span>${enter}</span>${icon('next')}</button>`;
     // A player journey opens on its own single cover: no carousel, atlas, rankings or PK.
     if(s.mode==='ugc')return `<div class="page cover-page cover-ugc" data-cover-city="${esc(c.id)}"><div class="cover-hero">${img(c.scenes[0].id,tr('待挑战的玩家 Journey','A player journey to play'),true)}</div><header class="immersive-top"><button class="glass round" data-action="leave-cover" aria-label="${tr('返回 Journey','Back to the journey')}">${icon('back')}</button><span class="cover-name">${esc(Community.label(c,false))}</span><button class="glass" data-action="rules" aria-haspopup="dialog" aria-expanded="false">${tr('玩法','How to play')}</button></header><div class="cover-footer"><p class="cover-ugc-note">${tr(`玩家 ${esc(f(c.author,'name'))} 出题 · 社区挑战不参与优惠与成就`,`Made by ${esc(f(c.author,'name'))} · Community challenges earn no perks or achievements`)}</p><nav class="cover-dock">${cta}</nav></div></div>`;
     return `<div class="page cover-page" data-cover-city="${esc(c.id)}" role="region" aria-roledescription="${tr('轮播','carousel')}" aria-label="${tr('今日目的地，左右滑动切换','Today’s destinations. Swipe left or right to switch')}"><div class="cover-hero" tabindex="0" aria-label="${tr(`第 ${index+1} 个目的地，共 ${order.length} 个；左右方向键切换`,`Destination ${index+1} of ${order.length}. Use the left and right arrow keys to switch`)}">${img(c.scenes[0].id,tr('待探索的目的地','A destination to explore'),true)}</div><header class="immersive-top"><button class="glass round" data-action="leave-cover" aria-label="${tr('返回 TripWonder','Back to TripWonder')}">${icon('back')}</button><span class="cover-name">${tr('今日挑战','Today’s challenge')}</span><button class="glass" data-action="rules" aria-haspopup="dialog" aria-expanded="false">${tr('玩法','How to play')}</button></header><div class="cover-footer"><nav class="cover-dock" aria-label="${tr('探索与发现','Explore and discover')}"><div class="cover-dock-links"><button class="cover-tool" data-go="atlas">${icon('atlas')}<span>${tr('图鉴','Atlas')}</span></button><button class="cover-tool" data-go="ranking">${icon('trophy')}<span>${tr('排行榜','Rankings')}</span></button>${feature('pk')&&!record.result&&!friend&&!s.exploring?`<button class="cover-tool cover-pk" data-action="pk-start"><b class="pk-vs" aria-hidden="true">VS</b><span>${tr('PK 对战','PK battle')}</span></button>`:''}</div>${cta}</nav></div></div>`;
@@ -618,14 +617,14 @@
   }
   function resumeQuizTimer() {
     clearInterval(timer);timer=null;
-    if(!s.deadline||!gameMode()||!['explore','quiz'].includes(s.view))return;
+    if(!s.deadline||!gameMode()||!['explore','quiz'].includes(s.view)){window.QuizUrgency?.clear();return;}
     tick();
     if(s.deadline&&['explore','quiz'].includes(s.view))timer=setInterval(tick,250);
   }
   function tick() {
     if(!s.deadline||!['explore','quiz'].includes(s.view))return;
     const left=Math.max(0,s.deadline-Date.now()),remain=Math.ceil(left/1000),el=app.querySelector('#timer');
-    if(el){el.textContent=mmss(remain*1000);el.parentElement.classList.toggle('urgent',remain<=15);window.QuizUrgency?.update(remain,el.parentElement);}
+    if(el){el.textContent=mmss(remain*1000);el.parentElement.classList.toggle('urgent',remain<=15);window.QuizUrgency?.update(remain,el.parentElement,{left,total:quizMs()});}
     if(s.pk&&s.view==='quiz')PKMode.update(app.querySelector('.quiz-page'),s.pk,{mine:s.answers.length,total:s.questions.length,elapsed:quizMs()-left});
     if(remain===0)timeUp();
   }

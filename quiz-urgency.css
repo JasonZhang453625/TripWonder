@@ -1,9 +1,15 @@
-/* Last ten seconds of the quiz (quiz-urgency.js). */
+/* Shared challenge clock and screen-edge light (quiz-urgency.js). */
 #app .quiz-timer.final{color:#fff;background:linear-gradient(160deg,#ffffff38,#ffffff0a 55%),#e0412fe6;border-color:#ffc2b8}
 #app .quiz-timer.beat{animation:tw-timer-beat .46s cubic-bezier(.3,1.6,.5,1)}
 @keyframes tw-timer-beat{0%{scale:1}28%{scale:1.16}100%{scale:1}}
-/* ::after already holds the contrast gradient that QuizScene samples, so the edge glow uses ::before. */
-#app .quiz-backdrop::before{content:'';position:absolute;inset:0;z-index:1;pointer-events:none;opacity:0;box-shadow:inset 0 0 70px 6px #ff3b2a66;transition:opacity .4s}
-#app .quiz-page.final-countdown .quiz-backdrop::before{opacity:1;animation:tw-final-glow 1s ease-in-out infinite}
-@keyframes tw-final-glow{0%,100%{opacity:.55}50%{opacity:1}}
-@media (prefers-reduced-motion: reduce){#app .quiz-timer.beat{animation:none}#app .quiz-page.final-countdown .quiz-backdrop::before{animation:none;opacity:.7}}
+.countdown-edge{position:absolute;inset:0;z-index:26;pointer-events:none;border-radius:inherit;overflow:hidden;contain:paint;color:rgb(47,158,255);transition:color .5s linear}
+.countdown-edge svg{display:block;width:100%;height:100%;overflow:visible}
+.countdown-edge path{fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:var(--edge-length,1) 1;stroke-dashoffset:var(--edge-offset,0);transition:stroke-dasharray .26s linear,stroke-dashoffset .26s linear}
+.countdown-edge-halo{stroke-width:12px;opacity:.85;filter:blur(5px)}
+.countdown-edge-core{stroke-width:2.5px}
+.countdown-edge.is-new,.countdown-edge.is-new path{transition:none}
+.countdown-edge-end{position:absolute;left:50%;bottom:1px;width:7px;height:7px;margin-left:-3.5px;border-radius:50%;background:currentColor;box-shadow:0 0 8px 3px currentColor;opacity:0}
+.countdown-edge.is-ended svg{opacity:0;transition:opacity .2s}
+.countdown-edge.is-ended .countdown-edge-end{animation:tw-edge-finish .65s ease-out both}
+@keyframes tw-edge-finish{0%{opacity:1;transform:scale(1.4)}100%{opacity:0;transform:scale(0)}}
+@media (prefers-reduced-motion: reduce){#app .quiz-timer.beat{animation:none}.countdown-edge,.countdown-edge path,.countdown-edge.is-ended svg{transition:none}.countdown-edge.is-ended .countdown-edge-end{animation:none}}
