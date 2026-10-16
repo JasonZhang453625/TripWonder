@@ -5,6 +5,8 @@
 .mobile-device #app>.page.guess-page{padding:0}
 
 /* ---------- Map surface ---------- */
+/* Static sea shading stays behind the land and does not repaint during pan/zoom. */
+.gm,.guess-mini{--sea-surface:radial-gradient(ellipse at 18% 15%,#effcfc99,transparent 65%),linear-gradient(150deg,#e7f4fb 0%,#cde8f4 55%,#b9d9ee 100%);background:var(--sea-surface)}
 .gm{position:absolute;inset:0;overflow:hidden;touch-action:none;user-select:none;-webkit-user-select:none;cursor:crosshair;contain:strict}
 .gm.dragging{cursor:grabbing}
 .gm.revealed{cursor:default}
@@ -28,7 +30,7 @@
 .gm-cities path{fill:transparent;stroke:#ffffffd9;stroke-width:.7;vector-effect:non-scaling-stroke}
 .gm:not(.cities) .gm-cities{display:none}
 .gm-dash{fill:none;stroke:#6f86ad;stroke-width:1.3;vector-effect:non-scaling-stroke}
-.gm-inset-bg{fill:#e7f0fae6;stroke:#9fb4d4;stroke-width:1;vector-effect:non-scaling-stroke}
+.gm-inset-bg{fill:#d9edf7;stroke:#9fb4d4;stroke-width:1;vector-effect:non-scaling-stroke}
 .gm-inset-land{fill:#fdeccb;stroke:#fff;stroke-width:.6;vector-effect:non-scaling-stroke}
 .gm-inset text{font-size:46px;fill:#6f82a3;font-family:inherit}
 .gm .gm-line{fill:none;stroke:#2855f7;stroke-width:2.6;stroke-linecap:round;stroke-dasharray:1 7;vector-effect:non-scaling-stroke}
@@ -152,7 +154,7 @@ html:not(.mobile-device) .guess-card{bottom:24px}
 .guess-summary .row{margin-bottom:12px}
 .guess-summary h3{margin:0}
 .guess-summary .pill{background:#fff0ea;color:#c2381a}
-.guess-mini{position:relative;aspect-ratio:1.6;border-radius:14px;overflow:hidden;background:linear-gradient(160deg,#eef5fd,#d3e2f3)}
+.guess-mini{position:relative;aspect-ratio:1.6;border-radius:14px;overflow:hidden;background:var(--sea-surface)}
 .guess-mini .gm-svg{width:100%;height:100%}
 .gm-line.static{fill:none;stroke:#2855f7;stroke-linecap:round}
 .gm-dot{stroke:#fff}
