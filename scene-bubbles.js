@@ -1,7 +1,7 @@
 /* Floating notes over the explore scene: what earlier travellers left here, tagged "been" or "not yet".
    Each note is anchored to a photo position (like a hotspot) and follows the view as it is dragged:
    the flat viewer scales the plane, and the immersive viewer projects them with its own hotspot markers.
-   A few notes float at a time and take turns. New notes are placed at the centre of the current view.
+   A few notes float at a time and take turns. New notes go where the user taps the view.
    Notes live on this device (TWStore); samples come from content/bubble-seed.js. */
 (() => {
   'use strict';
@@ -25,18 +25,24 @@
   const liked = note => !!window.TWStore.get().likes[note.id];
 
   // Photo position (0–1) at the centre of the screen.
-  function centreUV(root, viewer) {
+  function pointUV(root, viewer, clientX, clientY) {
     if (Array.isArray(viewer?.markers) && viewer.state && viewer.eye) {
-      // Inverse of the immersive shader's ray for the centre pixel: ray -> cylinder -> photo coordinates.
-      const yaw = rad(viewer.state.yaw), dy = Math.tan(rad(viewer.state.pitch)), r = viewer.config.radius;
-      const dx = Math.sin(yaw), dz = -Math.cos(yaw), ex = viewer.eye.x, ez = viewer.eye.z;
+      // Inverse of the immersive projection (see projectMarkers): screen point -> ray -> cylinder -> photo coordinates.
+      const view = root.getBoundingClientRect();
+      const sx = (clientX - view.left) / view.width, sy = (clientY - view.top) / view.height;
+      const yaw = rad(viewer.state.yaw), r = viewer.config.radius;
+      const angle = (sx - .5) * 2 * Math.atan(viewer.th), slope = Math.tan(rad(viewer.state.pitch)) + viewer.tv * (1 - 2 * sy);
+      const dx = Math.sin(yaw) * Math.cos(angle) + Math.cos(yaw) * Math.sin(angle), dz = -Math.cos(yaw) * Math.cos(angle) + Math.sin(yaw) * Math.sin(angle);
+      const ex = viewer.eye.x, ez = viewer.eye.z;
       const b = ex * dx + ez * dz, k = ex * ex + ez * ez - r * r, hit = -b + Math.sqrt(Math.max(0, b * b - k));
       const hx = ex + hit * dx, hz = ez + hit * dz;
-      return {u: .5 + Math.atan2(hx, -hz) / (2 * viewer.halfH), v: .5 - hit * dy / (r * 2 * viewer.tanV)};
+      return {u: .5 + Math.atan2(hx, -hz) / (2 * viewer.halfH), v: .5 - hit * slope / (r * 2 * viewer.tanV)};
     }
-    const plane = root.querySelector('.photo-plane').getBoundingClientRect(), view = root.getBoundingClientRect();
-    return {u: (view.left + view.width / 2 - plane.left) / plane.width, v: (view.top + view.height / 2 - plane.top) / plane.height};
+    const plane = root.querySelector('.photo-plane').getBoundingClientRect();
+    return {u: (clientX - plane.left) / plane.width, v: (clientY - plane.top) / plane.height};
   }
+  // A small coloured initial stands in for a profile picture.
+  const hueOf = text => { let h = 0; for (const c of String(text)) h = (h * 31 + c.codePointAt(0)) % 360; return h; };
 
   function mount({root, viewer, scene, hiddenNames = [], onCompose}) {
     const page = root.closest('.page'), plane = root.querySelector('.photo-plane');
@@ -58,14 +64,14 @@
 
     function markers() {
       if (!Array.isArray(viewer?.markers)) return;
-      viewer.markers = viewer.markers.filter(m => !m.element.classList.contains('tw-bubble'));
-      plane.querySelectorAll('.tw-bubble').forEach(element => viewer.markers.push({element, u: Number(element.dataset.u), v: Number(element.dataset.v), x: NaN, y: NaN, hidden: null}));
+      viewer.markers = viewer.markers.filter(m => !m.element.classList.contains('tw-bubble') && !m.element.classList.contains('tw-pin'));
+      plane.querySelectorAll('.tw-bubble, .tw-pin').forEach(element => viewer.markers.push({element, u: Number(element.dataset.u), v: Number(element.dataset.v), x: NaN, y: NaN, hidden: null}));
       viewer.projectMarkers?.();
     }
     function build() {
-      plane.querySelectorAll('.tw-bubble').forEach(el => el.remove());
+      plane.querySelectorAll('.tw-bubble:not(.tw-pin)').forEach(el => el.remove());
       list = filter === 'off' ? [] : notes(scene.id).filter(n => filter === 'all' || n.kind === filter);
-      plane.insertAdjacentHTML('beforeend', list.map((note, i) => `<div class="tw-bubble kind-${note.kind}${note.mine ? ' mine' : ''}" data-id="${esc(note.id)}" data-u="${note.u}" data-v="${note.v}" style="left:${(note.u * 100).toFixed(2)}%;top:${(note.v * 100).toFixed(2)}%"><div class="tw-bubble-float" style="--float-delay:${(-i * 1.37).toFixed(2)}s"><button class="tw-bubble-body" aria-expanded="false"><span class="tw-bubble-tag">${kindLabel(note.kind)}</span><span class="tw-bubble-text">${esc([...textOf(note)].length > SNIPPET ? [...textOf(note)].slice(0, SNIPPET).join('') + '…' : textOf(note))}</span></button><div class="tw-bubble-more"><p>${esc(textOf(note))}</p><div class="tw-bubble-meta"><span>${esc(nameOf(note))}${note.seed ? ` · ${t('示例', 'Sample')}` : ''}</span><button class="tw-bubble-like" aria-pressed="${liked(note)}" aria-label="${t('点赞', 'Like')}">♥ <b>${likes(note)}</b></button></div></div></div></div>`).join(''));
+      plane.insertAdjacentHTML('beforeend', list.map((note, i) => `<div class="tw-bubble kind-${note.kind}${note.mine ? ' mine' : ''}" data-id="${esc(note.id)}" data-u="${note.u}" data-v="${note.v}" style="left:${(note.u * 100).toFixed(2)}%;top:${(note.v * 100).toFixed(2)}%"><div class="tw-bubble-float" style="--float-delay:${(-i * 1.37).toFixed(2)}s"><button class="tw-bubble-body" aria-expanded="false"><span class="tw-bubble-avatar" style="--hue:${note.mine ? 222 : hueOf(note.id)}" aria-hidden="true">${esc([...nameOf(note)][0] || '')}</span><span class="tw-bubble-text">${esc([...textOf(note)].length > SNIPPET ? [...textOf(note)].slice(0, SNIPPET).join('') + '…' : textOf(note))}</span></button><div class="tw-bubble-more"><p>${esc(textOf(note))}</p><div class="tw-bubble-meta"><span>${esc(nameOf(note))}${note.seed ? ` · ${t('示例', 'Sample')}` : ''}</span><button class="tw-bubble-like" aria-pressed="${liked(note)}" aria-label="${t('点赞', 'Like')}">♥ <b>${likes(note)}</b></button></div></div></div></div>`).join(''));
       shown = []; cursor = 0;
       const first = list.slice(0, MAX_VISIBLE).map(n => n.id);
       if (freshId && !first.includes(freshId)) first[first.length - 1] = freshId;
@@ -97,18 +103,46 @@
       if (on) { button.classList.remove('pop'); void button.offsetWidth; button.classList.add('pop'); }
     }
 
+    let picked = null, down = null;
+    const setPin = (u, v) => {
+      picked = {u, v};
+      let pin = plane.querySelector('.tw-pin');
+      if (!pin) {
+        plane.insertAdjacentHTML('beforeend', `<div class="tw-pin"><div class="tw-bubble-float"><span class="tw-bubble-body"><span class="tw-bubble-avatar" style="--hue:222" aria-hidden="true">${t('我', 'Me')}</span><span class="tw-bubble-text">${t('我的留言', 'My note')}</span></span></div></div>`);
+        pin = plane.querySelector('.tw-pin');
+      }
+      pin.dataset.u = u; pin.dataset.v = v;
+      pin.style.left = `${(u * 100).toFixed(2)}%`; pin.style.top = `${(v * 100).toFixed(2)}%`;
+      markers();
+      placing?.querySelector('[data-place-ok]')?.removeAttribute('disabled');
+    };
+    // A tap (not a drag) on the view drops the pin there.
+    const onDown = event => { down = event.target.closest('.tw-place-actions') ? null : {x: event.clientX, y: event.clientY}; };
+    const onUp = event => {
+      if (!placing || !down) return;
+      const moved = Math.hypot(event.clientX - down.x, event.clientY - down.y); down = null;
+      if (moved > 8) return;
+      const {u, v} = pointUV(root, viewer, event.clientX, event.clientY);
+      if (u >= 0 && u <= 1 && v >= 0 && v <= 1) setPin(clamp(u, .04, .96), clamp(v, .1, .9));
+    };
     function startPlacing() {
       if (placing) return;
       page.classList.add('tw-placing');
       placing = document.createElement('div');
       placing.className = 'tw-place';
-      placing.innerHTML = `<p class="tw-place-hint">${t('拖动画面，把准星对准想留言的位置', 'Drag the view to aim the crosshair where your note should go')}</p><span class="tw-place-cross" aria-hidden="true"></span><div class="tw-place-actions"><button class="tw-place-cancel" data-place-cancel>${t('取消', 'Cancel')}</button><button class="tw-place-ok" data-place-ok>${t('放在这里', 'Place here')}</button></div>`;
+      placing.innerHTML = `<p class="tw-place-hint">${t('点击画面，选一个想留言的位置', 'Tap the view to choose where your note goes')}</p><div class="tw-place-actions"><button class="tw-place-cancel" data-place-cancel>${t('取消', 'Cancel')}</button><button class="tw-place-ok" data-place-ok disabled>${t('放在这里', 'Place here')}</button></div>`;
       page.append(placing);
+      page.addEventListener('pointerdown', onDown, true);
+      page.addEventListener('pointerup', onUp, true);
     }
-    function stopPlacing() { placing?.remove(); placing = null; page.classList.remove('tw-placing'); }
+    function stopPlacing() {
+      placing?.remove(); placing = null; picked = null; down = null; page.classList.remove('tw-placing');
+      page.removeEventListener('pointerdown', onDown, true); page.removeEventListener('pointerup', onUp, true);
+      plane.querySelector('.tw-pin')?.remove(); markers();
+    }
     function confirmPlace() {
-      let {u, v} = centreUV(root, viewer);
-      u = clamp(u, .04, .96); v = clamp(v, .1, .9);
+      if (!picked) return;
+      let {u, v} = picked;
       // Keep clear of the clue hotspots so a note never covers one.
       if (scene.hotspots.some(h => Math.hypot(h.x / 100 - u, (h.y / 100 - v) * .7) < .07)) v = clamp(v + .1, .1, .9);
       stopPlacing();
