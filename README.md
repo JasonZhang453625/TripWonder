@@ -35,3 +35,7 @@ GitHub 仓库：[JasonZhang453625/TripWonder](https://github.com/JasonZhang45362
 ## 球面照片查看与后续上传接入
 
 正式探索页已经使用球面查看器替换旧圆柱投影。未来上传模块只需向场景提供稳定照片 ID、可读取原图地址和内容版本，即可自动使用球面呈现，无需逐张配置深度或执行图片重绘。上传接口本身尚未实现。具体契约、构建和验收步骤见 [球面照片接入流程](docs/sphere-photo-workflow.md)。
+
+## 目的地 Journey 与球面照片联合接入
+
+每个目的地对应一份 PostgreSQL JSONB journey，整合原图、展示资源、热点讲解、题目、选项、答案和解析。八城材料可从现有目录导入，保留来源与许可。数据库目录与球面查看器已提供共同适配：本地 `npm run --prefix backend preview -- --local` 读取数据库，Vercel 构建在配置 `DATABASE_URL` 时导出数据库材料；网站仍是静态构建，数据库改动需重建才生效。当前尚无上传 HTTP 接口，也未部署云数据库。建库、导入、联合预览及测试见 [backend/README.md](backend/README.md)。

@@ -20,7 +20,7 @@ async function waitScene(page,n){await counter(page).filter({hasText:`${n} / 3`}
 async function gateImage(page,part){
   let release,requests=0;
   const gate=new Promise(r=>release=r);
-  await page.route('**/'+part+'/immersive-blur/photo.jpg*',async route=>{requests++;await gate;await route.continue().catch(()=>{});});
+  await page.route('**/'+part+'/{immersive-blur/photo.jpg,original.*,oriented.*}*',async route=>{requests++;await gate;await route.continue().catch(()=>{});});
   return {release,count:()=>requests};
 }
 (async()=>{
@@ -31,7 +31,7 @@ async function gateImage(page,part){
   const requests=[];page.on('request',r=>requests.push(r.url()));
   const gate=await gateImage(page,'shenzhen/houhai');
   let fail=true,attempts=0;
-  await page.route('**/shenzhen/qianhai/immersive-blur/photo.jpg*',route=>{attempts++;return fail?route.abort('failed'):route.continue();});
+  await page.route('**/shenzhen/qianhai/{immersive-blur/photo.jpg,original.*,oriented.*}*',route=>{attempts++;return fail?route.abort('failed'):route.continue();});
   await enter(page);const old=await page.locator('#app canvas').elementHandle();
   assert.equal(gate.count(),1,'next scene downloads before clicking next');
   assert.equal(attempts,1,'all destination scenes preload, including the last scene');
@@ -46,7 +46,7 @@ async function gateImage(page,part){
   assert.ok(frames.some(x=>x.counter==='2 / 3'));
   assert.ok(frames.every(x=>!x.plain&&x.rendered==='true'),'every visible scene was rendered before commit');
   assert.equal(await page.locator('#app .photo-viewport').getAttribute('data-source-size'),'7002x4668');
-  assert.ok(!requests.some(x=>/houhai\/(screen|detail|original)\./.test(x)),'no intermediate flat image request');
+  assert.ok(!requests.some(x=>/houhai\/(screen|detail)\./.test(x)),'no intermediate screen/detail image request');
   assert.ok(!requests.some(x=>/immersive-sz-houhai-assets\.js/.test(x)),'HTTP uses the texture directly');
   await shot(page,'scene-transition-ready');report.slowLoad={frames:frames.length,oneRequest:gate.count(),nativeSize:'7002x4668',noFlatImage:true};
 

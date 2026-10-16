@@ -19,6 +19,12 @@ async function hosting(){
     has:[{type:'query',key:'v',value:'[a-f0-9]{12}'}],
     headers:{'Cache-Control':'public, max-age=31536000, immutable'},continue:true
   }];
+  // This site uses static Build Output: export database materials at build time.
+  // No configured database keeps the existing file:// and static catalog path.
+  if(process.env.DATABASE_URL || process.env.TRIPWONDER_LOCAL_DATABASE==='1'){
+    const {databaseCatalogScript}=await import('../../backend/catalog.mjs');
+    fs.writeFileSync(path.join(staticDir,'catalog.js'),await databaseCatalogScript({local:process.env.TRIPWONDER_LOCAL_DATABASE==='1'}));
+  }
   const prefix=`mobile-updates/bundles/${release.bundleId}`;
   for(const file of walk(out)){
     const href=relative(out,file);copy(file,`${prefix}/${href}`);

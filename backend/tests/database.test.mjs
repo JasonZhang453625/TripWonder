@@ -1,4 +1,6 @@
 import test from 'node:test';
+import vm from 'node:vm';
+import {gameCatalogScript} from '../catalog.mjs';
 import assert from 'node:assert/strict';
 import {mkdtemp, rm} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
@@ -101,4 +103,25 @@ test('local database persists journeys after closing and reopening', async () =>
     connection = new PGlite(directory);
     assert.deepEqual(await new JourneyDatabase(connection).get('suzhou'), source.suzhou);
   } finally { await connection?.close(); await rm(directory, {recursive: true, force: true}); }
+});
+
+test('database catalog adapter installs real viewer photos, indexes and current questions', async () => {
+  const connection = new PGlite();
+  const db = new JourneyDatabase(connection);
+  try {
+    await db.initialize(); await db.importMissing(source);
+    const edited = structuredClone(source.suzhou);
+    edited.questions[0].q = '由数据库更新的题目';
+    await db.save('suzhou', edited);
+    const window = {MEDIA_ASSETS: {}};
+    vm.runInNewContext(gameCatalogScript(await db.dictionary()), {window});
+    const catalog = window.TRIPWONDER_CATALOG;
+    assert.equal(catalog.cities.length, 8);
+    assert.equal(catalog.photoById.size, 23);
+    assert.equal(catalog.cities.find(c => c.id === 'suzhou').questions[0].q, edited.questions[0].q);
+    assert.equal(catalog.photoById.get('suzhou-huqiu').original.src, edited.scenes[0].photo.displaySource.src);
+    assert.equal(window.MEDIA_ASSETS['suzhou-huqiu'].thumb.src, edited.scenes[0].photo.thumb.src);
+    assert.throws(() => gameCatalogScript({}), /empty/);
+    assert.equal((await db.get('suzhou')).scenes[0].photo.original.src, source.suzhou.scenes[0].photo.original.src);
+  } finally { await connection.close(); }
 });
