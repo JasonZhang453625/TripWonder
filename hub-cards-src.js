@@ -1,8 +1,7 @@
 import * as THREE from 'three';
-import {TessellateModifier} from 'three/addons/modifiers/TessellateModifier.js';
 
 // One renderer, two actual rounded meshes. DOM buttons retain focus, names and routing.
-// Spring positions drive both rigid motion and a local, normal-corrected GPU dent.
+// Springs move each entire card as a rigid body. The printed face never deforms.
 const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 const spring=(value=0)=>({value,velocity:0,target:value});
 function step(s,dt,stiffness=190,damping=17){
@@ -77,26 +76,16 @@ function shadowTexture(){
   g.addColorStop(0,'#233b6740');g.addColorStop(.55,'#233b671d');g.addColorStop(1,'#233b6700');ctx.fillStyle=g;ctx.fillRect(0,0,128,128);
   return new THREE.CanvasTexture(canvas);
 }
-function elastic(material,uniforms){
+function sheen(material,uniforms){
   material.onBeforeCompile=shader=>{
     Object.assign(shader.uniforms,uniforms);
-    const declarations='uniform float cardPress; uniform vec2 cardTouch; uniform vec2 cardSize;';
-    shader.vertexShader=shader.vertexShader.replace('#include <common>',`#include <common>\n${declarations}`)
-      .replace('#include <beginnormal_vertex>',`#include <beginnormal_vertex>
-        vec2 softP = (position.xy - cardTouch) / cardSize;
-        float softWeight = exp(-3.0 * dot(softP, softP));
-        vec2 softSlope = cardPress * 108.0 * softWeight * softP / cardSize;
-        objectNormal.xy -= softSlope * objectNormal.z;`)
-      .replace('#include <begin_vertex>',`#include <begin_vertex>
-        vec2 cardP = (position.xy - cardTouch) / cardSize;
-        transformed.z -= cardPress * 18.0 * exp(-3.0 * dot(cardP, cardP));`);
     if(material.isMeshBasicMaterial)shader.fragmentShader=shader.fragmentShader
       .replace('#include <common>','#include <common>\nuniform vec2 cardTilt;')
       .replace('#include <map_fragment>',`#include <map_fragment>
         float silk = 1.0 - smoothstep(0.0, 0.16, abs(vMapUv.x + vMapUv.y * 0.55 - 0.7 - cardTilt.y * 2.0 + cardTilt.x * 2.0));
         diffuseColor.rgb = mix(diffuseColor.rgb, vec3(1.0), silk * 0.045);`);
   };
-  material.customProgramCacheKey=()=> 'elastic-entry-card-v1';
+  material.customProgramCacheKey=()=> 'rigid-entry-card-v1';
   return material;
 }
 let current=null;
@@ -124,24 +113,23 @@ class HubCards {
     this.bind();this.request();return true;
   }
   createModel(button,index,w,h){
-    const uniforms={cardPress:{value:0},cardTouch:{value:new THREE.Vector2()},cardTilt:{value:new THREE.Vector2()},cardSize:{value:new THREE.Vector2(w*.6,h*.6)}};
+    const uniforms={cardTilt:{value:new THREE.Vector2()}};
     const texture=faceTexture(button,w,h,index);
-    const side=elastic(new THREE.MeshPhysicalMaterial({color:index?0xebd0be:0x3257cf,roughness:.4,metalness:.02,clearcoat:.35,clearcoatRoughness:.4}),uniforms);
+    const side=new THREE.MeshPhysicalMaterial({color:index?0xebd0be:0x3257cf,roughness:.4,metalness:.02,clearcoat:.35,clearcoatRoughness:.4});
     // Printed artwork keeps its intended colours; the rolled physical edges catch the light.
-    const face=elastic(new THREE.MeshBasicMaterial({map:texture,toneMapped:false}),uniforms);
-    // A slim extruded body and printed face share the same soft-body deformation.
-    // Fine face tessellation makes a corner dent local instead of bending one huge triangle.
-    const shape=cardShape(w,h,26),tessellate=new TessellateModifier(40,4);
+    const face=sheen(new THREE.MeshBasicMaterial({map:texture,toneMapped:false}),uniforms);
+    // The rim and flat printed face move together under one rigid transform.
+    const shape=cardShape(w,h,26);
     const body=new THREE.ExtrudeGeometry(shape,{depth:8,steps:1,bevelEnabled:true,bevelThickness:3,bevelSize:2.5,bevelSegments:6,curveSegments:20});body.translate(0,0,-4);
-    // Only the rolled rim belongs to the body. A hidden cap below the deforming
-    // printed face would intersect it because the two triangulations differ.
+    // The separate printed face replaces the body's front cap.
     const shell=new THREE.BufferGeometry(),rim=body.groups.find(group=>group.materialIndex===1);
     for(const [name,attribute] of Object.entries(body.attributes))shell.setAttribute(name,new THREE.BufferAttribute(attribute.array.slice(rim.start*attribute.itemSize,(rim.start+rim.count)*attribute.itemSize),attribute.itemSize));
-    const geometry=tessellate.modify(shell);shell.dispose();body.dispose();
-    const plane=new THREE.ShapeGeometry(shape,20),faceGeometry=tessellate.modify(plane);plane.dispose();
+    const geometry=shell;body.dispose();
+    const faceGeometry=new THREE.ShapeGeometry(shape,20);
     const pos=faceGeometry.attributes.position,uv=faceGeometry.attributes.uv;
     for(let i=0;i<uv.count;i++)uv.setXY(i,pos.getX(i)/w+.5,pos.getY(i)/h+.5);
     faceGeometry.translate(0,0,7.4);
+    faceGeometry.computeBoundingBox();
     const mesh=new THREE.Group();mesh.add(new THREE.Mesh(geometry,side),new THREE.Mesh(faceGeometry,face));this.scene.add(mesh);
     const shadow=new THREE.Sprite(new THREE.SpriteMaterial({map:this.shadow,transparent:true,opacity:.8,depthWrite:false}));shadow.scale.set(w*1.3,h*1.28,1);shadow.position.z=-28;this.scene.add(shadow);
     return {button,index,w,h,uniforms,texture,side,face,geometry,faceGeometry,mesh,shadow,x:spring(),y:spring(),press:spring(),lift:spring(),touch:new THREE.Vector2(),held:false};
@@ -225,9 +213,7 @@ class HubCards {
       }
       const idle=this.reduced.matches?0:Math.sin(time*.00135+model.index*2.4),float=this.reduced.matches?0:Math.sin(time*.00165+model.index*2.1)*1.7;
       model.mesh.rotation.set(model.x.value+idle*.009,model.y.value+(model.index?-.017:.017),Math.sin(time*.0008+model.index)*.002*(this.reduced.matches?0:1));
-      model.mesh.position.set(model.cx,model.cy+float+model.lift.value,0);
-      model.mesh.scale.set(1+model.press.value*.003,1-model.press.value*.006,1);
-      model.uniforms.cardPress.value=model.press.value;model.uniforms.cardTouch.value.lerp(model.touch,.22);
+      model.mesh.position.set(model.cx,model.cy+float+model.lift.value,-model.press.value*7);
       model.uniforms.cardTilt.value.set(model.mesh.rotation.x,model.mesh.rotation.y);
       model.shadow.position.x=model.cx;model.shadow.position.y=model.cy-12;model.shadow.material.opacity=.68-model.lift.value*.012;
     }
@@ -238,7 +224,7 @@ class HubCards {
   disposeModel(model){
     this.scene.remove(model.mesh,model.shadow);model.geometry.dispose();model.faceGeometry.dispose();model.side.dispose();model.face.dispose();model.texture.dispose();model.shadow.material.dispose();
   }
-  inspect(){return {renderer:'three',cards:this.models.map(m=>({rotation:[m.mesh.rotation.x,m.mesh.rotation.y],press:m.press.value,velocity:m.press.velocity,target:m.press.target,touch:[m.touch.x,m.touch.y],lift:m.lift.value})),frames:this.frames||0,calls:this.renderer?.info.render.calls,triangles:this.renderer?.info.render.triangles,dpr:this.renderer?.getPixelRatio(),reduced:this.reduced.matches};}
+  inspect(){return {renderer:'three',cards:this.models.map(m=>({rotation:[m.mesh.rotation.x,m.mesh.rotation.y],press:m.press.value,velocity:m.press.velocity,target:m.press.target,touch:[m.touch.x,m.touch.y],lift:m.lift.value,depth:m.mesh.position.z,scale:m.mesh.scale.toArray(),surfaceDepth:[m.faceGeometry.boundingBox.min.z,m.faceGeometry.boundingBox.max.z]})),frames:this.frames||0,calls:this.renderer?.info.render.calls,triangles:this.renderer?.info.render.triangles,dpr:this.renderer?.getPixelRatio(),reduced:this.reduced.matches};}
   fail(error){
     if(error)console.warn('3D entry cards unavailable; keeping the accessible cards.',error.message);
     this.root.classList.remove('is-three-ready');this.root.dataset.hubRenderer='fallback';this.destroy(false);

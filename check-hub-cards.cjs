@@ -1,4 +1,4 @@
-// Actual Three.js models, elastic corner pressure, routing, renderer lifecycle and fallback.
+// Rigid Three.js models, spring motion, routing, renderer lifecycle and fallback.
 const {chromium,devices}=require(process.env.PLAYWRIGHT_PATH||'C:/Users/Administrator/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
 const base=process.env.TRIPWONDER_BASE||'http://127.0.0.1:8765/',artifacts=process.env.TRIPWONDER_TEST_ARTIFACTS;
@@ -14,10 +14,13 @@ async function back(p){await p.locator('.cm-feed [data-go="hub"]').click();await
   p.on('pageerror',e=>errors.push(e.message));p.on('console',m=>{if(m.type()==='error'&&/THREE|shader|WebGLProgram/.test(m.text()))errors.push(m.text());});
   await hub(p);const cards=p.locator('.cm-entry');let audit=await state(p);
   assert.equal(audit.cards.length,2);assert.equal(await p.locator('.hub3d-stage canvas[data-renderer="three"]').count(),1);assert.ok(audit.calls<=8&&audit.triangles<12000);await shot(p,'desktop-resting');
-  for(let index=0;index<2;index++)for(const [name,x,y] of [['top-left',-1,-1],['top-right',1,-1],['bottom-left',-1,1],['bottom-right',1,1]]){
-   const card=cards.nth(index),b=await card.boundingBox();await p.mouse.move(b.x+(x<0?30:b.width-30),b.y+(y<0?30:b.height-30));await p.mouse.down();await p.waitForTimeout(230);
-   const model=(await state(p)).cards[index];assert.ok(model.press>.75,`${index}/${name}: actual mesh deformation`);assert.ok(model.touch[0]*x>0&&model.touch[1]*y<0,'local dent follows the touched corner');assert.ok(model.rotation[0]*y<0&&model.rotation[1]*x>0,'model tilts away at the touched corner');
-   if(name==='top-right')await shot(p,`card-${index}-pressed`);
+  for(let index=0;index<2;index++)for(const [name,x,y] of [['top-left',-1,-1],['top-right',1,-1],['bottom-left',-1,1],['bottom-right',1,1],['center',0,0]]){
+   const card=cards.nth(index),b=await card.boundingBox();await p.mouse.move(b.x+(x===0?b.width/2:x<0?30:b.width-30),b.y+(y===0?b.height/2:y<0?30:b.height-30));await p.mouse.down();await p.waitForTimeout(230);
+   const model=(await state(p)).cards[index];assert.ok(model.press>.75&&model.depth<-5,`${index}/${name}: whole card moves backward`);
+   assert.deepEqual(model.scale,[1,1,1],'rigid card never squashes or stretches');assert.equal(model.surfaceDepth[0],model.surfaceDepth[1],'printed surface stays flat');assert.deepEqual(model.surfaceDepth,audit.cards[index].surfaceDepth,'surface geometry is unchanged during pressure');
+   if(name==='center'){assert.ok(Math.abs(model.rotation[0])<.025&&Math.abs(model.rotation[1])<.04,'center press translates the rigid card without bending');}
+   else{assert.ok(model.touch[0]*x>0&&model.touch[1]*y<0,'tilt follows the touched corner');assert.ok(model.rotation[0]*y<0&&model.rotation[1]*x>0,'model tilts away at the touched corner');}
+   if(name==='top-right'||name==='center')await shot(p,`card-${index}-${name}`);
    await p.mouse.move(b.x-12,b.y+b.height/2);await p.mouse.up();await p.waitForTimeout(230);
    const rebound=(await state(p)).cards[index];assert.ok(rebound.press<0,'spring crosses rest rather than just easing to zero');
    await p.waitForTimeout(650);assert.ok(Math.abs((await state(p)).cards[index].press)<.015,'spring settles');assert.equal(await p.locator('.cm-hub').count(),1,'release outside cancels navigation');
@@ -37,6 +40,6 @@ async function back(p){await p.locator('.cm-feed [data-go="hub"]').click();await
   const fallback=await browser.newPage({viewport:{width:390,height:844}});
   await fallback.addInitScript(()=>{const get=HTMLCanvasElement.prototype.getContext;HTMLCanvasElement.prototype.getContext=function(kind,...args){return /webgl/i.test(kind)?null:get.call(this,kind,...args);};});
   await hub(fallback,false);assert.equal(await fallback.locator('.cm-hub.is-three-ready').count(),0);await fallback.locator('.cm-entry-community').click();await fallback.locator('.cm-feed').waitFor();await idle(fallback);await fallback.close();
-  console.log('PASS: one Three.js canvas / two extruded models / 6 draw calls; local dents at all corners; real spring overshoot and settling; cancellation; keyboard/touch; single-context lifecycle; ~30 fps idle cap; one-minute challenge; 320px/landscape/reduced motion; WebGL fallback.');
+  console.log('PASS: rigid flat cards at every corner and centre; unchanged surface and unit scale; whole-card tilt/translation; spring overshoot and settling; cancellation; keyboard/touch; single-context lifecycle; ~30 fps idle cap; one-minute challenge; 320px/landscape/reduced motion; WebGL fallback.');
  }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});
