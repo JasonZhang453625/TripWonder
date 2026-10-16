@@ -4,7 +4,7 @@
 (() => {
   'use strict';
   const KEY = 'tripwonder-v2';
-  const blank = () => ({version: 2, wallet: {balance: 0, ledger: [], best: {}}, redemptions: [], bubbles: {}, likes: {}, explored: {}, pk: {history: []}, prefs: {}});
+  const blank = () => ({version: 2, wallet: {balance: 0, ledger: [], best: {}}, redemptions: [], bubbles: {}, likes: {}, explored: {}, challenged: {}, pk: {history: []}, prefs: {}});
   const listeners = new Set();
   function load() {
     try {

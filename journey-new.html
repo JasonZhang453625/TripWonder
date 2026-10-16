@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="zh-CN">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>添加 Journey · TripWonder</title><link rel="stylesheet" href="styles.css?v=20260924-five1"><style>
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1px solid #dae4f3;border-radius:19px;padding:9px 18px;background:#fff;font-size:12px;color:var(--ink);cursor:pointer;text-decoration:none;white-space:nowrap}.btn:hover{border-color:#b9c9e6}.btn.solid{background:#3264ff;border-color:#3264ff;color:#fff}.btn.solid:hover{background:#1649ed}.btn.danger{color:#d23a3a}.btn:disabled{opacity:.5;cursor:default}
+.panel{background:#fff;border:1px solid #e9edf5;border-radius:19px;padding:22px 24px;margin:18px 0}.panel h2{margin:0 0 4px;font-size:16px}.panel .sub{margin:0 0 16px;font-size:12px;line-height:1.7;color:#7c8ba1}
+.fields{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px 16px}.field{display:flex;flex-direction:column;gap:6px}.field.wide{grid-column:1/-1}.field label{font-size:12px;color:#51617a}.field label i{color:#d23a3a;font-style:normal}.field small{font-size:11px;color:#95a2b5;line-height:1.5}
+.field input,.field textarea{border:1px solid #dae4f3;border-radius:12px;padding:10px 12px;font-size:13px;background:#fff;color:var(--ink);width:100%}.field textarea{resize:vertical;min-height:64px}.field input:focus,.field textarea:focus{outline:2px solid #3264ff33;border-color:#3264ff}
+.drop{display:block;margin-top:2px;border:1.5px dashed #b9c9e6;border-radius:16px;padding:26px;text-align:center;color:#74849a;font-size:13px;background:#f8faff;cursor:pointer}.drop.over{background:#edf3ff;border-color:#3264ff}.drop b{color:#3264ff}
+.scene-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px;margin-top:16px}
+.scene{background:#fff;border:1px solid #e9edf5;border-radius:16px;overflow:hidden;display:flex;flex-direction:column}.scene .pv{height:150px;background:#edf2fa;position:relative}.scene .pv img{width:100%;height:100%;object-fit:cover;display:block}.scene .pv .badge{position:absolute;left:8px;top:8px;background:#000a;color:#fff;font-size:10px;padding:3px 8px;border-radius:10px}.scene .pv .state{position:absolute;inset:auto 8px 8px auto;font-size:10px;padding:3px 8px;border-radius:10px;background:#fff;color:#74849a}.scene .pv .state.err{color:#c53030}
+.scene .body{padding:12px 14px;display:flex;flex-direction:column;gap:8px}.scene .row{display:flex;gap:6px}.scene .row .btn{padding:4px 10px;font-size:11px}.scene .body .field input{padding:7px 10px;font-size:12px}
+.total{font-size:12px;margin-top:12px;color:#51617a}.total b.bad{color:#c53030}.total b.good{color:#1c8a4c}
+.error{font-size:12px;color:#c53030;background:#fdeaea;border-radius:12px;padding:10px 14px;margin:14px 0}
+.submit-bar{display:flex;align-items:center;gap:14px;flex-wrap:wrap}.submit-bar .hint{font-size:12px;color:#7c8ba1}
+.steps{list-style:none;margin:6px 0 0;padding:0;font-size:13px;line-height:2.2}.steps li{display:flex;gap:10px;align-items:baseline}.steps .mark{width:18px;text-align:center;color:#95a2b5}.steps .running{color:#3264ff}.steps .done .mark{color:#1c8a4c}.steps .failed{color:#c53030}.steps .skipped{color:#a86a00}.steps small{color:#95a2b5;font-size:11px}
+.notice{font-size:12px;color:#a86a00;background:#fff8e8;border:1px solid #f5e2b8;border-radius:12px;padding:10px 14px;margin:14px 0}
+</style></head>
+<body class="photo-body"><main class="library"><header class="library-head"><a class="brand" href="index.html">Trip<span>.</span>com</a><a href="photos.html">返回旅程库 ↗</a></header><span class="pill">TRIPWONDER · 后台</span><h1 style="margin-top:18px">添加 Journey</h1><p class="library-intro">填写目的地信息、上传 3–9 张场景照片并设定游戏规则。提交后系统会依次完成图片转换、讲解点与题目生成、地图位置确定，并把它作为一个新目的地存入数据库，之后即可在游戏里挑战。</p>
+<div id="offline" class="notice" hidden>后台服务未连接。请运行 <code>node admin/server.mjs</code>，并通过 http://127.0.0.1:8787/journey-new.html 打开本页。</div>
+<div id="keywarn" class="notice" hidden>未找到 MiMo API Key：无法生成讲解点与题目。请设置环境变量 MIMO_API_KEY，或将 key 放入 mimo api key.txt 后重启服务。</div>
+<form id="form" novalidate>
+<section class="panel"><h2>目的地信息</h2><p class="sub">玩家在探索阶段看不到这些名称，只会在揭晓结果时看到；AI 也被禁止在线索和题目里出现它们。</p>
+<div class="fields">
+<div class="field"><label for="f-name">目的地名称 <i>*</i></label><input id="f-name" name="name" maxlength="20" placeholder="如：成都" required></div>
+<div class="field"><label for="f-id">英文标识 <i>*</i></label><input id="f-id" name="id" maxlength="40" pattern="[a-z][a-z0-9-]{1,39}" placeholder="如：chengdu" required><small>小写字母、数字、短横线，创建后不可修改</small></div>
+<div class="field"><label for="f-region">所在省份 / 地区 <i>*</i></label><input id="f-region" name="region" maxlength="20" placeholder="如：四川" required></div>
+<div class="field"><label for="f-nameEn">英文名称</label><input id="f-nameEn" name="nameEn" maxlength="60" placeholder="如：Chengdu"></div>
+<div class="field"><label for="f-lat">纬度</label><input id="f-lat" name="lat" inputmode="decimal" placeholder="如：30.6586"></div>
+<div class="field"><label for="f-lng">经度</label><input id="f-lng" name="lng" inputmode="decimal" placeholder="如：104.0647"><small>坐标决定地图定位的评分，留空则由 AI 推断并标记为“待核对”</small></div>
+<div class="field wide"><label for="f-intro">目的地简介</label><textarea id="f-intro" name="intro" maxlength="400" placeholder="可选。用于结果页与后台展示，不会写进线索。"></textarea></div>
+</div></section>
+<section class="panel"><h2>场景图片 <span id="count" style="font-weight:400;font-size:12px;color:#7c8ba1"></span></h2><p class="sub">每张图片是一个场景，玩家依次探索，每个场景 AI 会生成 3 个可点击的讲解点。支持 JPG / PNG / WebP / AVIF，短边不小于 600 px，单张不超过 60 MB。请使用你有权使用的照片。</p>
+<label class="drop" id="drop" for="files"><b>点击选择</b>或把图片拖到这里（3–9 张）</label><input id="files" type="file" accept="image/jpeg,image/png,image/webp,image/avif" multiple hidden>
+<div class="scene-list" id="scenes"></div></section>
+<section class="panel"><h2>游戏规则</h2><p class="sub">已填入当前游戏的默认值，可按目的地调整。结果页按 100 分制展示，因此三题分值之和加定位满分必须等于 100。</p>
+<div class="fields">
+<div class="field"><label for="r-sec">答题倒计时（秒）</label><input id="r-sec" name="quizSeconds" type="number" min="10" max="600" step="1" value="60"><small>三道题共用，切题不重置</small></div>
+<div class="field"><label for="r-p1">第 1 题分值</label><input id="r-p1" class="pt" type="number" min="1" max="100" value="20"></div>
+<div class="field"><label for="r-p2">第 2 题分值</label><input id="r-p2" class="pt" type="number" min="1" max="100" value="20"></div>
+<div class="field"><label for="r-p3">第 3 题分值</label><input id="r-p3" class="pt" type="number" min="1" max="100" value="20"></div>
+<div class="field"><label for="r-gmax">定位满分</label><input id="r-gmax" name="gmax" type="number" min="1" max="100" value="40"></div>
+<div class="field"><label for="r-full">满分半径（公里）</label><input id="r-full" name="fullKm" type="number" min="0" max="1000" value="25"><small>落点在此范围内（或同城）即满分</small></div>
+<div class="field"><label for="r-decay">距离衰减尺度（公里）</label><input id="r-decay" name="decayKm" type="number" min="10" max="5000" value="450"><small>超出后按指数衰减，数值越大越宽容</small></div>
+</div><div class="total" id="total"></div></section>
+<div id="error" class="error" hidden></div>
+<div class="submit-bar"><button class="btn solid" id="submit" type="submit" disabled>开始生成 Journey</button><span class="hint" id="hint"></span></div>
+</form>
+<section class="panel" id="progress" hidden><h2 id="p-title">正在生成…</h2><p class="sub" id="p-sub">可以离开本页，任务会在后台继续；在旅程库里随时查看进度。</p><ul class="steps" id="p-steps"></ul><div class="submit-bar" id="p-actions" style="margin-top:14px"></div></section>
+</main>
+<script>
+const $=s=>document.querySelector(s),esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const MIN=3,MAX=9,scenes=[];let uploading=0,jobId=null,pollTimer=0;
+const call=async(url,opts)=>{const r=await fetch(url,opts);const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||r.statusText);return d;};
+
+fetch('/api/status').then(r=>r.json()).then(s=>{if(!s.hasKey)$('#keywarn').hidden=false;}).catch(()=>{$('#offline').hidden=false;$('#submit').disabled=true;});
+
+/* ---- uploads: each file is posted raw as soon as it is chosen ---- */
+async function addFiles(fileList){
+  const files=[...fileList].filter(f=>f.type.startsWith('image/'));
+  for(const file of files){
+    if(scenes.length>=MAX){showError(`最多 ${MAX} 张图片`);break;}
+    const scene={key:crypto.randomUUID(),file,filename:file.name,preview:URL.createObjectURL(file),name:file.name.replace(/\.[^.]+$/,'').slice(0,24),note:'',credit:'',state:'uploading'};
+    scenes.push(scene);renderScenes();upload(scene);
+  }
+}
+async function upload(scene){
+  uploading++;updateSubmit();
+  try{const res=await call('/api/uploads',{method:'POST',headers:{'Content-Type':'application/octet-stream'},body:scene.file});Object.assign(scene,{uploadId:res.uploadId,width:res.width,height:res.height,state:'ready'});}
+  catch(error){scene.state='error';scene.error=error.message;}
+  uploading--;renderScenes();
+}
+function renderScenes(){
+  $('#scenes').innerHTML=scenes.map((s,i)=>`<div class="scene" data-key="${s.key}"><div class="pv"><img src="${s.preview}" alt=""><span class="badge">第 ${i+1} 处</span><span class="state ${s.state==='error'?'err':''}">${s.state==='ready'?`${s.width}×${s.height}`:s.state==='uploading'?'上传中…':esc(s.error)}</span></div><div class="body"><div class="field"><label>景点名称 <i>*</i></label><input data-f="name" maxlength="24" value="${esc(s.name)}" placeholder="如：宽窄巷子"></div><div class="field"><label>给 AI 的备注</label><input data-f="note" maxlength="120" value="${esc(s.note)}" placeholder="可选：如“拍摄于清晨，画面左侧为钟楼”"></div><div class="field"><label>来源 / 作者</label><input data-f="credit" maxlength="80" value="${esc(s.credit)}" placeholder="默认：用户提供"></div><div class="row"><button type="button" class="btn" data-move="-1" ${i?'':'disabled'}>↑ 前移</button><button type="button" class="btn" data-move="1" ${i<scenes.length-1?'':'disabled'}>↓ 后移</button><button type="button" class="btn danger" data-remove="1">移除</button></div></div></div>`).join('');
+  $('#count').textContent=`（已添加 ${scenes.length} / ${MAX}，至少 ${MIN} 张）`;
+  $('#drop').style.display=scenes.length>=MAX?'none':'';
+  updateSubmit();
+}
+$('#scenes').addEventListener('input',e=>{const card=e.target.closest('.scene'),f=e.target.dataset.f;if(card&&f)scenes.find(s=>s.key===card.dataset.key)[f]=e.target.value;updateSubmit();});
+$('#scenes').addEventListener('click',e=>{
+  const card=e.target.closest('.scene');if(!card)return;const i=scenes.findIndex(s=>s.key===card.dataset.key);
+  if(e.target.closest('[data-remove]')){URL.revokeObjectURL(scenes[i].preview);scenes.splice(i,1);renderScenes();}
+  const mv=e.target.closest('[data-move]');if(mv){const j=i+Number(mv.dataset.move);[scenes[i],scenes[j]]=[scenes[j],scenes[i]];renderScenes();}
+});
+$('#files').addEventListener('change',e=>{addFiles(e.target.files);e.target.value='';});
+const drop=$('#drop');
+['dragover','dragenter'].forEach(t=>drop.addEventListener(t,e=>{e.preventDefault();drop.classList.add('over');}));
+['dragleave','drop'].forEach(t=>drop.addEventListener(t,e=>{e.preventDefault();drop.classList.remove('over');}));
+drop.addEventListener('drop',e=>addFiles(e.dataTransfer.files));
+
+/* ---- rules ---- */
+const num=sel=>Number($(sel).value);
+function updateTotal(){const sum=num('#r-p1')+num('#r-p2')+num('#r-p3')+num('#r-gmax');$('#total').innerHTML=`总分 = 三题 ${num('#r-p1')+num('#r-p2')+num('#r-p3')} + 定位 ${num('#r-gmax')} = <b class="${sum===100?'good':'bad'}">${sum}</b>${sum===100?'':'（需等于 100）'}`;updateSubmit();}
+document.querySelectorAll('.pt,#r-gmax').forEach(el=>el.addEventListener('input',updateTotal));
+
+/* ---- submit ---- */
+function problems(){
+  const list=[];
+  if(!$('#f-name').value.trim())list.push('请填写目的地名称');
+  if(!/^[a-z][a-z0-9-]{1,39}$/.test($('#f-id').value.trim()))list.push('英文标识需为小写字母/数字/短横线，并以字母开头');
+  if(!$('#f-region').value.trim())list.push('请填写所在省份');
+  if(scenes.length<MIN)list.push(`至少上传 ${MIN} 张场景图片（当前 ${scenes.length}）`);
+  if(scenes.some(s=>!s.name.trim()))list.push('每张图片都需要景点名称');
+  if(scenes.some(s=>s.state==='error'))list.push('有图片上传失败，请移除后重新添加');
+  if(num('#r-p1')+num('#r-p2')+num('#r-p3')+num('#r-gmax')!==100)list.push('三题分值加定位满分需等于 100');
+  if(!!$('#f-lat').value.trim()!==!!$('#f-lng').value.trim())list.push('纬度和经度需同时填写，或同时留空');
+  return list;
+}
+function updateSubmit(){const p=problems();$('#submit').disabled=!!uploading||!!jobId||!$('#offline').hidden;$('#hint').textContent=uploading?'图片上传中…':p[0]||'';}
+document.querySelectorAll('#form input,#form textarea').forEach(el=>el.addEventListener('input',updateSubmit));
+$('#f-id').addEventListener('input',e=>{e.target.value=e.target.value.toLowerCase().replace(/[^a-z0-9-]/g,'');});
+function showError(message){const el=$('#error');el.textContent=message||'';el.hidden=!message;}
+$('#form').addEventListener('submit',async e=>{
+  e.preventDefault();showError('');
+  const p=problems();if(p.length)return showError(p.join('；'));
+  $('#submit').disabled=true;
+  const body={
+    id:$('#f-id').value.trim(),name:$('#f-name').value.trim(),nameEn:$('#f-nameEn').value.trim(),region:$('#f-region').value.trim(),intro:$('#f-intro').value.trim(),
+    lat:$('#f-lat').value.trim(),lng:$('#f-lng').value.trim(),
+    rules:{quizSeconds:num('#r-sec'),points:[num('#r-p1'),num('#r-p2'),num('#r-p3')],guess:{max:num('#r-gmax'),fullKm:num('#r-full'),decayKm:num('#r-decay')}},
+    scenes:scenes.map(s=>({uploadId:s.uploadId,name:s.name.trim(),note:s.note.trim(),credit:s.credit.trim(),filename:s.filename}))
+  };
+  try{const res=await call('/api/journeys',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});jobId=res.jobId;showProgress();}
+  catch(error){showError(error.message);jobId=null;updateSubmit();}
+});
+
+/* ---- progress ---- */
+function showProgress(){$('#form').hidden=true;$('#progress').hidden=false;window.scrollTo(0,0);poll();}
+async function poll(){
+  clearTimeout(pollTimer);
+  let job;try{job=await call('/api/jobs/'+jobId);}catch(error){$('#p-sub').textContent='无法读取进度：'+error.message;pollTimer=setTimeout(poll,3000);return;}
+  $('#p-steps').innerHTML=job.steps.map(s=>`<li class="${s.status}"><span class="mark">${{done:'✓',running:'…',failed:'✕',skipped:'–',pending:'·'}[s.status]}</span><span>${esc(s.label)} <small>${esc(s.detail)}</small></span></li>`).join('');
+  const actions=$('#p-actions');
+  if(job.status==='done'){$('#p-title').textContent='生成完成';$('#p-sub').textContent='新目的地已存入数据库并加入游戏。AI 生成的内容默认为“待审核”，请在旅程库里核对讲解点、题目和坐标。';actions.innerHTML=`<a class="btn solid" href="photos.html#dest=${encodeURIComponent(job.destinationId)}">查看目的地</a><a class="btn" href="index.html" target="_blank">在游戏中试玩 ↗</a><a class="btn" href="journey-new.html">再添加一个</a>`;return;}
+  if(job.status==='failed'){$('#p-title').textContent='生成失败';$('#p-sub').textContent=job.error||'';actions.innerHTML='<button class="btn solid" id="retry">重试（从失败的步骤继续）</button><a class="btn" href="photos.html">返回旅程库</a>';$('#retry').onclick=async()=>{try{await call(`/api/jobs/${jobId}/retry`,{method:'POST'});$('#p-title').textContent='正在生成…';$('#p-sub').textContent='';actions.innerHTML='';poll();}catch(error){$('#p-sub').textContent=error.message;}};return;}
+  $('#p-title').textContent='正在生成…';pollTimer=setTimeout(poll,1500);
+}
+renderScenes();updateTotal();
+</script></body></html>

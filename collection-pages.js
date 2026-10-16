@@ -77,7 +77,7 @@
         <div class="atlas-slots-head"><span>${t(`纪念徽章 · ${MEDAL_SCORE} 分可领取`, `Badges · claim at ${MEDAL_SCORE}+ points`)}</span><span>${medals} / ${total}</span></div>
         <ol class="atlas-slots" style="--slots:${total}">${slots}</ol>
       </section>
-      <h2 class="atlas-section-title">${t('我的目的地', 'My destinations')}<span>${count}</span></h2>
+      <h2 class="atlas-section-title">${t('已挑战', 'Challenged')}<span>${count}</span></h2>
       ${count ? `<div class="atlas-list">${cards}</div>` : skeleton}
       ${more}
     </div>`;

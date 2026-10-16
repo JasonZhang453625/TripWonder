@@ -25,7 +25,6 @@ jobs:
           cache: npm
           cache-dependency-path: |
             package-lock.json
-            backend/package-lock.json
             mobile/package-lock.json
       - run: npm ci --no-audit --no-fund
       - run: npm run build

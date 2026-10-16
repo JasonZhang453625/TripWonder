@@ -18,7 +18,7 @@
 5. 等待 `main` 的 Vercel 部署显示 **Ready**；再检查 <https://tripwonder.vercel.app> 的首页、进入探索、照片加载与返回。确认网页引用的脚本版本对应本次提交。
 6. 根据 `mobile/build-report.json` 的 `runtime` 检查 `/mobile-updates/<runtime>.json`，核对 bundle ID、清单和文件校验和。安卓页面更新仍需完整关闭应用后重新打开；原生插件和权限变化需要新 APK。
 
-Vercel 的 `buildCommand` 统一为 `npm run build`，由根脚本安装 backend 和 mobile 依赖并生成网站及 OTA 产物。配置 `DATABASE_URL` 后才从云数据库导出网页目录；没有配置时继续使用已入库的静态材料。不要为修复部署而填入假连接串或把本地数据库目录上传。
+Vercel 的 `buildCommand` 统一为 `npm run build`，由根脚本安装 mobile 依赖并生成网站及 OTA 产物。
 
 ## 套餐边界与排查
 

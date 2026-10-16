@@ -38,6 +38,13 @@ GitHub 仓库：[JasonZhang453625/TripWonder](https://github.com/JasonZhang45362
 
 正式探索页已经使用球面查看器替换旧圆柱投影。未来上传模块只需向场景提供稳定照片 ID、可读取原图地址和内容版本，即可自动使用球面呈现，无需逐张配置深度或执行图片重绘。上传接口本身尚未实现。具体契约、构建和验收步骤见 [球面照片接入流程](docs/sphere-photo-workflow.md)。
 
-## 目的地 Journey 与球面照片联合接入
+## 后台：目的地旅程库（photos.html）与添加 Journey
 
-每个目的地对应一份 PostgreSQL JSONB journey，整合原图、展示资源、热点讲解、题目、选项、答案和解析。八城材料可从现有目录导入，保留来源与许可。数据库目录与球面查看器已提供共同适配：本地 `npm run --prefix backend preview -- --local` 读取数据库，Vercel 构建在配置 `DATABASE_URL` 时导出数据库材料；网站仍是静态构建，数据库改动需重建才生效。当前尚无上传 HTTP 接口，也未部署云数据库。建库、导入、联合预览及测试见 [backend/README.md](backend/README.md)。
+运行 `node admin/server.mjs`（Node 22+，需要 `node:sqlite`；默认 http://127.0.0.1:8787/，只监听本机），打开 `/photos.html`：
+
+- 按目的地展示，一个目的地一张卡片，点击进入该目的地的场景、讲解点、题目与规则；内置八城为只读，数据库中的目的地可审核、停用、删除。
+- “添加 Journey”（`journey-new.html`）：填写目的地信息、上传 3–9 张场景图、设定规则（答题倒计时、三题分值、定位满分与距离衰减；三题分值 + 定位满分须为 100）。提交后创建后台任务，依次执行：图片转换（thumb / screen / detail WebP；探索页用原图，由球面查看器按需生成） → 每个场景由 MiMo 看图生成 3 个讲解点 → 生成 3 道题、地图坐标与路线站点 → 校验并写入 SQLite（`admin/data/tripwonder.db`）。步骤失败可从失败处重试，已完成的步骤不会重做。
+- 提示词在 `admin/prompts/*.md`，可直接编辑；输出由 `admin/pipeline.mjs` 校验（禁用词防剧透、坐标范围、选项与答案位置等），不合格会带着原因自动重试。生成内容默认“待审核”，坐标由模型推断时会标出“待核对”。
+- 游戏通过 `/db-journeys.js` 读取状态为“已上线”的数据库目的地（`catalog.js` 并入目的地池；`app.js` 读取每个目的地的 `rules`）。纯静态部署没有该脚本，目的地池和之前一致，`photos.html` 退回只读预览。
+- MiMo Key 从环境变量 `MIMO_API_KEY`、`admin/mimo.key` 或上级目录的 `mimo api key.txt` 读取，只在服务端使用；模型默认 `mimo-v2.6-flash`（不用 pro）（`MIMO_MODEL` 可改，`MIMO_THINKING=off` 关闭思考以提速）。
+- 数据库表 `destination_journeys(destination_id, journey)` 存 journey 文档（JSON），状态与任务另存于 `journey_meta`、`jobs`。

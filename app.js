@@ -42,14 +42,22 @@
   const hash = str => [...str].reduce((n, char) => Math.imul(n ^ char.charCodeAt(0), 16777619) >>> 0, 2166136261);
   const shuffle = (items, seed) => { const out = [...items]; let n = hash(seed); for (let i=out.length-1;i>0;i--) { n ^= n<<13; n ^= n>>>17; n ^= n<<5; const j = (n>>>0)%(i+1); [out[i],out[j]]=[out[j],out[i]]; } return out; };
   // A stable daily draw: five different destinations from the complete library.
-  const libraryOrder = shuffle(C.cities.map(c => c.id), day);
+  // Cities the player has already challenged (kept on this device) are never drawn again while unplayed ones remain; they
+  // live in the atlas under "已挑战". If fewer than five unplayed cities are left, the draw is padded with challenged ones.
+  const challenged = window.TWStore?.get().challenged || {};
+  const libraryOrder = [...shuffle(C.cities.map(c => c.id).filter(id => !challenged[id]), day), ...shuffle(C.cities.map(c => c.id).filter(id => challenged[id]), day)];
   const order = libraryOrder.slice(0,5);
   const daily = {}, benefits = {};
   let invitation=null;
   try { const raw=new URL(location.href).searchParams.get('challenge');if(raw){const token=raw.replace(/-/g,'+').replace(/_/g,'/'),candidate=JSON.parse(atob(token));if(libraryOrder.includes(candidate.cityId)&&Number.isInteger(candidate.score)&&candidate.score>=0&&candidate.score<=100)invitation=candidate;} } catch {}
   // A shared destination must stay playable even when it is outside today's draw.
   if(invitation&&!order.includes(invitation.cityId))order[order.length-1]=invitation.cityId;
-  const QUIZ_DURATION = 60 * 1000;
+  // Earlier results of challenged cities that are not part of today's draw feed the atlas and the mall.
+  for(const [id,record] of Object.entries(challenged))if(record?.result&&!order.includes(id)&&C.cities.some(c=>c.id===id))daily[id]={result:record.result,skipped:false};
+  const QUIZ_DURATION = 60 * 1000; // default; a journey may set rules.quizSeconds / rules.points / guess (admin-generated journeys)
+  const quizMs = () => (city().rules?.quizSeconds ?? 60) * 1000;
+  const quizPoints = c => c?.rules?.points || [20,20,20];
+  const quizTotal = c => quizPoints(c).reduce((sum,p)=>sum+p,0);
   const mmss = ms => { const sec=Math.max(0,Math.ceil(ms/1000)); return String(Math.floor(sec/60)).padStart(2,'0')+':'+String(sec%60).padStart(2,'0'); };
   const s = {
     view:invitation?'cover':'home', cityId: invitation?.cityId || order.find(id => !daily[id]?.result && !daily[id]?.skipped) || order[0],
@@ -66,7 +74,7 @@
   const current = () => s.daily[s.cityId] || {};
   // Location guess scoring: full marks for a pin in the destination's own city (prefecture level; municipalities
   // and SARs as a whole), otherwise full inside fullKm, then exponential decay. A city may override via city.guess.
-  const GUESS = {max:40, fullKm:25, decayKm:450}, QUIZ_POINTS = [20,20,20];
+  const GUESS = {max:40, fullKm:25, decayKm:450};
   const guessRule = () => ({...GUESS, ...city().guess});
   function guessScore(km,sameCity=false) { const c=guessRule(); return sameCity||km<=c.fullKm?c.max:Math.round(c.max*Math.exp(-(km-c.fullKm)/c.decayKm)); }
   const guessVerdict = ({km,sameCity}) => sameCity?tr('同城命中','Right city!'):km<=25?tr('精准命中','Bullseye'):km<=100?tr('近在咫尺','So close'):km<=300?tr('八九不离十','Nearly there'):km<=800?tr('方向对了','Right direction'):tr('下次再近一点','Closer next time');
@@ -143,7 +151,7 @@
     return `<section class="quiz-top"><div class="quiz-progress" aria-label="${tr(`第 ${s.q+1} 题，共 3 题`,`Question ${s.q+1} of 3`)}">${s.questions.map((_,i)=>`<span class="${i<s.q?'done':i===s.q?'current':''}"></span>`).join('')}</div><h1 class="quiz-question" tabindex="-1">${esc(f(q,'q'))}</h1></section><div class="question-card quiz-options" role="group" aria-label="${tr('选择答案','Choose an answer')}">${f(q,'options').map((o,i)=>`<button class="option ${s.selected===i?'selected':''}" data-option="${i}" aria-pressed="${s.selected===i}"><b class="option-letter">${String.fromCharCode(65+i)}</b><span class="option-text">${esc(o)}</span><span class="option-check" aria-hidden="true">${icon('check')}</span></button>`).join('')}</div>`;
   }
   function quiz() {
-    return `<div class="page quiz-page"><div class="quiz-backdrop" aria-hidden="true"></div><header class="page-head quiz-header"><button class="glass round quiz-back" data-action="quiz-back" aria-label="${tr('返回刚刚的场景','Back to the last scene')}">${icon('back')}</button>${s.pk?PKMode.hud(s.pk,{mine:s.answers.length,total:s.questions.length,elapsed:QUIZ_DURATION-s.quizRemaining}):`<strong>${tr('线索挑战','Clue quiz')}</strong>`}<span class="glass timer quiz-timer" role="timer" aria-label="${tr('答题剩余时间','Time left')}"><svg class="icon quiz-clock" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l3 2"/></svg><b id="timer">${mmss(s.quizRemaining)}</b></span></header><main class="quiz-body">${quizBody()}</main><footer class="quiz-submit"><button class="primary" data-action="submit" ${s.selected===null?'disabled':''}><span>${submitLabel()}</span>${icon('next')}</button></footer></div>`;
+    return `<div class="page quiz-page"><div class="quiz-backdrop" aria-hidden="true"></div><header class="page-head quiz-header"><button class="glass round quiz-back" data-action="quiz-back" aria-label="${tr('返回刚刚的场景','Back to the last scene')}">${icon('back')}</button>${s.pk?PKMode.hud(s.pk,{mine:s.answers.length,total:s.questions.length,elapsed:quizMs()-s.quizRemaining}):`<strong>${tr('线索挑战','Clue quiz')}</strong>`}<span class="glass timer quiz-timer" role="timer" aria-label="${tr('答题剩余时间','Time left')}"><svg class="icon quiz-clock" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l3 2"/></svg><b id="timer">${mmss(s.quizRemaining)}</b></span></header><main class="quiz-body">${quizBody()}</main><footer class="quiz-submit"><button class="primary" data-action="submit" ${s.selected===null?'disabled':''}><span>${submitLabel()}</span>${icon('next')}</button></footer></div>`;
   }
   function submitLabel() { return s.q===2?tr('前往地图','Go to the map'):tr('下一题','Next question');
   }
@@ -259,7 +267,7 @@
         <div class="result-copy"><div class="result-region">${icon('pin')}${esc(f(c,'region'))} · ${name}</div><h1 class="result-arrival${en()?' is-en':''}">${en()?`<span>Hello,</span><strong>${name}<i>.</i></strong>`:`<span>你好，</span><strong>${name}<i>。</i></strong>`}</h1></div>
         <p class="result-description">${esc(f(story,'description')||tr('沿着眼前的风景，继续发现这座城市。','Follow the view in front of you and keep discovering this city.'))}</p>
         <div class="result-score-module"><div class="result-score-label">${tr('本次探索得分','Your score')}</div><div class="result-score-number">${r.score}<small>/ 100</small></div></div>
-        <div class="result-score-breakdown"><span>${tr('地图定位','Map guess')} <b>${r.guess?.points??0}<small> / ${GUESS.max}</small></b></span><span>${tr('线索答题','Clue quiz')} <b>${r.quiz??r.score}<small> / 60</small></b></span></div>
+        <div class="result-score-breakdown"><span>${tr('地图定位','Map guess')} <b>${r.guess?.points??0}<small> / ${GUESS.max}</small></b></span><span>${tr('线索答题','Clue quiz')} <b>${r.quiz??r.score}<small> / ${quizTotal(c)}</small></b></span></div>
         <button class="result-scroll-cue" aria-label="${tr('向下查看地图与探索详情','Scroll down for the map and details')}">${tr('向下，继续这段旅程','Scroll on to continue the journey')} ${icon('down')}</button>
       </div>
     </section>`;
@@ -355,7 +363,7 @@
   }
   function startPK(invitation=null) {
     if(pkMatching||s.view!=='cover')return;
-    s.pk=PKMode.create({city:city(),day,points:QUIZ_POINTS,guessScore:km=>guessScore(km),guessMax:guessRule().max,duration:QUIZ_DURATION,invitation});
+    s.pk=PKMode.create({city:city(),day,points:quizPoints(city()),guessScore:km=>guessScore(km),guessMax:guessRule().max,duration:quizMs(),invitation});
     pkMatching=true;
     PKMode.match(document.querySelector('#phone'),s.pk).then(()=>{pkMatching=false;if(s.view==='cover')start();});
   }
@@ -531,7 +539,7 @@
   function start() {
     const resume=s.exploring;
     pauseQuizTimer();
-    loadView('explore',resume?s.scene:0,()=>{if(!resume){s.scene=0;s.exploring=true;s.quizRemaining=QUIZ_DURATION;s.clues.clear();s.visited=new Set([0]);s.answers=[];s.questions=[];s.q=0;s.selected=null;}});
+    loadView('explore',resume?s.scene:0,()=>{if(!resume){s.scene=0;s.exploring=true;s.quizRemaining=quizMs();s.clues.clear();s.visited=new Set([0]);s.answers=[];s.questions=[];s.q=0;s.selected=null;}});
   }
   function pauseQuizTimer() {
     clearInterval(timer);timer=null;
@@ -548,13 +556,13 @@
     if(s.view!=='quiz'||!s.deadline)return;
     const remain=Math.max(0,Math.ceil((s.deadline-Date.now())/1000)),el=app.querySelector('#timer');
     if(el){el.textContent=mmss(remain*1000);el.parentElement.classList.toggle('urgent',remain<=15);window.QuizUrgency?.update(remain,el.parentElement);}
-    if(s.pk)PKMode.update(app.querySelector('.quiz-page'),s.pk,{mine:s.answers.length,total:s.questions.length,elapsed:QUIZ_DURATION-Math.max(0,s.deadline-Date.now())});
+    if(s.pk)PKMode.update(app.querySelector('.quiz-page'),s.pk,{mine:s.answers.length,total:s.questions.length,elapsed:quizMs()-Math.max(0,s.deadline-Date.now())});
     if(remain===0){finishQuiz(true);toast(tr('答题时间到，已提交当前答案，未作答题目计 0 分','Time’s up. Your answers have been submitted; unanswered questions score 0.'));}
   }
   function beginQuiz() {
     pauseQuizTimer();s.exploring=false;
     const resume=s.questions.length===3&&s.answers.length<3;
-    if(!resume){s.quizRemaining=QUIZ_DURATION;s.questions=city().questions.slice(0,3).map((q,i)=>({...q,points:QUIZ_POINTS[i]}));s.q=0;s.selected=null;s.answers=[];}
+    if(!resume){s.quizRemaining=quizMs();s.questions=city().questions.slice(0,3).map((q,i)=>({...q,points:quizPoints(city())[i]}));s.q=0;s.selected=null;s.answers=[];}
     go('quiz');
   }
   function finishQuiz(timedOut=false) {
@@ -572,7 +580,8 @@
   function sourceHotspot(answer) { const match=answer.source?.match(/第\s*(\d+)\s*处\s*·\s*(.+)/);if(!match)return null;return {n:Number(match[1]),hotspot:city().scenes[Number(match[1])-1]?.hotspots.find(h=>h.title===match[2])}; }
   function sourceLabel(answer) { const found=sourceHotspot(answer);return en()&&found?.hotspot?`Scene ${found.n} · ${f(found.hotspot,'title')}`:(en()&&/[\u4e00-\u9fa5]/.test(answer.source||'')?'':answer.source||''); }
   function answerSource(answer) { if(answer.source?.startsWith('http'))return answer.source;return sourceHotspot(answer)?.hotspot?.source||null; }
-  function finish() { const counts={};for(const key of s.clues){const [i,j]=key.split('-').map(Number),tag=city().scenes[i].hotspots[j]?.tag;if(tag)counts[tag]=(counts[tag]||0)+1;}const tags=Object.keys(counts).sort((a,b)=>counts[b]-counts[a]).slice(0,2);const quiz=s.answers.reduce((n,a)=>n+(a.correct?a.points:0),0),r={score:quiz+(s.guess?.points||0),quiz,guess:s.guess?{...s.guess}:null,correct:s.answers.filter(a=>a.correct).length,answers:s.answers,clues:s.clues.size,tags:tags.length?tags:['旅行发现'],date:day};if(s.pk)r.pk=PKMode.settle(s.pk,r,QUIZ_DURATION-s.quizRemaining);if(feature('wallet'))r.coins=Wallet.award({cityId:s.cityId,day,score:r.score,quizRemaining:s.quizRemaining,pk:r.pk});s.result=r;const previous=current().result;s.daily[s.cityId]={...current(),result:!previous||r.score>previous.score?r:previous,skipped:false}; }
+  function finish() { const counts={};for(const key of s.clues){const [i,j]=key.split('-').map(Number),tag=city().scenes[i].hotspots[j]?.tag;if(tag)counts[tag]=(counts[tag]||0)+1;}const tags=Object.keys(counts).sort((a,b)=>counts[b]-counts[a]).slice(0,2);const quiz=s.answers.reduce((n,a)=>n+(a.correct?a.points:0),0),r={score:quiz+(s.guess?.points||0),quiz,guess:s.guess?{...s.guess}:null,correct:s.answers.filter(a=>a.correct).length,answers:s.answers,clues:s.clues.size,tags:tags.length?tags:['旅行发现'],date:day};if(s.pk)r.pk=PKMode.settle(s.pk,r,quizMs()-s.quizRemaining);if(feature('wallet'))r.coins=Wallet.award({cityId:s.cityId,day,score:r.score,quizRemaining:s.quizRemaining,pk:r.pk});s.result=r;const previous=current().result;s.daily[s.cityId]={...current(),result:!previous||r.score>previous.score?r:previous,skipped:false};
+    if(window.TWStore)TWStore.update(data=>{const old=data.challenged?.[s.cityId]?.result;if(!old||r.score>=old.score){const {pk,coins,...keep}=r;data.challenged={...data.challenged,[s.cityId]:{at:Date.now(),result:keep}};}}); }
   function inviteUrl() { const r=s.result||current().result,token=btoa(JSON.stringify({cityId:s.cityId,score:r.score,day})).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');const url=new URL('index.html',window.TRIPWONDER_PUBLIC_ORIGIN||location.href);url.searchParams.set('challenge',token);return url.href; }
   function share() {
     const r=s.result||current().result,c=city(),url=inviteUrl();
@@ -605,7 +614,7 @@
         <text x="676" y="686" text-anchor="end" fill="#233451" font-size="28" font-weight="650">${tr('等你来超越','Can you beat it?')}</text>
         <circle cx="650" cy="730" r="23" fill="#edf2ff"/><path d="M638 730h24m-9-9 9 9-9 9" fill="none" stroke="#3264ff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
         <path d="M44 786h632" stroke="#e8edf5"/>
-        <g text-anchor="middle" fill="#233451" font-size="28" font-weight="650"><text x="147" y="831">${r.guess?.points??0}<tspan fill="#9aa5b6" font-size="20" font-weight="400"> / 40</tspan></text><text x="360" y="831">${r.quiz??r.score}<tspan fill="#9aa5b6" font-size="20" font-weight="400"> / 60</tspan></text><text x="573" y="831">${c.scenes.length}<tspan font-size="20" font-weight="400">${tr(' 处','')}</tspan></text></g>
+        <g text-anchor="middle" fill="#233451" font-size="28" font-weight="650"><text x="147" y="831">${r.guess?.points??0}<tspan fill="#9aa5b6" font-size="20" font-weight="400"> / ${{...GUESS,...c.guess}.max}</tspan></text><text x="360" y="831">${r.quiz??r.score}<tspan fill="#9aa5b6" font-size="20" font-weight="400"> / ${quizTotal(c)}</tspan></text><text x="573" y="831">${c.scenes.length}<tspan font-size="20" font-weight="400">${tr(' 处','')}</tspan></text></g>
         <g text-anchor="middle" fill="#8290a5" font-size="20"><text x="147" y="866">${tr('地图定位','Map guess')}</text><text x="360" y="866">${tr('线索答题','Clue quiz')}</text><text x="573" y="866">${tr('探索实景','Scenes')}</text></g>
       </g></svg>`;
   }
