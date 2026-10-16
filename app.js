@@ -73,7 +73,7 @@
   };
   // Gameplay layer (tw-store.js): coins, simulated PK and scene notes, each switchable for the live demo.
   const feature = name => !!window.TW_FEATURES?.[name] && !!window.TWStore && !!{wallet:window.Wallet,pk:window.PKMode,bubbles:window.SceneBubbles}[name];
-  let bubbles=null, pkMatching=false;
+  let bubbles=null, pkMatching=false, hubCards=null;
   let timer, viewer, mapView, resultReveal, coverCarousel, clueSheet, toastTimer, transition=0, pendingCleanup, rulesCleanup, previousFocus, activeShare, resultRouteReturn;
   const cityProgress = new Map();
   const journeyById = id => C.cities.find(c => c.id === id) || C.ugc?.find(c => c.id === id);
@@ -471,6 +471,7 @@
     finally{if(ticket===transition){cleanup();pendingCleanup=null;}}
   }
   function render(ready,prepared,{deferRules=false}={}) {
+    hubCards?.destroy();hubCards=null;
     Community.releasePress();
     QuizScene.destroy();
     bubbles?.destroy();bubbles=null;
@@ -489,6 +490,7 @@
     frame.firstElementChild.dataset.view=s.view;
     if(ready){const placeholder=frame.querySelector('.photo-plane>img,.cover-hero>img,.result-visual>img,.route-hero>img'); if(placeholder){ready.alt=placeholder.alt;placeholder.replaceWith(ready);}}
     app.replaceChildren(...frame.childNodes);app.scrollTop=0;showOpeningWarnings();showFriendComparison();
+    if(s.view==='hub')hubCards=window.HubCards3D?.mount(app.firstElementChild);
     document.querySelectorAll('.flow button').forEach(b=>b.classList.toggle('active',b.dataset.go===s.view || (b.dataset.go==='today'&&s.mode==='challenge'&&['cover','explore','quiz','guess','atlas','ranking'].includes(s.view)) || (b.dataset.go==='feed'&&['journey','publish'].includes(s.view)) || (b.dataset.go==='feed'&&s.mode!=='challenge'&&['cover','explore','quiz','guess'].includes(s.view))));
     app.querySelectorAll('img').forEach(el=>el.addEventListener('error',()=>{el.insertAdjacentHTML('afterend','<span class="error-image">'+tr('照片未能载入','Photo failed to load')+'</span>');},{once:true}));
     if(s.view==='explore') { const root=app.querySelector('.photo-viewport'),config=immersiveConfig(activePhoto());viewer=prepared?.viewer||(config&&window.ImmersivePhotoViewer?new ImmersivePhotoViewer(root,activePhoto(),config):new PhotoViewer(root,activePhoto()));viewer.ready?.then(()=>{if(viewer?.root===root)viewer.present?.();},()=>{}); rememberExplored(); if(feature('bubbles')&&s.mode==='browse'&&Community.boardOpen(city(),true)){bubbles=SceneBubbles.mount({root,viewer,scene:city().scenes[s.scene],hiddenNames:[],onCompose:composeNote});if(s.composeScene===s.scene){s.composeScene=null;bubbles.place?.();}} }
@@ -786,7 +788,7 @@
   document.addEventListener('click',event=>{
     const b=event.target.closest('button')||event.target.closest('.cm-post[data-journey]');if(!b||b.disabled)return;if(ChallengeMotion.busy){event.preventDefault();return;}if(event.detail===0&&['quiz','guess','result'].includes(s.view))ChallengeMotion.press(b);
     if(b.dataset.shareChannel){chooseShareOption(b);return;}
-    if(b.dataset.city){selectCity(b.dataset.city);return;} if(b.dataset.go){go(b.dataset.go);return;}
+    if(b.dataset.city){selectCity(b.dataset.city);return;} if(b.dataset.go){if(b.matches('.cm-entry')&&hubCards&&!hubCards.destroyed)hubCards.activate(b,()=>go(b.dataset.go));else go(b.dataset.go);return;}
     if(b.dataset.service){product(b.dataset.service);return;}if(b.dataset.product){product(b.dataset.product);return;}
     if(b.dataset.clue!==undefined){clue(Number(b.dataset.clue));return;}
     if(b.dataset.recall!==undefined){recall(Number(b.dataset.recall));return;}

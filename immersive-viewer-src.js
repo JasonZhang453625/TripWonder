@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import './hub-cards-src.js';
 import {ImmersiveSceneMedia} from './immersive-media-src.js';
 import {sphereProjection, spherePhotoAt, sphereScreenAt} from './sphere-projection.mjs';
 
