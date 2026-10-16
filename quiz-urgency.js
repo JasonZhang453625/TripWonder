@@ -41,7 +41,7 @@
     const fraction=Math.max(0,Math.min(1,left/Math.max(1,total)));
     // Ease the spatial movement towards zero; the numerical clock stays exact.
     const length=Math.pow(fraction,1.4),offset=1-length;
-    const redAt=Math.min(15000,total*.125),warmAt=Math.min(35000,total*.3);
+    const redAt=Math.min(15000,total*.25),warmAt=Math.min(35000,total*.5);
     const warmth=Math.max(0,Math.min(1,(warmAt-left)/Math.max(1,warmAt-redAt)));
     const blue=[47,158,255],red=[255,65,74];
     edge.style.color=`rgb(${blue.map((value,i)=>Math.round(value+(red[i]-value)*warmth)).join(',')})`;
@@ -67,7 +67,7 @@
       tone.start(at); tone.stop(at + .14);
     } catch {}
   }
-  function update(remain, timer, {left=remain*1000,total=120000}={}) {
+  function update(remain, timer, {left=remain*1000,total=60000}={}) {
     if (!timer) return;
     updateEdge(left,total);
     const final = remain > 0 && remain <= FINAL;

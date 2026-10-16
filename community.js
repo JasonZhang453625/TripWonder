@@ -132,5 +132,57 @@
     box.innerHTML = [...input.files].slice(0, 5).map((file, i) => `<span class="cm-preview"><img src="${URL.createObjectURL(file)}" alt=""><b>${i + 1}</b></span>`).join('') + (input.files.length > 5 ? `<p class="cm-hint">${t('只会使用前 5 张', 'Only the first five are used')}</p>` : '');
   }
 
-  window.Community = Object.freeze({isUgc, label, boardOpen, hub, feed, journey, publish, validate, previews});
+  let activePress=null;
+  const cancelledClicks=new WeakSet();
+  function releasePress(){activePress?.();activePress=null;}
+  function holdCard(card,event){
+    releasePress();
+    const box=card.getBoundingClientRect(),listeners=new AbortController();
+    const move=e=>{
+      const x=e?Math.max(-1,Math.min(1,(e.clientX-box.left)/box.width*2-1)):0;
+      const y=e?Math.max(-1,Math.min(1,(e.clientY-box.top)/box.height*2-1)):0;
+      card.style.setProperty('--press-x',`${-y*3.5}deg`);
+      card.style.setProperty('--press-y',`${x*3.5}deg`);
+      card.style.setProperty('--press-z','-5px');
+      card.style.setProperty('--press-drop','3px');
+    };
+    activePress=()=>{
+      listeners.abort();card.classList.remove('is-pressed');
+      for(const name of ['--press-x','--press-y','--press-z','--press-drop'])card.style.removeProperty(name);
+      if(event&&card.hasPointerCapture(event.pointerId))card.releasePointerCapture(event.pointerId);
+    };
+    card.classList.add('is-pressed');move(event);
+    const options={signal:listeners.signal,passive:true};
+    if(event){
+      card.setPointerCapture(event.pointerId);
+      document.addEventListener('pointermove',e=>{if(e.pointerId===event.pointerId)move(e);},options);
+      const finish=e=>{
+        if(e.pointerId!==event.pointerId)return;
+        if(e.type==='pointercancel'||e.clientX<box.left||e.clientX>box.right||e.clientY<box.top||e.clientY>box.bottom){
+          cancelledClicks.add(card);setTimeout(()=>cancelledClicks.delete(card),200);
+        }
+        releasePress();
+      };
+      document.addEventListener('pointerup',finish,options);
+      document.addEventListener('pointercancel',finish,options);
+      card.addEventListener('lostpointercapture',releasePress,options);
+    }else{
+      document.addEventListener('keyup',e=>{if(e.key===' '||e.key==='Enter')releasePress();},options);
+      card.addEventListener('blur',releasePress,options);
+    }
+    window.addEventListener('blur',releasePress,options);
+  }
+  document.addEventListener('pointerdown',event=>{
+    const card=event.target.closest('.cm-entry');
+    if(card&&!card.disabled&&event.isPrimary&&event.button===0&&!window.ChallengeMotion?.busy)holdCard(card,event);
+  },{passive:true});
+  document.addEventListener('keydown',event=>{
+    const card=event.target.closest('.cm-entry');
+    if(card&&!event.repeat&&(event.key===' '||event.key==='Enter')&&!window.ChallengeMotion?.busy)holdCard(card);
+  });
+  document.addEventListener('click',event=>{
+    const card=event.target.closest('.cm-entry');
+    if(card&&cancelledClicks.delete(card)){event.preventDefault();event.stopImmediatePropagation();}
+  },true);
+  window.Community = Object.freeze({isUgc, label, boardOpen, hub, feed, journey, publish, validate, previews, releasePress});
 })();

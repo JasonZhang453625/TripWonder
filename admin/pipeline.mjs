@@ -27,7 +27,7 @@ export const STEPS = [
 ];
 export const RESERVED_IDS = ['datong', 'shenzhen', 'suzhou', 'guilin', 'hongkong', 'beijing', 'shanghai', 'zhangjiajie'];
 // quizSeconds is the whole challenge clock (exploring + answering), as in the game.
-export const DEFAULT_RULES = {quizSeconds: 120, points: [20, 20, 20], guess: {max: 40, fullKm: 25, decayKm: 450}};
+export const DEFAULT_RULES = {quizSeconds: 60, points: [20, 20, 20], guess: {max: 40, fullKm: 25, decayKm: 450}};
 const TAGS = ['建筑', '历史', '地理', '自然', '城市', '生活', '体验', '文化', '美食', '交通'];
 const INTERESTS = ['建筑', '文化', '摄影', '自然', '美食'];
 const CHINA = {minLat: 3.5, maxLat: 54, minLng: 73, maxLng: 136};

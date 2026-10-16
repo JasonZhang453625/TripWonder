@@ -49,17 +49,17 @@ async function reveal(page){await idle(page);await page.locator('.guess-map').cl
     await page.locator('[data-action="start"]').click();await page.locator('.explore-page').waitFor();await idle(page);
     assert.equal(await page.locator('.hotspot').count(),0,'the challenge has no clue hotspots');
     assert.equal(await page.locator('.tw-bubble-bar,.tw-bubble').count(),0,'the challenge shows no notes');
-    assert.equal(await page.locator('#timer').textContent(),'02:00');await shot(page,'challenge-explore');
-    await advance(page,30);await page.waitForFunction(()=>document.querySelector('#timer')?.textContent==='01:30');
+    assert.equal(await page.locator('#timer').textContent(),'01:00');await shot(page,'challenge-explore');
+    await advance(page,15);await page.waitForFunction(()=>document.querySelector('#timer')?.textContent==='00:45');
     await page.locator('[data-action="leave"]').click();await page.locator('.cover-page').waitFor();await idle(page);
-    await advance(page,20);await page.locator('[data-action="start"]').click();await page.locator('.explore-page').waitFor();await idle(page);
-    assert.equal(await page.locator('#timer').textContent(),'01:10','the clock keeps running on the cover');
+    await advance(page,10);await page.locator('[data-action="start"]').click();await page.locator('.explore-page').waitFor();await idle(page);
+    assert.equal(await page.locator('#timer').textContent(),'00:35','the clock keeps running on the cover');
     await page.locator('[data-action="go-quiz"]').click();await page.locator('.quiz-page').waitFor();await idle(page);
-    assert.equal(await page.locator('#timer').textContent(),'01:10','answering shares the same clock');
+    assert.equal(await page.locator('#timer').textContent(),'00:35','answering shares the same clock');
     await page.locator('[data-option="0"]').click();await page.locator('[data-action="submit"]').click();await idle(page);
     await page.locator('[data-action="quiz-back"]').click();await page.locator('.explore-page').waitFor();await idle(page);
     assert.equal(await page.locator('.hotspot').count(),0);
-    await advance(page,80);await page.locator('.guess-map').waitFor();await idle(page);
+    await advance(page,40);await page.locator('.guess-map').waitFor();await idle(page);
     assert.equal(await page.locator('[data-action="guess-back"]').isDisabled(),true,'time-out leaves no time to go back');
     await reveal(page);
     assert.equal(await page.locator('.badge-benefit').count(),1,'the challenge keeps its badge module');
@@ -132,6 +132,6 @@ async function reveal(page){await idle(page);await page.locator('.guess-map').cl
     assert.equal(official,pools.official.length);
 
     assert.deepEqual(errors,[]);
-    console.log('PASS: hub entries; UGC outside the official pool; feed lists only challenged cities with their badge; challenge without clues or notes on one 2-minute clock (runs on the cover, shared with answering, time-out to the map); result → community page; browse with clues and notes, no clock; player journey without rewards, played stamp and board unlock; board switched off; publish form validation.');
+    console.log('PASS: hub entries; UGC outside the official pool; feed lists only challenged cities with their badge; challenge without clues or notes on one 1-minute clock (runs on the cover, shared with answering, time-out to the map); result → community page; browse with clues and notes, no clock; player journey without rewards, played stamp and board unlock; board switched off; publish form validation.');
   }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});

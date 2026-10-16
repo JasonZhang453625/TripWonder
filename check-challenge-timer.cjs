@@ -30,7 +30,7 @@ async function reveal(page){await idle(page);await page.locator('.guess-map').cl
     await page.clock.setFixedTime(new Date(epoch));
     await open(page,'datong');
     assert.equal(await page.locator('.cover-limit').count(),0,'no limit chip on the start button');
-    await start(page);await timerIs(page,'02:00');
+    await start(page);await timerIs(page,'01:00');
     assert.equal(await page.locator('.countdown-edge').count(),1,'one shared screen-edge clock');
     const edge=()=>page.locator('.countdown-edge').evaluate(el=>({length:Number(el.style.getPropertyValue('--edge-length')),offset:Number(el.style.getPropertyValue('--edge-offset')),color:el.style.color}));
     const full=await edge();assert.equal(full.length,1);assert.equal(full.color,'rgb(47, 158, 255)');
@@ -40,27 +40,27 @@ async function reveal(page){await idle(page);await page.locator('.guess-map').cl
     assert.equal(await page.locator('.hotspot').count(),0,'no clue hotspots');
     assert.equal(await page.locator('.explore-go-quiz').count(),1,'answering is available from any scene');
     // The clock runs while exploring and while back on the cover.
-    await advance(page,40);await timerIs(page,'01:20');
+    await advance(page,15);await timerIs(page,'00:45');
     const midway=await edge();assert.ok(midway.length<1&&midway.length>0);assert.ok(Math.abs(midway.offset+1-midway.length)<1e-6);
     await shot(page,'edge-descending');
     await page.locator('[data-action="next-scene"]').click();await page.locator('.scene-counter',{hasText:'2 / 3'}).waitFor();await idle(page);
     await page.locator('[data-action="leave"]').click();await page.locator('.cover-page').waitFor();await idle(page);
     assert.equal(await page.locator('.countdown-edge').count(),0,'cover hides the active edge');
     assert.match(await page.locator('.cover-enter').textContent(),/继续挑战/);
-    await advance(page,30);await start(page);await timerIs(page,'00:50');
+    await advance(page,10);await start(page);await timerIs(page,'00:35');
     const resumed=await edge();assert.ok(resumed.length<midway.length,'edge resumes from elapsed time');
     assert.equal(await page.locator('.scene-counter').textContent(),'2 / 3','resuming keeps the current scene');
     // The last scene's button starts answering on the same clock; urgency shows from 15 s.
     await page.locator('[data-action="next-scene"]').click();await page.locator('.scene-counter',{hasText:'3 / 3'}).waitFor();await idle(page);
     assert.equal(await page.locator('.explore-go-quiz').count(),0,'the last scene uses its own button');
     await page.locator('[data-action="next-scene"]').click();await page.locator('.quiz-page').waitFor();await idle(page);
-    await timerIs(page,'00:50');
+    await timerIs(page,'00:35');
     assert.equal(await page.locator('.countdown-edge').count(),1,'quiz uses the same single edge');assert.equal((await edge()).length,resumed.length);
-    await advance(page,38);await timerIs(page,'00:12');
+    await advance(page,23);await timerIs(page,'00:12');
     const late=await edge();assert.equal(late.color,'rgb(255, 65, 74)');assert.ok(late.length<resumed.length);
     assert.equal(await page.locator('.quiz-timer.urgent').count(),1);
     await advance(page,3);await timerIs(page,'00:09');
-    const finalEdge=await edge();assert.ok((late.length-finalEdge.length)/3<(midway.length-resumed.length)/30,'edge movement slows near the end');
+    const finalEdge=await edge();assert.ok((late.length-finalEdge.length)/3<(midway.length-resumed.length)/10,'edge movement slows near the end');
     await page.waitForFunction(()=>document.querySelector('.quiz-timer')?.classList.contains('final'));
     await shot(page,'quiz-urgent');
     // Answer two questions, then go back to a scene: the clock keeps running there.
@@ -91,7 +91,7 @@ async function reveal(page){await idle(page);await page.locator('.guess-map').cl
     const other=await page.evaluate(()=>TRIPWONDER_CATALOG.cities.find(c=>c.id!=='datong').id);
     await open(page,other);await start(page);
     await page.locator('[data-action="leave"]').click();await page.locator('.cover-page').waitFor();await idle(page);
-    await advance(page,121);await page.locator('[data-action="start"]').click();await page.locator('.guess-map').waitFor();await idle(page);
+    await advance(page,61);await page.locator('[data-action="start"]').click();await page.locator('.guess-map').waitFor();await idle(page);
     await reveal(page);
     assert.match(await page.locator('.result-score-breakdown').textContent(),/限时答题\s*0\s*\/ 60/);
     await page.locator('[data-review="0"]').click();assert.match(await page.locator('.sheet').textContent(),/你的答案：未作答/);

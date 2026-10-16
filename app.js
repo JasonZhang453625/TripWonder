@@ -56,7 +56,7 @@
   for(const [id,record] of Object.entries(challenged))if(record?.result&&!order.includes(id)&&C.cities.some(c=>c.id===id))daily[id]={result:record.result,skipped:false};
   // One clock covers looking at the scenes and answering: it starts on entering the first scene and keeps running
   // until the last answer (or time-out), also while the player is back on the cover. A journey may set rules.challengeSeconds.
-  const QUIZ_DURATION = 120 * 1000;
+  const QUIZ_DURATION = 60 * 1000;
   // Admin-generated journeys store the same clock as rules.quizSeconds.
   const quizMs = () => (city().rules?.challengeSeconds ?? city().rules?.quizSeconds ?? QUIZ_DURATION / 1000) * 1000;
   const quizPoints = c => c?.rules?.points || [20,20,20];
@@ -471,6 +471,7 @@
     finally{if(ticket===transition){cleanup();pendingCleanup=null;}}
   }
   function render(ready,prepared,{deferRules=false}={}) {
+    Community.releasePress();
     QuizScene.destroy();
     bubbles?.destroy();bubbles=null;
     coverCarousel?.destroy();coverCarousel=null;
