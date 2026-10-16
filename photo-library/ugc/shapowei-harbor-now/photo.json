@@ -1,0 +1,38 @@
+{
+  "city": "ugc",
+  "dir": "shapowei-harbor-now",
+  "id": "ugc-shapowei-harbor-now",
+  "src": "photo-library/ugc/shapowei-harbor-now/original.jpg",
+  "width": 4800,
+  "height": 3600,
+  "sourceSha256": "4a9f70b63b763458fe9662ec50562801d711aab1e780b8df752c8ac1a7942c8a",
+  "original": {
+    "src": "photo-library/ugc/shapowei-harbor-now/original.jpg",
+    "width": 4800,
+    "height": 3600,
+    "bytes": 2834145,
+    "untouched": true
+  },
+  "credit": "向史公哲曰 / Wikimedia Commons",
+  "license": "CC BY-SA 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+  "source": "https://commons.wikimedia.org/wiki/File:%E7%BD%91%E7%BA%A2%E5%8C%96%E6%B2%99%E5%9D%A1%E5%B0%BE2.jpg",
+  "thumb": {
+    "src": "photo-library/ugc/shapowei-harbor-now/thumb.webp",
+    "width": 480,
+    "height": 360,
+    "bytes": 25252
+  },
+  "screen": {
+    "src": "photo-library/ugc/shapowei-harbor-now/screen.webp",
+    "width": 1080,
+    "height": 810,
+    "bytes": 145230
+  },
+  "detail": {
+    "src": "photo-library/ugc/shapowei-harbor-now/detail.webp",
+    "width": 1600,
+    "height": 1200,
+    "bytes": 295422
+  }
+}

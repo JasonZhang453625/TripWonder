@@ -1,0 +1,38 @@
+{
+  "city": "ugc",
+  "dir": "shapowei-harbor-2015",
+  "id": "ugc-shapowei-harbor-2015",
+  "src": "photo-library/ugc/shapowei-harbor-2015/original.jpg",
+  "width": 5616,
+  "height": 3744,
+  "sourceSha256": "bb39fef6add9ffe1bd273e18f775837c95367d6bfbf260dbd62579f90361cd63",
+  "original": {
+    "src": "photo-library/ugc/shapowei-harbor-2015/original.jpg",
+    "width": 5616,
+    "height": 3744,
+    "bytes": 4653167,
+    "untouched": true
+  },
+  "credit": "pxhere 匿名作者 / Wikimedia Commons",
+  "license": "CC0",
+  "licenseUrl": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+  "source": "https://commons.wikimedia.org/wiki/File:2015%E5%B9%B4%E7%9A%84%E6%B2%99%E5%9D%A1%E5%B0%BE%E9%81%BF%E9%A3%8E%E5%9D%9E.jpg",
+  "thumb": {
+    "src": "photo-library/ugc/shapowei-harbor-2015/thumb.webp",
+    "width": 480,
+    "height": 320,
+    "bytes": 25346
+  },
+  "screen": {
+    "src": "photo-library/ugc/shapowei-harbor-2015/screen.webp",
+    "width": 1080,
+    "height": 720,
+    "bytes": 145130
+  },
+  "detail": {
+    "src": "photo-library/ugc/shapowei-harbor-2015/detail.webp",
+    "width": 1600,
+    "height": 1067,
+    "bytes": 332102
+  }
+}

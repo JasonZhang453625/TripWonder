@@ -1,10 +1,11 @@
-/* Device-local storage for the gameplay layer: coins, redemptions, scene bubbles, explored scenes and PK history.
+/* Device-local storage for the gameplay layer: coins, redemptions, scene bubbles, explored scenes, PK history,
+   challenged official cities (with their badge) and played community (UGC) journeys.
    Daily challenge progress stays in memory (app.js); only what must survive a reload lives here.
    Every read and write tolerates blocked storage, so the prototype keeps working in private windows. */
 (() => {
   'use strict';
   const KEY = 'tripwonder-v2';
-  const blank = () => ({version: 2, wallet: {balance: 0, ledger: [], best: {}}, redemptions: [], bubbles: {}, likes: {}, explored: {}, challenged: {}, pk: {history: []}, prefs: {}});
+  const blank = () => ({version: 2, wallet: {balance: 0, ledger: [], best: {}}, redemptions: [], bubbles: {}, likes: {}, explored: {}, challenged: {}, ugcPlayed: {}, pk: {history: []}, prefs: {}});
   const listeners = new Set();
   function load() {
     try {

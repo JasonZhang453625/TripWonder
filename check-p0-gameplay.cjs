@@ -64,9 +64,14 @@ async function closeRules(page){if(await page.locator('.rules-popover').count())
     const mallText=await page.locator('.tw-mall-page').textContent(),cityNames=await page.evaluate(()=>TRIPWONDER_CATALOG.cities.map(c=>c.name));
     for(const name of cityNames)assert.ok(!mallText.includes(name),`rewards page does not name ${name} before it is solved`);
 
-    // Scene notes on the explore page: visible, filterable, posted notes are escaped and masked, and they persist.
-    await page.goto(base);await page.locator('.entry').first().click();await page.locator('.cover-page').waitFor();await idle(page);await closeRules(page);
+    // Today's challenge shows no notes; they live in the community, on cities this player has challenged.
+    await page.goto(base);await page.locator('.entry').first().click();await page.locator('.cm-entry[data-go="today"]').click();await page.locator('.cover-page').waitFor();await idle(page);await closeRules(page);
     await page.locator('[data-action="start"]').click();await page.locator('.explore-page').waitFor();await idle(page);
+    assert.equal(await page.locator('.tw-bubble,.tw-bubble-bar').count(),0,'no notes in the challenge');
+    // Scene notes in community browse mode: visible, filterable, posted notes are escaped, and they persist.
+    await page.evaluate(()=>TWStore.update(data=>{data.challenged={datong:{at:Date.now(),result:{score:50}}};}));
+    await page.goto(base);await page.locator('.entry').first().click();await page.locator('.cm-entry[data-go="feed"]').click();await page.locator('[data-journey="datong"]').click();await page.locator('.cm-journey').waitFor();await idle(page);
+    await page.locator('[data-action="browse"]').click();await page.locator('.explore-page').waitFor();await idle(page);
     await page.locator('.tw-bubble').first().waitFor({state:'attached'});
     assert.ok(await page.locator('.tw-bubble.on').count()>0,'some notes float on arrival');
     const current=await page.evaluate(()=>{const scenes=TRIPWONDER_CATALOG.cities.flatMap(c=>c.scenes.map(sc=>({c,sc})));const id=[...document.querySelectorAll('.tw-bubble')].map(b=>b.dataset.id).find(id=>id.startsWith('seed-'));const hit=scenes.find(x=>id?.startsWith(`seed-${x.sc.id}-`));return {name:hit.c.name,scene:hit.sc.id};});
@@ -74,13 +79,13 @@ async function closeRules(page){if(await page.locator('.rules-popover').count())
     assert.ok(await page.evaluate(()=>[...document.querySelectorAll('.tw-bubble')].every(b=>b.classList.contains('kind-been'))),'filter shows "been" notes');
     await page.locator('[data-bubble-filter]').click();await page.locator('[data-bubble-filter]').click();
     assert.equal(await page.locator('.tw-bubble').count(),0,'notes can be switched off');
-    await page.locator('[data-bubble-new]').click();await page.locator('[data-place-ok]').click();await page.locator('.tw-compose').waitFor();
+    await page.locator('[data-bubble-new]').click();await page.locator('.photo-viewport').click({position:{x:190,y:330}});await page.locator('[data-place-ok]').click();await page.locator('.tw-compose').waitFor();
     assert.ok(await page.locator('[data-compose-submit]').isDisabled(),'a note needs a choice and text');
     await page.locator('[data-compose-kind="been"]').click();
     await page.locator('.tw-compose textarea').fill(`<img src=x onerror="window.__xss=1">${current.name}真好`);
     await page.locator('[data-compose-submit]').click();await page.locator('.tw-bubble.mine').waitFor({state:'attached'});
     const mine=await page.locator('.tw-bubble.mine .tw-bubble-more p').textContent();
-    assert.ok(!mine.includes(current.name)&&mine.includes('这里'),'the destination name is hidden before the guess');
+    assert.ok(mine.includes(current.name),'a challenged city is no secret in the community');
     assert.equal(await page.locator('.tw-bubble img').count(),0);assert.equal(await page.evaluate(()=>window.__xss),undefined,'note text is escaped');
     assert.equal(await page.evaluate(scene=>TWStore.get().bubbles[scene]?.length,current.scene),1,'note saved');
     assert.ok(await page.evaluate(scene=>!!TWStore.get().explored[scene],current.scene),'explored scene remembered');
@@ -101,20 +106,15 @@ async function closeRules(page){if(await page.locator('.rules-popover').count())
     await fp.locator('[data-action="start"]').click();
     assert.match(await fp.locator('.pk-match').textContent(),/好友挑战/);
     await fp.locator('.explore-page').waitFor();await idle(fp);
-    while(await fp.locator('.explore-page').count()){
-      const previous=await fp.locator('.scene-counter').textContent();
-      await fp.locator('[data-action="next-scene"]').click();
-      await fp.waitForFunction(previous=>!document.querySelector('.scene-counter')||document.querySelector('.scene-counter').textContent!==previous,previous);
-    }
-    await fp.locator('#timer').waitFor();await idle(fp);
-    assert.equal(await fp.locator('#timer').textContent(),'01:00','one-minute quiz');
+    assert.equal(await fp.locator('#timer').textContent(),'02:00','one 2-minute clock from the first scene');
+    await fp.locator('[data-action="go-quiz"]').click();await fp.locator('.quiz-page').waitFor();await idle(fp);
     assert.equal(await fp.locator('.quiz-header .pk-hud').count(),1,'PK progress replaces the title');
     const firstAnswer=await fp.evaluate(()=>TRIPWONDER_CATALOG.cities.find(c=>c.id==='datong').questions[0].answer);
     await fp.locator(`[data-option="${firstAnswer}"]`).click();await fp.locator('[data-action="submit"]').click();await idle(fp);
-    await fp.clock.fastForward(52000);await fp.waitForFunction(()=>document.querySelector('.quiz-timer')?.classList.contains('final'));
+    await fp.clock.fastForward(Math.max(0,await fp.evaluate(()=>{const [m,s]=document.querySelector('#timer').textContent.split(':').map(Number);return (m*60+s-8)*1000;})));await fp.waitForFunction(()=>document.querySelector('.quiz-timer')?.classList.contains('final'));
     assert.equal(await fp.locator('.quiz-timer.urgent').count(),1,'red from 15 s');
     await fp.clock.fastForward(9000);await fp.locator('.guess-map').waitFor();
-    assert.match(await fp.locator('#toast').textContent(),/答题时间到/);
+    assert.match(await fp.locator('#toast').textContent(),/挑战时间到/);
     await idle(fp);await fp.locator('.guess-map').click({position:{x:200,y:330}});await fp.locator('[data-action="guess-submit"]').click();
     await fp.locator('.gm-pin.rival').waitFor({state:'attached'});
     assert.match(await fp.locator('.gm-pin.rival .gm-tag').textContent(),/好友/);
@@ -133,6 +133,6 @@ async function closeRules(page){if(await page.locator('.rules-popover').count())
     assert.deepEqual(lockedErrors,[]);
     await page.evaluate(()=>TWStore.reset());
     assert.deepEqual(errors,[]);
-    console.log('PASS: coin rules and same-day replay guard across reloads; daily bonus once; redeem and overspend guard; reproducible PK and exact friend scores; anonymous sample notes; rewards page hides unsolved cities; scene notes filter, post, escape, mask and persist; demo reset restores notes; explored scenes recorded; friend link plays as PK through a 60-second timeout (red at 15 s, beat in the last 10 s, unanswered score 0); blocked storage still works.');
+    console.log('PASS: coin rules and same-day replay guard across reloads; daily bonus once; redeem and overspend guard; reproducible PK and exact friend scores; anonymous sample notes; rewards page hides unsolved cities; community scene notes filter, post, escape and persist; demo reset restores notes; explored scenes recorded; no notes in the challenge; friend link plays as PK through the shared 2-minute timeout (red at 15 s, beat in the last 10 s, unanswered score 0); blocked storage still works.');
   }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});

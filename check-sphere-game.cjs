@@ -4,13 +4,22 @@ const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('n
 const base=process.env.TRIPWONDER_URL || 'http://127.0.0.1:8766/';
 const output=process.env.TRIPWONDER_TEST_ARTIFACTS || path.join(os.tmpdir(),'tripwonder-sphere-game');
 fs.mkdirSync(output,{recursive:true});
-async function cover(browser,city){
+const CITIES=['zhangjiajie','guilin','beijing','shanghai','shenzhen','hongkong','suzhou','datong'];
+// The challenge has no clues or notes; they are browsed in the community once a city has been challenged.
+// mode 'challenge' opens the city's cover through a friend link; 'browse' opens its community page.
+async function cover(browser,city,mode='challenge'){
  const page=await browser.newPage({viewport:{width:390,height:780},hasTouch:true});
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
  page.on('console',m=>{if(/THREE.WebGLProgram: Shader Error/.test(m.text()))errors.push(m.text());});
- const token=Buffer.from(JSON.stringify({cityId:city,score:0})).toString('base64url');
- await page.goto(base+'?challenge='+token);await page.locator('#app .cover-page').waitFor();
- if(await page.locator('.rules-popover').count())await page.locator('[data-action="rules-start"]').click();
+ if(mode==='browse'){
+  await page.addInitScript(cities=>{try{localStorage.setItem('tripwonder-v2',JSON.stringify({version:2,challenged:Object.fromEntries(cities.map(id=>[id,{at:1,result:{score:60}}]))}));}catch{}},CITIES);
+  await page.goto(base);await page.locator('#app .th-wonder').click();await page.locator('.cm-entry[data-go="feed"]').click();
+  await page.locator('[data-journey="'+city+'"]').click();await page.locator('#app .cm-journey').waitFor();
+ }else{
+  const token=Buffer.from(JSON.stringify({cityId:city,score:0})).toString('base64url');
+  await page.goto(base+'?challenge='+token);await page.locator('#app .cover-page').waitFor();
+  if(await page.locator('.rules-popover').count())await page.locator('[data-action="rules-start"]').click();
+ }
  await page.evaluate(()=>{const Original=window.ImmersivePhotoViewer;window.ImmersivePhotoViewer=class extends Original{constructor(...args){super(...args);window.testSphereViewer=this;}};});
  return {page,errors};
 }
@@ -19,9 +28,9 @@ async function ready(page){await page.locator('#app .photo-viewport[data-rendere
  const browser=await chromium.launch({headless:true,...(process.env.BROWSER_PATH?{executablePath:process.env.BROWSER_PATH}:{channel:'chrome'})});
  const report=[];
  try{
-  for(const city of ['zhangjiajie','guilin','beijing','shanghai','shenzhen','hongkong','suzhou','datong']){
-   const {page,errors}=await cover(browser,city);
-   await page.locator('#app [data-action="start"]').click();await ready(page);
+  for(const city of CITIES){
+   const {page,errors}=await cover(browser,city,'browse');
+   await page.locator('#app [data-action="browse"]').click();await ready(page);
    const count=await page.evaluate(city=>TRIPWONDER_CATALOG.cities.find(c=>c.id===city).scenes.length,city);
    for(let index=0;index<count;index++){
     if(index){await page.locator('#app [data-action="next-scene"]').click();await ready(page);}
@@ -29,6 +38,7 @@ async function ready(page){await page.locator('#app .photo-viewport[data-rendere
     assert.equal(data.projection,'sphere');assert.equal(data.eye,undefined);
     // Verify photo-anchored clue projection and clickability, even near the photo edges.
     const markerCount=await page.evaluate(()=>testSphereViewer.markers.filter(m=>m.element.matches('.hotspot')).length);
+    assert.ok(markerCount>0,`${data.id} shows its clues when browsing`);
     for(let n=0;n<markerCount;n++){
      const marker=await page.evaluate(n=>{const v=testSphereViewer,m=v.markers.filter(m=>m.element.matches('.hotspot'))[n];v.state.yaw=v.state.targetYaw=(m.u-.5)*v.projection.horizontalSpan*180/Math.PI;v.state.pitch=v.state.targetPitch=(.5-m.v)*v.projection.verticalSpan*180/Math.PI;v.updateCamera();v.renderer.render(v.scene,v.camera);return {hidden:m.hidden,u:m.u,v:m.v};},n);
      assert.equal(marker.hidden,false,`${data.id} clue ${n} unreachable`);
@@ -38,13 +48,21 @@ async function ready(page){await page.locator('#app .photo-viewport[data-rendere
     if(index===0)await page.locator('#phone').screenshot({path:path.join(output,city+'.png')});
     report.push(data);
    }
-   await page.locator('#app [data-action="next-scene"]').click();await page.locator('.quiz-page').waitFor();
-   await page.locator('#app [data-action="quiz-back"]').click();await ready(page);
-   assert.equal(await page.locator('#app .photo-viewport').getAttribute('data-projection'),'sphere');
+   await page.locator('#app [data-action="next-scene"]').click();await page.locator('#app .cm-journey').waitFor();
    assert.deepEqual(errors,[]);console.log('PASS city',city,count);await page.close();
   }
+  // Challenge: no clues; the quiz round trip returns to the same sphere scene.
+  {
+   const {page,errors}=await cover(browser,'beijing');
+   await page.locator('#app [data-action="start"]').click();await ready(page);
+   assert.equal(await page.locator('#app .hotspot').count(),0,'the challenge has no clues');
+   await page.locator('#app [data-action="go-quiz"]').click();await page.locator('.quiz-page').waitFor();
+   await page.locator('#app [data-action="quiz-back"]').click();await ready(page);
+   assert.equal(await page.locator('#app .photo-viewport').getAttribute('data-projection'),'sphere');
+   assert.deepEqual(errors,[]);await page.close();
+  }
   // Unregistered, newly supplied horizontal image: no scene configuration, no baked assets.
-  const {page,errors}=await cover(browser,'beijing');
+  const {page,errors}=await cover(browser,'beijing','browse');
   await page.evaluate(async()=>{
    const p=TRIPWONDER_CATALOG.cities.find(c=>c.id==='beijing').scenes[0].photo;
    const canvas=document.createElement('canvas');canvas.width=4096;canvas.height=1024;
@@ -52,7 +70,7 @@ async function ready(page){await page.locator('#app .photo-viewport[data-rendere
    const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/png'));
    delete window.IMMERSIVE_SCENES[p.id];p.src=URL.createObjectURL(blob);p.original={src:p.src};
   });
-  await page.locator('#app [data-action="start"]').click();await ready(page);
+  await page.locator('#app [data-action="browse"]').click();await ready(page);
   assert.equal(await page.locator('#app .photo-viewport').getAttribute('data-source-size'),'4096x1024');
   const canvas=page.locator('#app canvas.immersive-canvas');const box=await canvas.boundingBox();
   const cdp=await page.context().newCDPSession(page);

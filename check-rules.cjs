@@ -2,12 +2,12 @@ const {chromium,devices}=require('C:/Users/Administrator/.cache/codex-runtimes/c
 const assert=require('node:assert/strict');
 (async()=>{const browser=await chromium.launch({executablePath:'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe',headless:true});
 for(const [name,opts] of [['desktop',{viewport:{width:1440,height:1000}}],['mobile',{...devices['iPhone 13'],deviceScaleFactor:1}],['landscape',{...devices['iPhone 13 landscape'],deviceScaleFactor:1}]]){
- const page=await browser.newPage(opts),errors=[];page.on('pageerror',e=>errors.push(e.message));await page.goto('http://127.0.0.1:8765/');await page.locator('.entry').click();
+ const page=await browser.newPage(opts),errors=[];page.on('pageerror',e=>errors.push(e.message));await page.goto('http://127.0.0.1:8765/');await page.locator('.entry').click();await page.locator('.cm-entry[data-go="today"]').click();
  const panel=page.locator('.rules-popover');await panel.waitFor();await panel.evaluate(e=>Promise.all(e.getAnimations().map(a=>a.finished)));
  assert.equal(await page.locator('.sheet').count(),0);assert.equal(await page.locator('#app').evaluate(e=>e.inert),true);
  const r=await panel.boundingBox(),a=await page.locator('[data-action="rules"]').boundingBox(),phone=await page.locator('#phone').boundingBox();assert.ok(Math.abs(r.x+r.width-a.x-a.width)<2);assert.ok(Math.abs(r.y-a.y-a.height-12)<2);assert.ok(r.y+r.height<=phone.y+phone.height-8);
- assert.match(await panel.textContent(),/奇境挑战TripWonder/);assert.deepEqual(await page.locator('.rules-steps li>span').allTextContents(),['探','答','猜','奖']);
- assert.match(await panel.textContent(),/在1分钟内根据收集到的线索完成答题挑战/);assert.deepEqual(await page.locator('.rules-steps p').evaluateAll(els=>[...new Set(els.map(e=>getComputedStyle(e).color))]),['rgb(15, 29, 51)'],'step copy is dark, not grey');
+ assert.match(await panel.textContent(),/奇境挑战TripWonder/);assert.deepEqual(await page.locator('.rules-steps li>span').allTextContents(),['看','答','猜','奖']);
+ assert.match(await panel.textContent(),/进入第一处场景就开始计时！02:00 内/);assert.deepEqual(await page.locator('.rules-steps p').evaluateAll(els=>[...new Set(els.map(e=>getComputedStyle(e).color))]),['rgb(15, 29, 51)'],'step copy is dark, not grey');
  const surfaces=await page.locator('.rules-steps li,.rules-steps li>span').evaluateAll(elements=>elements.map(el=>{const c=getComputedStyle(el);return [c.backgroundColor,c.backgroundImage,c.boxShadow,c.borderRadius,c.borderTopWidth];}));
  for(const style of surfaces)assert.deepEqual(style,['rgba(0, 0, 0, 0)','none','none','0px','0px'],'rules content has no card effects');
  assert.equal(await panel.evaluate(el=>el.scrollWidth>el.clientWidth),false,'rules have no horizontal overflow');
@@ -15,7 +15,7 @@ for(const [name,opts] of [['desktop',{viewport:{width:1440,height:1000}}],['mobi
  await page.locator('[aria-label="关闭玩法"]').click();await panel.waitFor({state:'detached'});assert.equal(await page.locator('#app').evaluate(e=>e.inert),false);assert.equal(await page.locator('[data-action="rules"]').evaluate(e=>e===document.activeElement),true);
  await page.locator('[data-action="rules"]').click();await panel.waitFor();await page.keyboard.press('Escape');await panel.waitFor({state:'detached'});
  await page.locator('[data-action="rules"]').click();await panel.waitFor();await page.locator('[data-action="rules-start"]').click();await page.locator('[data-action="start"]').click();await page.locator('.photo-viewport').waitFor();assert.equal(await page.locator('#app').evaluate(e=>e.inert),false);
- await page.locator('[data-action="leave"]').click();await page.locator('.cover-page').waitFor();assert.equal(await page.locator('.sheet,.rules-popover').count(),0);assert.match(await page.locator('[data-action="start"]').textContent(),/继续探索/);
+ await page.locator('[data-action="leave"]').click();await page.locator('.cover-page').waitFor();assert.equal(await page.locator('.sheet,.rules-popover').count(),0);assert.match(await page.locator('[data-action="start"]').textContent(),/继续挑战/);
  await page.locator('[data-action="rules"]').click();await panel.waitFor();
  await page.emulateMedia({reducedMotion:'reduce'});await page.keyboard.press('Escape');await panel.waitFor({state:'detached'});assert.deepEqual(errors,[]);await page.close();
-}await browser.close();console.log('PASS: auto rules; top-right anchor; desktop/mobile/landscape fit; animated close/reopen; focus restoration; start/resume; reduced motion');})().catch(e=>{console.error(e);process.exit(1)});
+}await browser.close();console.log('PASS: auto rules; top-right anchor; desktop/mobile/landscape fit; animated close/reopen; focus restoration; start/resume on the shared clock; reduced motion');})().catch(e=>{console.error(e);process.exit(1)});

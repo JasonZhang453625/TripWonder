@@ -18,7 +18,8 @@
   };
   const cities = [datong, window.CITY_SHENZHEN, window.CITY_SUZHOU, window.CITY_GUILIN, window.CITY_HONGKONG, window.CITY_BEIJING, window.CITY_SHANGHAI, window.CITY_ZHANGJIAJIE].filter(Boolean);
   // Journeys generated in the admin (SQLite) join the pool; absent on a static deploy.
-  for (const journey of window.DB_JOURNEYS || []) if (!cities.some(c => c.id === journey.id)) cities.push(journey);
+  // UGC journeys (channel 'ugc') go to the community instead (community.js), never into today's draw.
+  for (const journey of window.DB_JOURNEYS || []) if (journey.channel !== 'ugc' && !cities.some(c => c.id === journey.id)) cities.push(journey);
   const interests = {
     datong: [['文化','建筑'],['文化','建筑'],['建筑','摄影'],['文化','摄影'],['建筑','摄影'],['文化']],
     shenzhen: [['文化','摄影'],['文化'],['自然','摄影'],['自然','摄影'],['建筑','文化'],['自然','摄影']],

@@ -1,0 +1,38 @@
+{
+  "city": "ugc",
+  "dir": "dongjiao-south-gate",
+  "id": "ugc-dongjiao-south-gate",
+  "src": "photo-library/ugc/dongjiao-south-gate/original.jpg",
+  "width": 4096,
+  "height": 3072,
+  "sourceSha256": "a08819e90519122f730644157108d5fcb40df212293be69fb26a9df49955875c",
+  "original": {
+    "src": "photo-library/ugc/dongjiao-south-gate/original.jpg",
+    "width": 4096,
+    "height": 3072,
+    "bytes": 4501768,
+    "untouched": true
+  },
+  "credit": "Yumeto / Wikimedia Commons",
+  "license": "CC BY-SA 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+  "source": "https://commons.wikimedia.org/wiki/File:20250516_Dongjiao_Jiyi.jpg",
+  "thumb": {
+    "src": "photo-library/ugc/dongjiao-south-gate/thumb.webp",
+    "width": 480,
+    "height": 360,
+    "bytes": 19556
+  },
+  "screen": {
+    "src": "photo-library/ugc/dongjiao-south-gate/screen.webp",
+    "width": 1080,
+    "height": 810,
+    "bytes": 106748
+  },
+  "detail": {
+    "src": "photo-library/ugc/dongjiao-south-gate/detail.webp",
+    "width": 1600,
+    "height": 1200,
+    "bytes": 209832
+  }
+}

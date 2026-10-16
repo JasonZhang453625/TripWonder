@@ -61,7 +61,7 @@ function renderList(){
     const meta=d.kind==='job'?stepList(d.job):`<p>${d.scenes.length} 个场景 · ${d.questions.length} 道题 · 倒计时 ${d.rules.quizSeconds} 秒</p>`;
     const err=d.kind==='job'&&d.job.error?`<p style="color:#c53030">${escapeText(d.job.error)}</p>`:'';
     const actions=d.kind==='job'&&d.job.status==='failed'?`<div class="card-actions"><button class="btn solid" data-retry="${d.job.id}">重试</button><button class="btn danger" data-discard="${d.job.id}">放弃</button></div>`:'';
-    return `<article class="photo-card dest-card" tabindex="0" role="link" data-dest="${escapeText(d.id)}" aria-label="${escapeText(d.name)}"><div class="photo-preview">${thumb}</div><div class="details"><div class="pill-row"><span class="pill">${escapeText(d.region||'')}</span>${statusPill(d)}</div><h2>${escapeText(d.name)}</h2>${meta}${err}${actions}</div></article>`;}).join('')}</div>`;
+    return `<article class="photo-card dest-card" tabindex="0" role="link" data-dest="${escapeText(d.id)}" aria-label="${escapeText(d.name)}"><div class="photo-preview">${thumb}</div><div class="details"><div class="pill-row"><span class="pill">${escapeText(d.region||'')}</span>${d.channel==='ugc'?'<span class="pill warn">玩家 UGC · 审核后进社区</span>':''}${statusPill(d)}</div><h2>${escapeText(d.name)}</h2>${meta}${err}${actions}</div></article>`;}).join('')}</div>`;
   schedulePoll();
 }
 

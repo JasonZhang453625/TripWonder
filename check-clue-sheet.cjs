@@ -1,16 +1,17 @@
 const assert=require('node:assert/strict');
 const {chromium,devices}=require('C:/Users/Administrator/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
-const token=Buffer.from(JSON.stringify({cityId:'beijing',score:0})).toString('base64url');
 (async()=>{
   const browser=await chromium.launch({executablePath:'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe',headless:true,args:['--enable-unsafe-swiftshader','--use-gl=angle','--use-angle=swiftshader']});
   try{
     const page=await browser.newPage({...devices['iPhone 13'],viewport:{width:390,height:844}}),errors=[];
     page.on('pageerror',error=>errors.push(error.message));
     page.on('console',message=>{if(/passive event listener|Unable to preventDefault/.test(message.text()))errors.push(message.text());});
-    await page.goto((process.env.TRIPWONDER_URL||'http://127.0.0.1:8765/')+'?challenge='+token);
-    await page.locator('.cover-page').waitFor();
-    if(await page.locator('.rules-popover').count())await page.locator('[data-action="rules-start"]').click();
-    await page.locator('[data-action="start"]').click();await page.locator('.scene-counter').waitFor();await page.locator('.scene-transition').waitFor({state:'detached'});
+    // Clues are read in the community (browse mode) once a city has been challenged; the challenge itself has none.
+    await page.addInitScript(()=>{try{if(!localStorage.getItem('tripwonder-v2'))localStorage.setItem('tripwonder-v2',JSON.stringify({version:2,challenged:{beijing:{at:1,result:{score:60}}}}));}catch{}});
+    await page.goto(process.env.TRIPWONDER_URL||'http://127.0.0.1:8765/');
+    await page.locator('.entry').click();await page.locator('.cm-entry[data-go="feed"]').click();
+    await page.locator('[data-journey="beijing"]').click();await page.locator('.cm-journey').waitFor();
+    await page.locator('[data-action="browse"]').click();await page.locator('.scene-counter').waitFor();await page.locator('.scene-transition').waitFor({state:'detached'});
     const sheet=page.locator('.clue-dialog'),overlay=page.locator('.clue-dialog-overlay'),hotspot=page.locator('[data-clue="0"]');
     const open=async()=>{await hotspot.click();await sheet.waitFor();await page.waitForTimeout(390);};
     const closed=async()=>{await overlay.waitFor({state:'detached'});assert.equal(await page.locator('#app').evaluate(el=>el.inert),false);};

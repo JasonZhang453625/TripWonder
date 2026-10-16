@@ -1,0 +1,38 @@
+{
+  "city": "ugc",
+  "dir": "shibati-new-street",
+  "id": "ugc-shibati-new-street",
+  "src": "photo-library/ugc/shibati-new-street/original.jpg",
+  "width": 2976,
+  "height": 3968,
+  "sourceSha256": "6da95cecc06222b83b27704856b67c160572e3d0872466cdae7ff686871ebda2",
+  "original": {
+    "src": "photo-library/ugc/shibati-new-street/original.jpg",
+    "width": 2976,
+    "height": 3968,
+    "bytes": 2751864,
+    "untouched": true
+  },
+  "credit": "Daredemodaisuki 114514 / Wikimedia Commons",
+  "license": "CC BY-SA 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+  "source": "https://commons.wikimedia.org/wiki/File:Shibati_%E5%8D%81%E5%85%AB%E6%A2%AF_2022.1.1.jpg",
+  "thumb": {
+    "src": "photo-library/ugc/shibati-new-street/thumb.webp",
+    "width": 480,
+    "height": 640,
+    "bytes": 24444
+  },
+  "screen": {
+    "src": "photo-library/ugc/shibati-new-street/screen.webp",
+    "width": 1080,
+    "height": 1440,
+    "bytes": 155584
+  },
+  "detail": {
+    "src": "photo-library/ugc/shibati-new-street/detail.webp",
+    "width": 1600,
+    "height": 2133,
+    "bytes": 328316
+  }
+}

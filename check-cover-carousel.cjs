@@ -15,7 +15,7 @@ async function open(page,url=base){
   await page.goto(url);
   if(await page.locator('.trip-home').count()){
     await page.keyboard.press('Escape');await page.locator('.hp-layer').waitFor({state:'detached'});
-    await page.locator('.th-wonder').click();
+    await page.locator('.th-wonder').click();await page.locator('.cm-entry[data-go="today"]').click();
   }
   await closeRules(page);
 }
@@ -58,7 +58,7 @@ async function complete(page){
     const page=await browser.newPage({viewport:{width:1440,height:1040}});page.on('pageerror',e=>errors.push(e.message));
     await open(page);
     const initial=await current(page),seen=[initial];
-    assert.equal(await page.locator('.cover-dock button').count(),3);
+    assert.equal(await page.locator('.cover-dock button').count(),4,'atlas, rankings, PK and the start button');
     assert.equal(await page.locator('[data-action="skip"],.cover-pagination,.cover-dots,.cover-swipe-hint').count(),0);
     const style=await page.locator('.cover-enter').evaluate(el=>{const s=getComputedStyle(el);return{fill:s.backgroundColor,image:s.backgroundImage,shadow:s.boxShadow}});
     assert.deepEqual(style,{fill:'rgb(50, 100, 255)',image:'none',shadow:'none'});
@@ -71,11 +71,11 @@ async function complete(page){
     await swipe(page,1,{small:true});await swipe(page,1,{vertical:true});
     await page.locator('.cover-hero').focus();await page.keyboard.press('ArrowRight');await page.waitForFunction(id=>document.querySelector('.cover-page').dataset.coverCity!==id,initial);
     assert.equal(await current(page),seen[1]);
-    await page.locator('[data-go="atlas"]').click();await page.locator('.atlas-page').waitFor();assert.equal(await page.locator('.collection-destination').count(),5);
+    await page.locator('[data-go="atlas"]').click();await page.locator('.atlas-page').waitFor();assert.equal(await page.locator('.atlas-slot').count(),await page.evaluate(()=>TRIPWONDER_CATALOG.cities.length),'the atlas has a slot for every official city');
     await page.locator('.page-head [data-go="cover"]').click();await page.locator('.cover-page').waitFor();assert.equal(await current(page),seen[1]);
     await page.locator('[data-go="ranking"]').click();await page.locator('.ranking-page').waitFor();
     await page.locator('.page-head [data-go="cover"]').click();await page.locator('.cover-page').waitFor();
-    await page.reload();await page.locator('.trip-home').waitFor();await page.keyboard.press('Escape');await page.locator('.th-wonder').click();await closeRules(page);assert.equal(await current(page),initial);
+    await page.reload();await page.locator('.trip-home').waitFor();await page.keyboard.press('Escape');await page.locator('.th-wonder').click();await page.locator('.cm-entry[data-go="today"]').click();await closeRules(page);assert.equal(await current(page),initial);
     console.log('PASS dock styling, five unique cities, wrap in both directions, small/vertical gestures, keyboard, collections, refresh');
 
     // Save the live cover, using the reference pagoda when it is in today's draw.
@@ -96,7 +96,7 @@ async function complete(page){
     await page.locator('[data-action="next-scene"]').click();await page.locator('.scene-counter').filter({hasText:'2 / 3'}).waitFor();await idle(page);
     await page.locator('[data-action="leave"]').click();await page.locator('.cover-page').waitFor();await swipe(page,1);await swipe(page,-1);
     assert.equal(await current(page),'shenzhen');await page.locator('.cover-enter').click();await page.locator('.scene-counter').filter({hasText:'2 / 3'}).waitFor();await idle(page);
-    assert.notEqual(await page.locator('.explore-page .primary').evaluate(el=>getComputedStyle(el).backgroundImage),'none');
+    assert.notEqual(await page.locator('.explore-page .scene-nav').evaluate(el=>getComputedStyle(el).backgroundImage),'none');
     console.log('PASS per-city exploration resume and unchanged exploration glass');
 
     const mobile=await browser.newPage({...devices['iPhone 13']});mobile.on('pageerror',e=>errors.push(e.message));
@@ -120,7 +120,6 @@ async function complete(page){
     const library=await page.evaluate(()=>TRIPWONDER_CATALOG.cities.map(c=>c.id)),outside=library.find(id=>!seen.includes(id));
     if(outside){await open(page,base+'?challenge='+token(outside));assert.equal(await current(page),outside);const cycle=new Set([outside]);for(let i=0;i<5;i++){await swipe(page,1);cycle.add(await current(page));}assert.equal(cycle.size,5);assert.equal(await current(page),outside);}
     await open(page,base+'?challenge='+token('suzhou'));await complete(page);
-    assert.match(await page.locator('.result-details .demo-note').textContent(),/1 \/ 5/);
-    assert.deepEqual(errors,[]);console.log('PASS out-of-draw invitation, complete challenge, five-city result count, no browser errors');
+    assert.deepEqual(errors,[]);console.log('PASS out-of-draw invitation, complete challenge, no browser errors');
   }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});

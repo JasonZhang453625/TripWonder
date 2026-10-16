@@ -13,9 +13,9 @@ window.CONTENT_EN = {
       { q: 'Why is the Buddha in the first scene exposed to the open air?',
         options: ['The front wall of the original cave later collapsed', 'It was designed as an open-air plaza from the start', 'The front wall was removed to give visitors a view', 'It was moved here from somewhere else'],
         explain: 'Cave 20 was originally an enclosed cave. When its front wall collapsed, the main Buddha was exposed; the western standing Buddha has also been lost, which is why the scene today is asymmetrical.' },
-      { q: 'Which two dynasties do the Bhagavat Sutra Repository Hall and the rebuilt Great Buddha Hall belong to?',
-        options: ['Qin and Han', 'Sui and Tang', 'Liao and Jin', 'Ming and Qing'],
-        explain: 'The Bhagavat Sutra Repository Hall was built in 1038 under the Liao; the Great Buddha Hall was rebuilt in 1140 under the Jin. The pagoda in the photo should not be confused with these two ancient halls.' },
+      { q: 'What is the square pagoda in the photo mainly built from?',
+        options: ['Rammed earth', 'Glass and steel', 'Timber joined with mortise and tenon', 'Reinforced concrete'],
+        explain: 'It is a square timber pagoda: beams and columns lock together with mortise-and-tenon joints, a tenon slotting into the next piece’s mortise.' },
       { q: 'How do the halls on the cliff mainly transfer their weight to the mountain?',
         options: ['Slender wooden posts underneath hold them up on their own', 'Beams set into the rock work together with brackets and the timber frame', 'Iron chains hang the whole building from the summit', 'The outer walls are glued to the rock face'],
         explain: 'Beams set into the mountain are key load-bearing members, working with rock supports and the post-and-beam frame. The slender posts you can see are not the whole structure.' }
@@ -37,9 +37,9 @@ window.CONTENT_EN = {
       'sz-qianhai': { name: 'Qianhai · Joy Harbour', type: 'Waterfront new district', hotspots: ['The glowing Ferris wheel', 'Cabins and one full turn', 'Two characters on the light sign'] }
     },
     questions: [
-      { q: 'What title has the tallest tower in the first scene been certified with?',
-        options: ['World’s tallest office building', 'World’s tallest TV tower', 'World’s longest sea-crossing bridge', 'World’s largest stadium'],
-        explain: 'In 2019 the Council on Tall Buildings and Urban Habitat certified this 599-metre, 118-storey tower as the world’s tallest office building.' },
+      { q: 'What are the streaks of light along the streets at the bottom of the picture most likely to be?',
+        options: ['Lights buried under the road', 'Traffic in a long exposure', 'Lantern boats on a river', 'Trains on surface tracks'],
+        explain: 'Car lights blur into streaks in a long exposure; this is the junction of two main roads, busy with traffic.' },
       { q: 'In the second night view, what is the rolling dark outline between the front and back clusters of buildings?',
         options: ['A tree-covered ridge', 'A flat, open stretch of sea', 'A row of piers along the shore', 'A rectangular sports ground'],
         explain: 'The dark outline in the middle of the picture has rolling slopes and trees, with lit buildings in front of and behind it and a curving road on the left. The clue “The ridge between the towers” points to exactly this terrain.' },
@@ -65,12 +65,12 @@ window.CONTENT_EN = {
       { q: 'How is this ancient pagoda built, from top to bottom?',
         options: ['A seven-storey octagonal brick pagoda', 'A three-storey square timber tower', 'A single-storey stone pavilion', 'A nine-storey round iron pagoda'],
         explain: 'The pagoda is a seven-storey octagonal brick structure; the brick brackets under its eaves give it the layered look of a timber pavilion from afar.' },
-      { q: 'Roughly when was this pagoda built?',
-        options: ['Later Zhou to early Northern Song (959–961)', 'The Kaiyuan era of the Tang dynasty', 'The Zhizheng era of the Yuan dynasty', 'The Qianlong era of the Qing dynasty'],
-        explain: 'According to the city’s landscape and forestry bureau, work began in 959 (sixth year of Xiande, Later Zhou) and was completed in 961 (second year of Jianlong, Northern Song).' },
-      { q: 'Which statement about the pagoda’s lean is supported by historical records?',
-        options: ['By the Ming dynasty its seventh storey already tilted north-west', 'It was deliberately built at an angle', 'The lean began in the 21st century', 'The lean is only a perspective illusion in the photo'],
-        explain: 'The landscape and forestry bureau records that the seventh storey was already leaning north-west in the Ming dynasty. Photo perspective can exaggerate or reduce the angle, so it can’t be judged from the picture.' }
+      { q: 'From a distance, the stacked eaves and the brackets under them imitate which kind of building?',
+        options: ['A stone arch bridge', 'A Western clock tower', 'A yurt', 'A timber pavilion tower'],
+        explain: 'The brackets and eaves are made of brick but copy the rhythm of a timber pavilion: from afar they read as roof after roof.' },
+      { q: 'Look closely at the upper part. What is this pagoda most famous for?',
+        options: ['It leans', 'A golden ball on top', 'Vines all over it', 'A big bell hanging on it'],
+        explain: 'The upper tower leans slightly, and the pagoda is famous for its long-standing tilt; records say the seventh storey already leaned northwest in the Ming dynasty. Photo perspective can’t measure the real angle.' }
     ],
     stops: {
       苏州博物馆本馆: { name: 'Suzhou Museum (Main Building)', note: 'Next to the Humble Administrator’s Garden. Entry is by timed reservation; your slot follows your booking.' },
@@ -89,12 +89,12 @@ window.CONTENT_EN = {
       'gl-longji': { name: 'Longji Rice Terraces', type: 'Mountain rice farming', hotspots: ['The curving lines aren’t roads', 'A wooden hut in the fields', 'The gold doesn’t last all year'] }
     },
     questions: [
-      { q: 'How did the riverside old town in the first scene get its name?',
-        options: ['From the old county name “Xiping”, corrupted over time', 'From a general who came from the town', 'From the shape of a rock in the river', 'It was coined when a road was built in modern times'],
-        explain: 'From the Jin dynasty this was the seat of Xiping County. After the seat moved away in the Sui dynasty only a market town remained, and over time “Xiping” was corrupted into the town’s present name.' },
-      { q: 'When bamboo rafting began on the river in the second scene in 2000, how many rafts were there?',
-        options: ['5', '50', '500', '3,000'],
-        explain: 'In 2000 a riverside village began taking visitors out on bamboo rafts, starting with just 5. More than twenty years later the county has over 3,000 licensed rafts.' },
+      { q: 'Seen from above, what does the river do beside the town at the foot of the hills?',
+        options: ['It splits into three branches', 'It flows into a lake', 'It makes a big bend', 'It runs dead straight'],
+        explain: 'The river turns through a bend of about 90 degrees below the hills, wrapping round the old town like a ribbon.' },
+      { q: 'What carries the visitors under colourful parasols on the river?',
+        options: ['Speedboats', 'Sailing boats', 'Dragon boats', 'Bamboo rafts'],
+        explain: 'They are bamboo rafts. Villagers once used them to cross the river and carry goods; later they became rafts for visitors.' },
       { q: 'What problem do the curving ridges stepping up the hillside mainly solve?',
         options: ['Marking channels for tour boats', 'Turning steep slopes into fields that can be farmed and irrigated', 'Marking the location of underground caves', 'Stopping winter snow from sliding down'],
         explain: 'The terraces are cut into the slope level by level and kept farmable with ridges and channelled water. Above all, they are a mountain rice-farming system that is still in use.' }
@@ -116,12 +116,12 @@ window.CONTENT_EN = {
       'hk-sham-shui-po': { name: 'Sham Shui Po', type: 'Everyday street life', hotspots: ['The bakery building at the end of the street', 'The place name on the sign', 'A street of tightly packed buildings'] }
     },
     questions: [
-      { q: 'What inspired the design of the triangular-prism tower in the middle of the first night view?',
-        options: ['Bamboo “rising node by node”', 'The sail of a sailing boat', 'Lotus petals', 'The outline of a mountain peak'],
-        explain: 'I. M. Pei drew on bamboo “rising node by node”, combining four triangular shafts of different heights into a tower 367.4 metres tall.' },
-      { q: 'How is the Shining Star, the boat with the tour sign in the photo, related to the everyday ferries?',
-        options: ['It is only on display on land', 'It is a harbour-tour experience run by the same fleet', 'It can only sail on rivers', 'It is used only to carry vehicles'],
-        explain: 'The fleet runs everyday passenger ferries between piers on both sides of the harbour, and also offers harbour tours on the Shining Star.' },
+      { q: 'Judging from the picture, where is the photographer standing?',
+        options: ['On a boat in the harbour', 'On the peak above the city', 'On a pier by the sea', 'At the foot of a tower'],
+        explain: 'The nearby rooftops are below you: the photo was taken from a hill about 552 m up, the highest point on the island.' },
+      { q: 'What colours is this ferry painted?',
+        options: ['A white upper deck over a dark green hull', 'Bright red all over', 'Black and white stripes', 'A gold hull'],
+        explain: 'A white upper deck over a dark green hull is this fleet’s signature, running across the harbour since the late 19th century.' },
       { q: 'The district in the third scene has a name ending in the character “埗” (po). What does it mean?',
         options: ['Pier', 'City gate', 'Well', 'Market'],
         explain: '“埗” is interchangeable with “埠” and means a pier. The name comes from a deep-water pier that once stood nearby and disappeared after land reclamation.' }
@@ -143,15 +143,15 @@ window.CONTENT_EN = {
       'bj-beihai': { name: 'Glazed Archway of Xiaoxitian, Beihai Park', type: 'Imperial garden', hotspots: ['A panel read from right to left', 'Built for a mother’s longevity', 'The hall beyond the archway'] }
     },
     questions: [
-      { q: 'When were the white arched hoods added over the lower two rows of arrow windows on the first gate tower?',
-        options: ['During the 1915 renovation', 'When it was completed in 1439', 'During the 1780 rebuild', 'When it reopened in 2024'],
-        explain: 'The white arched hoods and the imitation-marble railing were designed by a German architect and added in the 1915 renovation; they are not Ming originals.' },
-      { q: 'What was the second pavilion mainly used for in the Qing dynasty?',
-        options: ['A silver vault for the Imperial Household Department', 'The emperor’s living quarters', 'An imperial examination hall', 'A library'],
-        explain: 'In the Qing it was the Imperial Household Department’s silver vault, storing gold, silver, coins, jewels, jade and gold and silver vessels.' },
-      { q: 'Why did the Qianlong Emperor build the complex around the third glazed archway?',
-        options: ['To pray for his mother’s long life', 'To celebrate his own accession', 'To receive foreign envoys', 'To commemorate a battle'],
-        explain: 'Begun in 1768 and completed in 1770, the complex was built by Qianlong to pray for the longevity of his mother, the Empress Dowager Xiaosheng.' }
+      { q: 'What were the rows of small square windows on the gate tower originally for?',
+        options: ['Shop windows', 'Ventilating the tower', 'Hanging lanterns', 'Shooting arrows when defending the city'],
+        explain: 'They are arrow windows for defending the gate; the north side faces the city and has none.' },
+      { q: 'What colours is the plaque in the middle of the pavilion?',
+        options: ['Blue characters on white', 'Gold characters on black', 'Gold characters on blue', 'Black characters on red'],
+        explain: 'The gold-on-blue plaque carries the pavilion’s present name; it was renamed twice after being called the Martial Tower in the early Ming.' },
+      { q: 'How should the four characters on the central panel of the archway be read?',
+        options: ['From the middle outwards', 'Right to left', 'Left to right', 'Bottom to top'],
+        explain: 'The panel reads right to left. Traditional gate panels and plaques are usually written this way.' }
     ],
     stops: {
       正阳门箭楼: { name: 'Zhengyangmen Arrow Tower', hours: 'Tue–Sun 09:00–17:00, last entry 16:30; closed Mondays', note: 'Visits by real-name reservation. Floors 1–3 house an exhibition on the city’s central axis.' },
@@ -170,9 +170,9 @@ window.CONTENT_EN = {
       'sh-bund-night': { name: 'The Bund at night, from across the river', type: 'Riverside night view', hotspots: ['A row of old buildings', 'The slender white tower by the river', 'Ribbons of light on the river'] }
     },
     questions: [
-      { q: 'In what year did the great clock on the first clock tower first ring?',
-        options: ['1928', '1900', '1949', '1996'],
-        explain: 'The Custom House was completed in 1927, and the great clock on its roof first rang in January 1928.' },
+      { q: 'What is mounted on the tower at the top of the building on the right?',
+        options: ['A big clock', 'A windmill', 'A radar dish', 'A neon billboard'],
+        explain: 'The building on the right with the clock tower is the Custom House, completed in 1927; its clock still chimes the hours.' },
       { q: 'Which line of poetry inspired the design of the TV tower strung with spheres in the second scene?',
         options: ['“Pearls large and small fall on a jade plate”', '“The torrent plunges three thousand feet”', '“Over the sea rises a bright moon”', '“To see a thousand li further”'],
         explain: 'The design team drew on the line “pearls large and small fall on a jade plate” from Bai Juyi’s “Song of the Pipa”, building the tower from 11 spheres of different sizes.' },
@@ -200,9 +200,9 @@ window.CONTENT_EN = {
       { q: 'Which landform appears again and again in the first two scenes?',
         options: ['Clusters of slender stone pillars and sheer rock walls', 'Gentle sand dunes merging into one', 'Rounded, glacier-covered summits', 'Isolated volcanoes around a round lake'],
         explain: 'The first scene shows dense stone pillars and the second shows layer upon layer of rock walls; a steep, dense peak forest is the clue the two mountain views share.' },
-      { q: 'In the third scene, how many steps does the “Stairway to Heaven” up to the natural opening have?',
-        options: ['99', '365', '999', '1,080'],
-        explain: 'The Stairway to Heaven in front of Tianmen Cave has 999 steps with rest platforms along the way, and climbing it carries the meaning of praying for good fortune.' },
+      { q: 'How did the great hole showing sky in the middle of the cliff form?',
+        options: ['A gap blasted in a war', 'An opening made for a cable car', 'It is a natural arch through the mountain', 'A tunnel cut by people'],
+        explain: 'It is a natural arch through the karst mountain; the steep cliff around it is still one continuous face.' },
       { q: 'How does doubling back again and again help vehicles climb the road in the fourth scene?',
         options: ['It makes the way up a short straight line', 'It spreads the climb over a longer stretch of road', 'It keeps every section at the same altitude', 'It lets vehicles avoid bends altogether'],
         explain: 'Doubling back lengthens the route, spreading the same height gain over a longer distance instead of going straight up the steep slope. The stacked road sections in the photo show exactly this.' }

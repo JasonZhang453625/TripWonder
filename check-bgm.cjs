@@ -78,10 +78,11 @@ async function enter(page){
     const during=await state(page);
     assert.equal(during.playing,'shenzhen');assert.ok(during.gain>.9,'music continues between scenes');assert.ok(during.copies>=before-1);
 
-    // Clues lower the music; reading aloud lowers it further; closing restores it.
-    await page.locator('#app [data-clue="0"]').click();await page.locator('.clue-dialog').waitFor();
+    // The challenge has no clue hotspots (clues are read in the community); ducking for a clue still lowers and restores the music.
+    assert.equal(await page.locator('#app [data-clue]').count(),0);
+    await page.evaluate(()=>SceneBGM.duck('clue'));
     await until(page,()=>SceneBGM.state().ducked==='clue'&&SceneBGM.state().level<.3);
-    await page.keyboard.press('Escape');await page.locator('.clue-dialog').waitFor({state:'detached'});
+    await page.evaluate(()=>SceneBGM.duck(null));
     await until(page,()=>!SceneBGM.state().ducked&&SceneBGM.state().level>.55);
 
     // The toggle fades out, suspends the context, remembers the choice, and fades back in.
@@ -93,12 +94,7 @@ async function enter(page){
     await until(page,()=>{const s=SceneBGM.state();return !s.muted&&s.context==='running'&&s.gain>.9;});
 
     // Leaving for the quiz pauses the music; returning picks the same track up without a new download.
-    while(await page.locator('#app .explore-page').count()){
-      const previous=await page.locator('#app .scene-counter').textContent();
-      await page.locator('#app [data-action="next-scene"]').click();
-      await page.waitForFunction(previous=>!document.querySelector('#app .scene-counter')||document.querySelector('#app .scene-counter').textContent!==previous,previous);
-    }
-    await page.locator('#timer').waitFor();await idle(page);
+    await page.locator('#app [data-action="go-quiz"]').click();await page.locator('#app .quiz-page').waitFor();await idle(page);
     await until(page,()=>{const s=SceneBGM.state();return s.want===null&&s.context==='suspended';});
     report.quiz=await state(page);
     await page.locator('[data-action="quiz-back"]').click();await page.locator('#app .explore-page').waitFor();await idle(page);

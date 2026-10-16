@@ -63,7 +63,7 @@ async function navigation(page,selector,{to,back=false,screenshot}={}){
     for(const [name,options] of [['mobile',{...devices['iPhone 13'],viewport:{width:390,height:844}}],['desktop',{viewport:{width:1440,height:1040}}]]){
       const page=await browser.newPage(options);page.on('pageerror',error=>errors.push(error.message));
       await page.goto(base);await page.keyboard.press('Escape');await page.locator('.hp-layer').waitFor({state:'detached'});
-      await page.locator('.th-wonder').click();await idle(page);await page.locator('[data-action="close"]').click();
+      await page.locator('.th-wonder').click();await idle(page);await page.locator('.cm-entry[data-go="today"]').click();await idle(page);await page.locator('[data-action="close"]').click();
       const first=await page.locator('.cover-page').getAttribute('data-cover-city');
       await complete(page);await bottom(page);
       assert.equal(await page.locator('.prev-city').isDisabled(),true);

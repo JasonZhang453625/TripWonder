@@ -5,6 +5,8 @@ test('built bundle contains executable bridge and every checksummed file',()=>{
  const bridge=fs.readFileSync(path.join(out,'native.js'),'utf8');
  assert.ok(bridge.startsWith('(()=>'),'compiled JavaScript, not byte-array text');new vm.Script(bridge);
  for(const file of manifest){const bytes=fs.readFileSync(path.join(out,file.href));assert.equal(sha(bytes),file.checksum,file.href);assert.equal(bytes.length,file.sizeInBytes);assert.ok(!file.href.includes('original.'));}
- const scenes=manifest.filter(f=>f.href.endsWith('/immersive-blur/photo.jpg'));assert.equal(scenes.length,23);
+ // 23 official scenes plus the sample community (UGC) scenes in photo-library/ugc.
+ const ugc=fs.readdirSync(path.join(root,'photo-library/ugc')).filter(dir=>fs.existsSync(path.join(root,'photo-library/ugc',dir,'original.jpg'))).length;
+ const scenes=manifest.filter(f=>f.href.endsWith('/immersive-blur/photo.jpg'));assert.equal(scenes.length,23+ugc);
  for(const file of scenes)assert.equal(file.checksum,sha(fs.readFileSync(path.join(root,file.href))));
 });

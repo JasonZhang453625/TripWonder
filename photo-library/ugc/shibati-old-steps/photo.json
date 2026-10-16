@@ -1,0 +1,38 @@
+{
+  "city": "ugc",
+  "dir": "shibati-old-steps",
+  "id": "ugc-shibati-old-steps",
+  "src": "photo-library/ugc/shibati-old-steps/original.jpg",
+  "width": 4608,
+  "height": 3456,
+  "sourceSha256": "141c1f3ea0d998ac036581d0e56fb593ab88af85825d4b3929b54816828311a0",
+  "original": {
+    "src": "photo-library/ugc/shibati-old-steps/original.jpg",
+    "width": 4608,
+    "height": 3456,
+    "bytes": 3450136,
+    "untouched": true
+  },
+  "credit": "rheins / Wikimedia Commons",
+  "license": "CC BY 3.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/3.0",
+  "source": "https://commons.wikimedia.org/wiki/File:%E5%8D%81%E5%85%AB%E6%A2%AF%E8%80%81%E8%A1%97_-_Old_Street_in_Shibati_Area_-_2015.04_-_panoramio.jpg",
+  "thumb": {
+    "src": "photo-library/ugc/shibati-old-steps/thumb.webp",
+    "width": 480,
+    "height": 360,
+    "bytes": 37650
+  },
+  "screen": {
+    "src": "photo-library/ugc/shibati-old-steps/screen.webp",
+    "width": 1080,
+    "height": 810,
+    "bytes": 247110
+  },
+  "detail": {
+    "src": "photo-library/ugc/shibati-old-steps/detail.webp",
+    "width": 1600,
+    "height": 1200,
+    "bytes": 560448
+  }
+}

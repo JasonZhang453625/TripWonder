@@ -19,7 +19,7 @@
 
   function notes(sceneId) {
     const data = window.TWStore.get();
-    return [...(data.bubbles[sceneId] || []).map(note => ({...note, mine: true})), ...(window.TW_BUBBLE_SEED?.[sceneId] || [])];
+    return [...(data.bubbles[sceneId] || []).map(note => ({...note, mine: true})), ...(window.TW_BUBBLE_SEED?.[sceneId] || []), ...(window.TW_UGC_BUBBLE_SEED?.[sceneId] || [])];
   }
   const likes = note => (note.likes || 0) + (window.TWStore.get().likes[note.id] ? 1 : 0);
   const liked = note => !!window.TWStore.get().likes[note.id];
@@ -174,6 +174,7 @@
     timer = setInterval(rotate, ROTATE_MS);
     return {
       add,
+      place: startPlacing,
       destroy() { destroyed = true; clearInterval(timer); page.removeEventListener('click', onClick); stopPlacing(); bar.remove(); plane.querySelectorAll('.tw-bubble').forEach(node => node.remove()); }
     };
   }
@@ -193,5 +194,9 @@
     field.addEventListener('input', sync);
   }
 
-  window.SceneBubbles = Object.freeze({mount, composeMarkup, bindCompose});
+  // The community board lists a journey's notes outside the scene view.
+  const list = sceneId => notes(sceneId).map(note => ({...note, sceneId, likes: likes(note), liked: liked(note), name: note.mine ? t('我', 'Me') : isEn() ? note.nameEn : note.name, body: note.mine ? note.text : isEn() ? note.textEn : note.text}));
+  const toggleLike = id => window.TWStore.update(data => { if (data.likes[id]) delete data.likes[id]; else data.likes[id] = true; return !!data.likes[id]; });
+
+  window.SceneBubbles = Object.freeze({mount, composeMarkup, bindCompose, list, toggleLike, kindLabel});
 })();

@@ -42,7 +42,8 @@ const readBody = (req, limit) => new Promise((resolve, reject) => {
 const readJson = async req => { try { return JSON.parse((await readBody(req, 2e6)).toString('utf8') || '{}'); } catch { throw Object.assign(new Error('请求内容不是有效 JSON'), {status: 400}); } };
 
 // Journeys that finished generation and were not switched off are what the game loads.
-const playable = () => listJourneys().filter(j => j.status === 'ready').map(j => ({...j, source: 'db'}));
+// UGC journeys additionally need review before players see them in the community.
+const playable = () => listJourneys().filter(j => j.status === 'ready' && (j.channel !== 'ugc' || j.review === 'approved')).map(j => ({...j, source: 'db'}));
 
 function publicJob(job) {
   const {input, state, ...rest} = job;

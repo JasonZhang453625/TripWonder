@@ -27,6 +27,10 @@
 <div class="field"><label for="f-nameEn">英文名称</label><input id="f-nameEn" name="nameEn" maxlength="60" placeholder="如：Chengdu"></div>
 <div class="field"><label for="f-lat">纬度</label><input id="f-lat" name="lat" inputmode="decimal" placeholder="如：30.6586"></div>
 <div class="field"><label for="f-lng">经度</label><input id="f-lng" name="lng" inputmode="decimal" placeholder="如：104.0647"><small>坐标决定地图定位的评分，留空则由 AI 推断并标记为“待核对”</small></div>
+<div class="field"><label for="f-channel">Journey 类型 <i>*</i></label><select id="f-channel" name="channel" style="border:1px solid #dae4f3;border-radius:12px;padding:10px 12px;font-size:13px"><option value="official">官方 · 进入今日挑战（可得优惠与成就）</option><option value="ugc">玩家 UGC · 审核后进入社区（无优惠与成就）</option></select></div>
+<div class="field ugc-only" hidden><label for="f-title">挑战标题 <i>*</i></label><input id="f-title" name="title" maxlength="20" placeholder="如：十年前后的渔港老街"><small>挑战前玩家只看到这个标题，不能包含地名</small></div>
+<div class="field ugc-only" hidden><label for="f-author">发布者昵称</label><input id="f-author" name="author" maxlength="16" placeholder="默认：玩家"></div>
+<div class="field ugc-only" hidden><label><input id="f-board" type="checkbox" checked> 开启留言板</label><small>玩家完成挑战后可以留言</small></div>
 <div class="field wide"><label for="f-intro">目的地简介</label><textarea id="f-intro" name="intro" maxlength="400" placeholder="可选。用于结果页与后台展示，不会写进线索。"></textarea></div>
 </div></section>
 <section class="panel"><h2>场景图片 <span id="count" style="font-weight:400;font-size:12px;color:#7c8ba1"></span></h2><p class="sub">每张图片是一个场景，玩家依次探索，每个场景 AI 会生成 3 个可点击的讲解点。支持 JPG / PNG / WebP / AVIF，短边不小于 600 px，单张不超过 60 MB。请使用你有权使用的照片。</p>
@@ -34,7 +38,7 @@
 <div class="scene-list" id="scenes"></div></section>
 <section class="panel"><h2>游戏规则</h2><p class="sub">已填入当前游戏的默认值，可按目的地调整。结果页按 100 分制展示，因此三题分值之和加定位满分必须等于 100。</p>
 <div class="fields">
-<div class="field"><label for="r-sec">答题倒计时（秒）</label><input id="r-sec" name="quizSeconds" type="number" min="10" max="600" step="1" value="60"><small>三道题共用，切题不重置</small></div>
+<div class="field"><label for="r-sec">挑战总时长（秒）</label><input id="r-sec" name="quizSeconds" type="number" min="10" max="600" step="1" value="120"><small>从进入第一处场景开始计时，探索与三道题共用</small></div>
 <div class="field"><label for="r-p1">第 1 题分值</label><input id="r-p1" class="pt" type="number" min="1" max="100" value="20"></div>
 <div class="field"><label for="r-p2">第 2 题分值</label><input id="r-p2" class="pt" type="number" min="1" max="100" value="20"></div>
 <div class="field"><label for="r-p3">第 3 题分值</label><input id="r-p3" class="pt" type="number" min="1" max="100" value="20"></div>
@@ -48,6 +52,7 @@
 <section class="panel" id="progress" hidden><h2 id="p-title">正在生成…</h2><p class="sub" id="p-sub">可以离开本页，任务会在后台继续；在旅程库里随时查看进度。</p><ul class="steps" id="p-steps"></ul><div class="submit-bar" id="p-actions" style="margin-top:14px"></div></section>
 </main>
 <script>
+document.addEventListener('change',e=>{if(e.target.id==='f-channel')document.querySelectorAll('.ugc-only').forEach(el=>el.hidden=e.target.value!=='ugc');});
 const $=s=>document.querySelector(s),esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const MIN=3,MAX=9,scenes=[];let uploading=0,jobId=null,pollTimer=0;
 const call=async(url,opts)=>{const r=await fetch(url,opts);const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||r.statusText);return d;};
@@ -116,6 +121,7 @@ $('#form').addEventListener('submit',async e=>{
   const body={
     id:$('#f-id').value.trim(),name:$('#f-name').value.trim(),nameEn:$('#f-nameEn').value.trim(),region:$('#f-region').value.trim(),intro:$('#f-intro').value.trim(),
     lat:$('#f-lat').value.trim(),lng:$('#f-lng').value.trim(),
+    channel:$('#f-channel').value,title:$('#f-title').value.trim(),author:$('#f-author').value.trim(),boardEnabled:$('#f-board').checked,
     rules:{quizSeconds:num('#r-sec'),points:[num('#r-p1'),num('#r-p2'),num('#r-p3')],guess:{max:num('#r-gmax'),fullKm:num('#r-full'),decayKm:num('#r-decay')}},
     scenes:scenes.map(s=>({uploadId:s.uploadId,name:s.name.trim(),note:s.note.trim(),credit:s.credit.trim(),filename:s.filename}))
   };

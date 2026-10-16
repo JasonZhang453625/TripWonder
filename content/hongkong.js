@@ -121,18 +121,18 @@ window.CITY_HONGKONG = {
   ],
   questions: [
     {
-      q: '第一处夜景中央那座三角棱柱高楼，设计灵感来自什么？',
-      options: ['竹子“节节高升”', '帆船的风帆', '莲花的花瓣', '山峰的轮廓'],
-      answer: 0, points: 30,
-      explain: '贝聿铭以竹子“节节高升”为灵感，让四个高度不同的三角柱身组成整座塔楼，楼高 367.4 米。',
-      source: 'https://www.gohk.gov.hk/tc/spots/spot_detail.php?spot=Bank+of+China+Tower'
+      q: '从画面看，拍摄者大概站在哪里？',
+      options: ['海上的游船', '城市背后的山顶', '海边的码头', '一座高楼的底层'],
+      answer: 1, points: 30,
+      source: '第 1 处 · 你站得有多高',
+      explain: '近处的楼顶都在脚下：拍摄点在海拔约 552 米的山上，是整座岛的最高处。'
     },
     {
-      q: '照片中写有游览标识的“辉星号”，与日常渡轮是什么关系？',
-      options: ['只在陆地展出', '属于同一船队的海港游览体验', '只能行驶在河道', '专门运送车辆'],
-      answer: 1, points: 30,
-      explain: '这支船队既有连接两岸码头的日常客运，也提供乘“辉星号”欣赏海港的游览体验。',
-      source: 'https://www.discoverhongkong.com/eng/place-to-go/travel.guide-star-ferry-pier.html'
+      q: '这艘渡轮的船身是什么配色？',
+      options: ['白色上层、深绿色下层', '通体大红色', '黑白相间的条纹', '金色船身'],
+      answer: 0, points: 30,
+      source: '第 2 处 · 白舱与绿船身',
+      explain: '白色上层与深绿色下层是这支船队最容易辨认的配色，它从 19 世纪末开始往返海港两岸。'
     },
     {
       q: '第三处街区的地名里，“埗”字指的是什么？',

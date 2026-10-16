@@ -26,7 +26,8 @@ export const STEPS = [
   {key: 'save', label: '写入数据库'}
 ];
 export const RESERVED_IDS = ['datong', 'shenzhen', 'suzhou', 'guilin', 'hongkong', 'beijing', 'shanghai', 'zhangjiajie'];
-export const DEFAULT_RULES = {quizSeconds: 60, points: [20, 20, 20], guess: {max: 40, fullKm: 25, decayKm: 450}};
+// quizSeconds is the whole challenge clock (exploring + answering), as in the game.
+export const DEFAULT_RULES = {quizSeconds: 120, points: [20, 20, 20], guess: {max: 40, fullKm: 25, decayKm: 450}};
 const TAGS = ['建筑', '历史', '地理', '自然', '城市', '生活', '体验', '文化', '美食', '交通'];
 const INTERESTS = ['建筑', '文化', '摄影', '自然', '美食'];
 const CHINA = {minLat: 3.5, maxLat: 54, minLng: 73, maxLng: 136};
@@ -77,7 +78,13 @@ export function normalizeInput(raw) {
     lat = Number(raw.lat); lng = Number(raw.lng);
     if (!inChina(lat, lng)) fail('坐标需为中国境内的纬度、经度（纬度 3.5–54，经度 73–136）');
   }
-  return {id, name, nameEn: str(raw.nameEn, 60), region, intro: str(raw.intro, 400), lat, lng, rules, scenes};
+  // Official journeys join today's challenge; UGC journeys appear in the community after review, without rewards.
+  const channel = raw.channel === 'ugc' ? 'ugc' : 'official';
+  const title = str(raw.title, 20);
+  if (channel === 'ugc' && !title) fail('玩家 Journey 需要一个不含地名的挑战标题');
+  if (channel === 'ugc' && title.includes(name)) fail('挑战标题不能包含目的地名称');
+  const ugc = channel === 'ugc' ? {title, boardEnabled: raw.boardEnabled !== false, author: {name: str(raw.author, 16) || '玩家'}} : {};
+  return {id, name, nameEn: str(raw.nameEn, 60), region, intro: str(raw.intro, 400), lat, lng, rules, scenes, channel, ...ugc};
 }
 const inChina = (lat, lng) => Number.isFinite(lat) && Number.isFinite(lng) &&
   lat >= CHINA.minLat && lat <= CHINA.maxLat && lng >= CHINA.minLng && lng <= CHINA.maxLng;
@@ -350,6 +357,7 @@ async function stepSave({input, state}) {
   }));
   const journey = {
     id: input.id, name: input.name, ...(input.nameEn ? {nameEn: input.nameEn} : {}), region: input.region,
+    channel: input.channel || 'official', ...(input.channel === 'ugc' ? {title: input.title, boardEnabled: input.boardEnabled, author: input.author} : {}),
     lat: assembled.lat, lng: assembled.lng, intro: input.intro, rules: input.rules, guess: input.rules.guess,
     scenes, questions, stops: assembled.stops,
     generated: {model: MODEL, at: new Date().toISOString(), flags: assembled.flags, recognized: state.recognized, locationReason: assembled.reason}
