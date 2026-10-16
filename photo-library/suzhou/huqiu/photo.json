@@ -3,39 +3,40 @@
   "dir": "huqiu",
   "id": "suzhou-huqiu",
   "src": "photo-library/suzhou/huqiu/original.jpg",
+  "width": 4000,
+  "height": 3000,
+  "sourceSha256": "cdbe124a1678a5fb65e547b2f16c44be873588b3755c8e361eceaa90205d4078",
   "original": {
     "src": "photo-library/suzhou/huqiu/original.jpg",
-    "width": 4032,
-    "height": 3024,
-    "bytes": 3443486,
+    "width": 4000,
+    "height": 3000,
+    "bytes": 3340430,
     "untouched": true
   },
-  "sourceFile": "photo-library/suzhou/huqiu/original.jpg",
-  "sourceSha256": "d59be26128e75cccded3ede5806dd227adc4fc5500d96b64eacfd0115ad4086e",
+  "credit": "Another Believer / Wikimedia Commons",
+  "license": "CC BY-SA 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+  "source": "https://commons.wikimedia.org/wiki/File:Tiger_Hill,_Suzhou,_December_2015_-_10.JPG",
   "thumb": {
-    "src": "photo-library/suzhou/huqiu/thumb.webp",
-    "width": 480,
-    "height": 640,
-    "bytes": 74894
+    "src": "photo-library/suzhou/huqiu/thumb.webp?v=cdbe124a1678",
+    "width": 640,
+    "height": 480,
+    "bytes": 46350
   },
   "screen": {
-    "src": "photo-library/suzhou/huqiu/screen.webp",
-    "width": 1080,
-    "height": 1440,
-    "bytes": 347660
+    "src": "photo-library/suzhou/huqiu/screen.webp?v=cdbe124a1678",
+    "width": 1440,
+    "height": 1080,
+    "bytes": 266434
   },
   "detail": {
-    "src": "photo-library/suzhou/huqiu/detail.webp",
-    "width": 1800,
-    "height": 2400,
-    "bytes": 811578
+    "src": "photo-library/suzhou/huqiu/detail.webp?v=cdbe124a1678",
+    "width": 2400,
+    "height": 1800,
+    "bytes": 839316
   },
-  "originalFilename": "original.jpg",
-  "displaySource": {
-    "src": "photo-library/suzhou/huqiu/oriented.jpg",
-    "width": 3024,
-    "height": 4032,
-    "bytes": 2687731,
-    "sha256": "794cd4a2b274d36377028bb65199221922338c1bcad05e1a3077cebdaee6f0fe"
-  }
+  "sourceFile": "photo-library/suzhou/huqiu/original.jpg",
+  "originalFilename": "Tiger Hill, Suzhou, December 2015 - 10.JPG",
+  "downloadUrl": "https://upload.wikimedia.org/wikipedia/commons/5/54/Tiger_Hill%2C_Suzhou%2C_December_2015_-_10.JPG?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+  "takenAt": "2015-12-06 11:24:32"
 }

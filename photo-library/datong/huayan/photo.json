@@ -3,32 +3,40 @@
   "dir": "huayan",
   "id": "huayan",
   "src": "photo-library/datong/huayan/original.jpg",
+  "width": 6000,
+  "height": 4000,
+  "sourceSha256": "b11f3c21a825f62aa634b4cc2863139cd642a4007dd9a62ee0266c210a038a3f",
   "original": {
     "src": "photo-library/datong/huayan/original.jpg",
-    "width": 2304,
-    "height": 4096,
-    "bytes": 4651136,
+    "width": 6000,
+    "height": 4000,
+    "bytes": 6705040,
     "untouched": true
   },
-  "sourceFile": "photo-library/datong/huayan/original.jpg",
-  "sourceSha256": "14705002fdc6361d422ee342fd31370985fa0d14f9104bf667e719c379a475e2",
-  "originalFilename": "微信图片_20260919174906_61_26.jpg",
+  "credit": "Liuxingy / Wikimedia Commons",
+  "license": "CC BY-SA 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+  "source": "https://commons.wikimedia.org/wiki/File:%E5%B9%B3%E5%9F%8E_%E5%8D%8E%E4%B8%A5%E5%AF%BA%E4%B9%8B%E5%8D%8E%E4%B8%A5%E5%AE%9D%E5%A1%94_02.jpg",
   "thumb": {
-    "src": "photo-library/datong/huayan/thumb.webp",
-    "width": 480,
-    "height": 853,
-    "bytes": 80342
+    "src": "photo-library/datong/huayan/thumb.webp?v=b11f3c21a825",
+    "width": 640,
+    "height": 427,
+    "bytes": 26174
   },
   "screen": {
-    "src": "photo-library/datong/huayan/screen.webp",
-    "width": 1080,
-    "height": 1920,
-    "bytes": 434214
+    "src": "photo-library/datong/huayan/screen.webp?v=b11f3c21a825",
+    "width": 1440,
+    "height": 960,
+    "bytes": 148378
   },
   "detail": {
-    "src": "photo-library/datong/huayan/detail.webp",
-    "width": 1600,
-    "height": 2844,
-    "bytes": 863454
-  }
+    "src": "photo-library/datong/huayan/detail.webp?v=b11f3c21a825",
+    "width": 2400,
+    "height": 1600,
+    "bytes": 465966
+  },
+  "sourceFile": "photo-library/datong/huayan/original.jpg",
+  "originalFilename": "平城 华严寺之华严宝塔 02.jpg",
+  "downloadUrl": "https://upload.wikimedia.org/wikipedia/commons/e/e1/%E5%B9%B3%E5%9F%8E_%E5%8D%8E%E4%B8%A5%E5%AF%BA%E4%B9%8B%E5%8D%8E%E4%B8%A5%E5%AE%9D%E5%A1%94_02.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+  "takenAt": "2025-08-30 16:35:31"
 }

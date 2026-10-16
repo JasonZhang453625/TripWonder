@@ -3,36 +3,40 @@
   "dir": "tianmen-cave",
   "id": "zjj-tianmen-cave",
   "src": "photo-library/zhangjiajie/tianmen-cave/original.jpg",
-  "sourceFile": "photo-library/zhangjiajie/tianmen-cave/original.jpg",
-  "originalFilename": "Tianmen_38330-Zhangjiajie.jpg",
-  "sourceSha256": "c15133d1a1cc82cb22ce26397c6a965dd00cd1e87c4ff00d59362bfb3eb2bef0",
+  "width": 4000,
+  "height": 3000,
+  "sourceSha256": "1adffd9a412746b3a63a38168f41c2939f727aef76d52617e49a35cf614fdd75",
   "original": {
     "src": "photo-library/zhangjiajie/tianmen-cave/original.jpg",
-    "width": 3000,
-    "height": 1996,
-    "bytes": 3415769,
+    "width": 4000,
+    "height": 3000,
+    "bytes": 3183657,
     "untouched": true
   },
-  "credit": "xiquinhosilva / Wikimedia Commons",
-  "license": "CC BY 2.0",
-  "licenseUrl": "https://creativecommons.org/licenses/by/2.0/",
-  "source": "https://commons.wikimedia.org/wiki/File:Tianmen_38330-Zhangjiajie_(49047525877).jpg",
+  "credit": "Huangdan2060 / Wikimedia Commons",
+  "license": "Public domain (PD-self)",
+  "licenseUrl": "https://commons.wikimedia.org/wiki/File:Tian_Menshan_Mountain_5.jpg#Licensing",
+  "source": "https://commons.wikimedia.org/wiki/File:Tian_Menshan_Mountain_5.jpg",
   "thumb": {
-    "src": "photo-library/zhangjiajie/tianmen-cave/thumb.webp",
+    "src": "photo-library/zhangjiajie/tianmen-cave/thumb.webp?v=1adffd9a4127",
     "width": 640,
-    "height": 426,
-    "bytes": 85712
+    "height": 480,
+    "bytes": 58822
   },
   "screen": {
-    "src": "photo-library/zhangjiajie/tianmen-cave/screen.webp",
+    "src": "photo-library/zhangjiajie/tianmen-cave/screen.webp?v=1adffd9a4127",
     "width": 1440,
-    "height": 958,
-    "bytes": 589154
+    "height": 1080,
+    "bytes": 381262
   },
   "detail": {
-    "src": "photo-library/zhangjiajie/tianmen-cave/detail.webp",
+    "src": "photo-library/zhangjiajie/tianmen-cave/detail.webp?v=1adffd9a4127",
     "width": 2400,
-    "height": 1597,
-    "bytes": 1869650
-  }
+    "height": 1800,
+    "bytes": 1177268
+  },
+  "sourceFile": "photo-library/zhangjiajie/tianmen-cave/original.jpg",
+  "originalFilename": "Tian Menshan Mountain 5.jpg",
+  "downloadUrl": "https://upload.wikimedia.org/wikipedia/commons/5/52/Tian_Menshan_Mountain_5.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+  "takenAt": "2010-10-30"
 }

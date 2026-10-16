@@ -3,32 +3,40 @@
   "dir": "futian",
   "id": "sz-futian",
   "src": "photo-library/shenzhen/futian/original.jpg",
+  "width": 4608,
+  "height": 3072,
+  "sourceSha256": "eb487325031ab354da2bebeb7bdb65e51d7d495d104e6977b35ecae3c7277513",
   "original": {
     "src": "photo-library/shenzhen/futian/original.jpg",
-    "width": 3000,
-    "height": 2000,
-    "bytes": 732212,
+    "width": 4608,
+    "height": 3072,
+    "bytes": 1228570,
     "untouched": true
   },
-  "sourceFile": "photo-library/shenzhen/futian/original.jpg",
-  "sourceSha256": "f27f905d5680cd8874406fec3ac3b8454396eb69d4440622acf6ba1fbd693ef1",
+  "credit": "Chris from Shenzhen, China / Wikimedia Commons",
+  "license": "CC BY-SA 2.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0",
+  "source": "https://commons.wikimedia.org/wiki/File:Ping_An_Finance_Centre_Shenzhen_city_China_(36461945211).jpg",
   "thumb": {
-    "src": "photo-library/shenzhen/futian/thumb.webp",
+    "src": "photo-library/shenzhen/futian/thumb.webp?v=eb487325031a",
     "width": 640,
     "height": 427,
-    "bytes": 46600
+    "bytes": 13160
   },
   "screen": {
-    "src": "photo-library/shenzhen/futian/screen.webp",
+    "src": "photo-library/shenzhen/futian/screen.webp?v=eb487325031a",
     "width": 1440,
     "height": 960,
-    "bytes": 185706
+    "bytes": 69628
   },
   "detail": {
-    "src": "photo-library/shenzhen/futian/detail.webp",
+    "src": "photo-library/shenzhen/futian/detail.webp?v=eb487325031a",
     "width": 2400,
     "height": 1600,
-    "bytes": 430022
+    "bytes": 289490
   },
-  "originalFilename": "pexels-lywin-55237728-38833568.jpg"
+  "sourceFile": "photo-library/shenzhen/futian/original.jpg",
+  "originalFilename": "Ping An Finance Centre Shenzhen city China (36461945211).jpg",
+  "downloadUrl": "https://upload.wikimedia.org/wikipedia/commons/a/a0/Ping_An_Finance_Centre_Shenzhen_city_China_%2836461945211%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+  "takenAt": "2017-08-14 09:36"
 }

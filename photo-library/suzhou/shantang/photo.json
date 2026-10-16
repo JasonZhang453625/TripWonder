@@ -1,0 +1,42 @@
+{
+  "city": "suzhou",
+  "dir": "shantang",
+  "id": "suzhou-shantang",
+  "src": "photo-library/suzhou/shantang/original.jpg",
+  "width": 4000,
+  "height": 3000,
+  "sourceSha256": "5339db97fd0dd4b5588195bc76d96f5f4a143e03bf4a10ace7aa6aa70d08db21",
+  "original": {
+    "src": "photo-library/suzhou/shantang/original.jpg",
+    "width": 4000,
+    "height": 3000,
+    "bytes": 2439041,
+    "untouched": true
+  },
+  "credit": "Another Believer / Wikimedia Commons",
+  "license": "CC BY-SA 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+  "source": "https://commons.wikimedia.org/wiki/File:Shantang_Street,_Suzhou_(December_2015)_-_03.JPG",
+  "thumb": {
+    "src": "photo-library/suzhou/shantang/thumb.webp?v=5339db97fd0d",
+    "width": 640,
+    "height": 480,
+    "bytes": 29176
+  },
+  "screen": {
+    "src": "photo-library/suzhou/shantang/screen.webp?v=5339db97fd0d",
+    "width": 1440,
+    "height": 1080,
+    "bytes": 148752
+  },
+  "detail": {
+    "src": "photo-library/suzhou/shantang/detail.webp?v=5339db97fd0d",
+    "width": 2400,
+    "height": 1800,
+    "bytes": 483978
+  },
+  "sourceFile": "photo-library/suzhou/shantang/original.jpg",
+  "originalFilename": "Shantang Street, Suzhou (December 2015) - 03.JPG",
+  "downloadUrl": "https://upload.wikimedia.org/wikipedia/commons/c/cb/Shantang_Street%2C_Suzhou_%28December_2015%29_-_03.JPG?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+  "takenAt": "2015-12-06 12:20:52"
+}

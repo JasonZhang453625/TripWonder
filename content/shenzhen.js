@@ -12,37 +12,62 @@ window.CITY_SHENZHEN = {
       name: '福田中心区·平安金融中心',
       type: '城市天际线',
       photo: {
-        src: 'photo-library/shenzhen/futian/original.jpg',
-        width: 3000,
-        height: 2000,
-        screen: { src: 'photo-library/shenzhen/futian/screen.webp', width: 1440, height: 960 },
-        thumb: { src: 'photo-library/shenzhen/futian/thumb.webp', width: 640, height: 427 },
-        detail: { src: 'photo-library/shenzhen/futian/detail.webp', width: 2400, height: 1600 },
-        credit: 'lywin / Pexels',
-        license: 'Pexels License',
-        licenseUrl: 'https://www.pexels.com/license/',
-        source: 'https://www.pexels.com/photo/38833568/'
-      },
+  "id": "sz-futian",
+  "src": "photo-library/shenzhen/futian/original.jpg",
+  "width": 4608,
+  "height": 3072,
+  "credit": "Chris from Shenzhen, China / Wikimedia Commons",
+  "license": "CC BY-SA 2.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0",
+  "source": "https://commons.wikimedia.org/wiki/File:Ping_An_Finance_Centre_Shenzhen_city_China_(36461945211).jpg",
+  "thumb": {
+    "src": "photo-library/shenzhen/futian/thumb.webp?v=eb487325031a",
+    "width": 640,
+    "height": 427,
+    "bytes": 13160
+  },
+  "screen": {
+    "src": "photo-library/shenzhen/futian/screen.webp?v=eb487325031a",
+    "width": 1440,
+    "height": 960,
+    "bytes": 69628
+  },
+  "detail": {
+    "src": "photo-library/shenzhen/futian/detail.webp?v=eb487325031a",
+    "width": 2400,
+    "height": 1600,
+    "bytes": 289490
+  }
+},
       hotspots: [
-        {
-          x: 64, y: 27, title: '最高的那根“针”', tag: '建筑',
-          text: '画面中央最高的塔楼高 599 米，地上 118 层。2019 年，世界高层建筑与都市人居学会把它认证为“世界最高办公建筑”。这里的天际线在几十年里被一次次刷新，它是目前的最高点。',
-          en: 'The tallest tower in the centre rises 599 metres over 118 floors. In 2019 the Council on Tall Buildings and Urban Habitat certified it as the world’s tallest office building — the latest peak of a skyline that has been rewritten again and again.',
-          source: 'http://www.sznews.com/news/content/2019-04/09/content_21610673.htm'
-        },
-        {
-          x: 64.5, y: 15, title: '塔顶下的观光层', tag: '体验',
-          text: '塔尖下方亮灯的几层里，第 116 层是对外开放的云际观光层，离地约 541 米，2018 年 2 月开始售票迎客。从这里往下看，整片中心区的路网会像一张摊开的地图。',
-          en: 'Among the lit floors just below the crown, level 116 is a public observation deck about 541 metres above the ground, open to ticketed visitors since February 2018. From there the district’s street grid spreads out like a map.',
-          source: 'http://ifutian.sznews.com/content/2018-03/09/content_18638064.htm'
-        },
-        {
-          x: 72, y: 81, title: '脚下的十字路口', tag: '城市',
-          text: '右下方车流汇成光带的街道，就是大厦所在的路口：它位于两条干道交会处的西南角，旁边是购物公园。办公、商业与交通在同一块地上叠起来，是中心区的典型做法。',
-          en: 'The light trails at lower right mark the tower’s own junction: it stands on the south-west corner where two main roads meet, next to a shopping park. Offices, retail and transport stacked on one plot are typical of this central district.',
-          source: 'http://ifutian.sznews.com/content/2018-03/09/content_18638064.htm'
-        }
-      ]
+  {
+    "x": 23,
+    "y": 25,
+    "title": "最高的那根“针”",
+    "tag": "建筑",
+    "text": "左侧最高的塔楼有细长的立面，顶部逐渐收尖。它的建筑高度为599米，是这片中心区天际线中最突出的地标。观察它与周围较矮楼群的比例，比只看局部细节更容易辨认轮廓。",
+    "en": "The tallest tower on the left has a slender facade and a tapered crown. Its architectural height is 599 metres. Compare it with the lower buildings around it to recognise its outline.",
+    "source": "http://www.sznews.com/news/content/2019-04/09/content_21610673.htm"
+  },
+  {
+    "x": 24,
+    "y": 14,
+    "title": "塔顶下的观光层",
+    "tag": "体验",
+    "text": "塔冠下方的高层区域设有观光层。从外部照片不能直接辨认内部楼层的用途；但可以留意塔身从宽到窄的变化，以及顶部与蓝天的对比。",
+    "en": "An observation deck occupies a high floor below the crown. Its interior use cannot be read directly from this exterior view; look instead at the tapering tower and its outline against the sky.",
+    "source": "http://ifutian.sznews.com/content/2018-03/09/content_18638064.htm"
+  },
+  {
+    "x": 65,
+    "y": 78,
+    "title": "高楼之间的城市尺度",
+    "tag": "城市",
+    "text": "主塔旁边排列着高度较低的办公楼，玻璃幕墙在阳光下呈现不同明暗。近处与远处的楼体重叠，表现出高密度中心区的空间层次。",
+    "en": "Lower office towers stand beside the main tower, their glass facades catching different amounts of light. Overlapping buildings create the depth of a dense city centre.",
+    "source": "https://commons.wikimedia.org/wiki/File:Ping_An_Finance_Centre_Shenzhen_city_China_(36461945211).jpg"
+  }
+]
     },
     {
       id: 'sz-houhai',
@@ -120,29 +145,47 @@ window.CITY_SHENZHEN = {
     }
   ],
   questions: [
-    {
-      q: '画面下方街道上连成一条条的光带，最可能是什么？',
-      options: ['路面下埋的灯管', '长时间曝光拍下的车流', '河上的灯船', '地面铁轨上的列车'],
-      answer: 1, points: 30,
-      source: '第 1 处 · 脚下的十字路口',
-      explain: '街道上的车灯在长时间曝光里连成光带，这里是两条干道交会的路口，车流不断。'
-    },
-    {
-      category: '观察',
-      q: '第二处夜景中，前后两片楼群之间起伏的暗色轮廓是什么？',
-      options: ['覆盖着树木的山脊', '平坦开阔的海面', '沿岸排列的码头', '规则矩形的运动场'],
-      answer: 0, points: 30,
-      explain: '画面中部的暗色轮廓有起伏的山坡和树木，前后分布着亮灯的楼群，左侧还有弯曲的道路。线索“楼群之间的山脊”对应的正是这处地形。',
-      source: '第2处 · 楼群之间的山脊'
-    },
-    {
-      q: '第三处摩天轮在夜里变色，主要靠什么？',
-      options: ['轮廓和辐条上的全彩 LED 灯', '水面反射的月光', '轿厢里的霓虹招牌', '周围大楼的探照灯'],
-      answer: 0, points: 40,
-      explain: '摩天轮的双面轮廓与 112 道辐条都使用全彩 LED 灯光矩阵，所以整座轮子能变换颜色。',
-      source: 'https://www.sznews.com/content/mb/2021-04/22/content_24154597.htm'
-    }
-  ],
+  {
+    "q": "第一处场景中，最高楼与周围建筑相比有什么明显特征？",
+    "options": [
+      "只有一层，向两侧铺开",
+      "塔身细长，顶部逐渐收尖",
+      "顶部是巨大的圆形穹顶",
+      "整体是横跨两岸的桥梁"
+    ],
+    "answer": 1,
+    "points": 20,
+    "source": "第 1 处 · 最高的那根“针”",
+    "explain": "最高的塔楼明显高于周围楼群，立面细长，塔冠逐渐收尖。"
+  },
+  {
+    "category": "观察",
+    "q": "第二处夜景中，前后两片楼群之间起伏的暗色轮廓是什么？",
+    "options": [
+      "覆盖着树木的山脊",
+      "平坦开阔的海面",
+      "沿岸排列的码头",
+      "规则矩形的运动场"
+    ],
+    "answer": 0,
+    "points": 30,
+    "explain": "画面中部的暗色轮廓有起伏的山坡和树木，前后分布着亮灯的楼群，左侧还有弯曲的道路。线索“楼群之间的山脊”对应的正是这处地形。",
+    "source": "第2处 · 楼群之间的山脊"
+  },
+  {
+    "q": "第三处摩天轮在夜里变色，主要靠什么？",
+    "options": [
+      "轮廓和辐条上的全彩 LED 灯",
+      "水面反射的月光",
+      "轿厢里的霓虹招牌",
+      "周围大楼的探照灯"
+    ],
+    "answer": 0,
+    "points": 40,
+    "explain": "摩天轮的双面轮廓与 112 道辐条都使用全彩 LED 灯光矩阵，所以整座轮子能变换颜色。",
+    "source": "https://www.sznews.com/content/mb/2021-04/22/content_24154597.htm"
+  }
+],
   stops: [
     {
       id: 'sz-stop-futian', name: '平安金融中心云际观光层', lat: 22.5333, lng: 114.0553,

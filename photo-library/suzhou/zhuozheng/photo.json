@@ -1,0 +1,42 @@
+{
+  "city": "suzhou",
+  "dir": "zhuozheng",
+  "id": "suzhou-zhuozheng",
+  "src": "photo-library/suzhou/zhuozheng/original.jpg",
+  "width": 6016,
+  "height": 4016,
+  "sourceSha256": "d149166470e734997c33b128d1af7590f4dc67a32dbd469a80ec0356939bae39",
+  "original": {
+    "src": "photo-library/suzhou/zhuozheng/original.jpg",
+    "width": 6016,
+    "height": 4016,
+    "bytes": 13548156,
+    "untouched": true
+  },
+  "credit": "King of Hearts / Wikimedia Commons",
+  "license": "CC BY-SA 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+  "source": "https://commons.wikimedia.org/wiki/File:Humble_Administrator%27s_Garden_Suzhou_November_2017_005.jpg",
+  "thumb": {
+    "src": "photo-library/suzhou/zhuozheng/thumb.webp?v=d149166470e7",
+    "width": 640,
+    "height": 427,
+    "bytes": 77018
+  },
+  "screen": {
+    "src": "photo-library/suzhou/zhuozheng/screen.webp?v=d149166470e7",
+    "width": 1440,
+    "height": 961,
+    "bytes": 493278
+  },
+  "detail": {
+    "src": "photo-library/suzhou/zhuozheng/detail.webp?v=d149166470e7",
+    "width": 2400,
+    "height": 1602,
+    "bytes": 1577580
+  },
+  "sourceFile": "photo-library/suzhou/zhuozheng/original.jpg",
+  "originalFilename": "Humble Administrator's Garden Suzhou November 2017 005.jpg",
+  "downloadUrl": "https://upload.wikimedia.org/wikipedia/commons/f/f5/Humble_Administrator%27s_Garden_Suzhou_November_2017_005.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+  "takenAt": "2017-11-27 11:37"
+}

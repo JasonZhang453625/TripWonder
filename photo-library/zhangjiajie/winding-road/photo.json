@@ -3,36 +3,40 @@
   "dir": "winding-road",
   "id": "zjj-winding-road",
   "src": "photo-library/zhangjiajie/winding-road/original.jpg",
-  "sourceFile": "photo-library/zhangjiajie/winding-road/original.jpg",
-  "originalFilename": "Winding_road,_Tianmen_Mountain.jpg",
-  "sourceSha256": "cf876eb626e6e7fc349a7a9b3d8a6c67fcd97410dec34b54971728db659847f7",
+  "width": 4272,
+  "height": 2848,
+  "sourceSha256": "235add2cd5ff6517bfcae93ea2ba12bde8a5f52aa9a36544df75da2af413e8b0",
   "original": {
     "src": "photo-library/zhangjiajie/winding-road/original.jpg",
-    "width": 1680,
-    "height": 1120,
-    "bytes": 1743265,
+    "width": 4272,
+    "height": 2848,
+    "bytes": 4145013,
     "untouched": true
   },
-  "credit": "王计 / Wikimedia Commons",
-  "license": "CC BY 2.5",
-  "licenseUrl": "https://creativecommons.org/licenses/by/2.5/",
-  "source": "https://commons.wikimedia.org/wiki/File:Winding_road,_Tianmen_Mountain.jpg",
+  "credit": "Kovacs Bela-Hungary / Wikimedia Commons",
+  "license": "CC BY 3.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/3.0",
+  "source": "https://commons.wikimedia.org/wiki/File:Zhangjiajie,_Tianmen_mountain_-_panoramio.jpg",
   "thumb": {
-    "src": "photo-library/zhangjiajie/winding-road/thumb.webp",
+    "src": "photo-library/zhangjiajie/winding-road/thumb.webp?v=235add2cd5ff",
     "width": 640,
     "height": 427,
-    "bytes": 98396
+    "bytes": 64890
   },
   "screen": {
-    "src": "photo-library/zhangjiajie/winding-road/screen.webp",
+    "src": "photo-library/zhangjiajie/winding-road/screen.webp?v=235add2cd5ff",
     "width": 1440,
     "height": 960,
-    "bytes": 592802
+    "bytes": 405298
   },
   "detail": {
-    "src": "photo-library/zhangjiajie/winding-road/detail.webp",
-    "width": 1680,
-    "height": 1120,
-    "bytes": 952652
-  }
+    "src": "photo-library/zhangjiajie/winding-road/detail.webp?v=235add2cd5ff",
+    "width": 2400,
+    "height": 1600,
+    "bytes": 1264528
+  },
+  "sourceFile": "photo-library/zhangjiajie/winding-road/original.jpg",
+  "originalFilename": "Zhangjiajie, Tianmen mountain - panoramio.jpg",
+  "downloadUrl": "https://upload.wikimedia.org/wikipedia/commons/c/c6/Zhangjiajie%2C_Tianmen_mountain_-_panoramio.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+  "takenAt": "Taken on<span typeof=\"mw:Entity\"> </span>9 April 2013<link rel=\"mw:PageProp/Category\" href=\"./Category:China_photographs_taken_on_2013-04-09\">"
 }

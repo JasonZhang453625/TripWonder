@@ -3,19 +3,21 @@
 const SPHERE_SCENE = {projection: 'sphere', periphery: 'sphere'};
 
 window.IMMERSIVE_SCENES = {
-  yungang: {
+  'yungang': {
     ...SPHERE_SCENE,
     id: 'yungang',
-    assetScript: 'immersive-yungang-assets.js?v=b2ef46326e39',
-    sourceUrl: 'photo-library/datong/yungang/immersive-blur/photo.jpg?v=b2ef46326e39',
-    sourceAspect: 0.75
+    assetScript: 'immersive-yungang-assets.js?v=e89f60e54398',
+    sourceUrl: 'photo-library/datong/yungang/immersive-blur/photo.jpg?v=e89f60e54398',
+    sourceAspect: 1.5,
+    focusX: 0.53
   },
-  huayan: {
+  'huayan': {
     ...SPHERE_SCENE,
     id: 'huayan',
-    assetScript: 'immersive-huayan-assets.js?v=14705002fdc6',
-    sourceUrl: 'photo-library/datong/huayan/immersive-blur/photo.jpg?v=14705002fdc6',
-    sourceAspect: 0.5625
+    assetScript: 'immersive-huayan-assets.js?v=b11f3c21a825',
+    sourceUrl: 'photo-library/datong/huayan/immersive-blur/photo.jpg?v=b11f3c21a825',
+    sourceAspect: 1.5,
+    focusX: 0.5
   },
   xuankong: {
     ...SPHERE_SCENE,
@@ -27,10 +29,10 @@ window.IMMERSIVE_SCENES = {
   'sz-futian': {
     ...SPHERE_SCENE,
     id: 'sz-futian',
-    assetScript: 'immersive-sz-futian-assets.js?v=f27f905d5680',
-    sourceUrl: 'photo-library/shenzhen/futian/immersive-blur/photo.jpg?v=f27f905d5680',
+    assetScript: 'immersive-sz-futian-assets.js?v=eb487325031a',
+    sourceUrl: 'photo-library/shenzhen/futian/immersive-blur/photo.jpg?v=eb487325031a',
     sourceAspect: 1.5,
-    focusX: 0.64
+    focusX: 0.25
   },
   'sz-houhai': {
     ...SPHERE_SCENE,
@@ -94,9 +96,10 @@ window.IMMERSIVE_SCENES = {
   'suzhou-huqiu': {
     ...SPHERE_SCENE,
     id: 'suzhou-huqiu',
-    assetScript: 'immersive-suzhou-huqiu-assets.js?v=794cd4a2b274',
-    sourceUrl: 'photo-library/suzhou/huqiu/immersive-blur/photo.jpg?v=794cd4a2b274',
-    sourceAspect: 0.75
+    assetScript: 'immersive-suzhou-huqiu-assets.js?v=cdbe124a1678',
+    sourceUrl: 'photo-library/suzhou/huqiu/immersive-blur/photo.jpg?v=cdbe124a1678',
+    sourceAspect: 1.3333333333333333,
+    focusX: 0.47
   },
   'bj-zhengyangmen': {
     ...SPHERE_SCENE,
@@ -152,25 +155,40 @@ window.IMMERSIVE_SCENES = {
   'zjj-misty-peaks': {
     ...SPHERE_SCENE,
     id: 'zjj-misty-peaks',
-    assetScript: 'immersive-zjj-misty-peaks-assets.js?v=fca69c4b8c72',
-    sourceUrl: 'photo-library/zhangjiajie/misty-peaks/immersive-blur/photo.jpg?v=fca69c4b8c72',
-    sourceAspect: 1.4991577765300392,
+    assetScript: 'immersive-zjj-misty-peaks-assets.js?v=1a4d22ceddfa',
+    sourceUrl: 'photo-library/zhangjiajie/misty-peaks/immersive-blur/photo.jpg?v=1a4d22ceddfa',
+    sourceAspect: 1.4991317769631487,
     focusX: 0.62
   },
   'zjj-tianmen-cave': {
     ...SPHERE_SCENE,
     id: 'zjj-tianmen-cave',
-    assetScript: 'immersive-zjj-tianmen-cave-assets.js?v=c15133d1a1cc',
-    sourceUrl: 'photo-library/zhangjiajie/tianmen-cave/immersive-blur/photo.jpg?v=c15133d1a1cc',
-    sourceAspect: 1.503006012024048,
-    focusX: 0.48
+    assetScript: 'immersive-zjj-tianmen-cave-assets.js?v=1adffd9a4127',
+    sourceUrl: 'photo-library/zhangjiajie/tianmen-cave/immersive-blur/photo.jpg?v=1adffd9a4127',
+    sourceAspect: 1.3333333333333333,
+    focusX: 0.5
   },
   'zjj-winding-road': {
     ...SPHERE_SCENE,
     id: 'zjj-winding-road',
-    assetScript: 'immersive-zjj-winding-road-assets.js?v=cf876eb626e6',
-    sourceUrl: 'photo-library/zhangjiajie/winding-road/immersive-blur/photo.jpg?v=cf876eb626e6',
+    assetScript: 'immersive-zjj-winding-road-assets.js?v=235add2cd5ff',
+    sourceUrl: 'photo-library/zhangjiajie/winding-road/immersive-blur/photo.jpg?v=235add2cd5ff',
     sourceAspect: 1.5,
-    focusX: 0.54
+    focusX: 0.55
+  },
+  'suzhou-zhuozheng': {
+    ...SPHERE_SCENE,
+    id: 'suzhou-zhuozheng',
+    assetScript: 'immersive-suzhou-zhuozheng-assets.js?v=d149166470e7',
+    sourceUrl: 'photo-library/suzhou/zhuozheng/immersive-blur/photo.jpg?v=d149166470e7',
+    sourceAspect: 1.49800796812749
+  },
+  'suzhou-shantang': {
+    ...SPHERE_SCENE,
+    id: 'suzhou-shantang',
+    assetScript: 'immersive-suzhou-shantang-assets.js?v=5339db97fd0d',
+    sourceUrl: 'photo-library/suzhou/shantang/immersive-blur/photo.jpg?v=5339db97fd0d',
+    sourceAspect: 1.3333333333333333,
+    focusX: 0.26
   }
 };

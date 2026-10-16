@@ -1,0 +1,12 @@
+{
+  "source": "../original.jpg",
+  "sourceSha256": "d149166470e734997c33b128d1af7590f4dc67a32dbd469a80ec0356939bae39",
+  "displaySize": [
+    6016,
+    4016
+  ],
+  "displaySha256": "d149166470e734997c33b128d1af7590f4dc67a32dbd469a80ec0356939bae39",
+  "sourceAspect": 1.49800796812749,
+  "encoding": "original JPEG bytes",
+  "sourcePage": "https://commons.wikimedia.org/wiki/File:Humble_Administrator%27s_Garden_Suzhou_November_2017_005.jpg"
+}

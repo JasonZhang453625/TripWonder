@@ -3,36 +3,40 @@
   "dir": "shibati-new-street",
   "id": "ugc-shibati-new-street",
   "src": "photo-library/ugc/shibati-new-street/original.jpg",
-  "width": 2976,
-  "height": 3968,
-  "sourceSha256": "6da95cecc06222b83b27704856b67c160572e3d0872466cdae7ff686871ebda2",
+  "width": 5184,
+  "height": 3456,
+  "sourceSha256": "6e66f7514caab13f46d3b551624ef2a3a56bff311b56b4fb5463e4751b974e50",
   "original": {
     "src": "photo-library/ugc/shibati-new-street/original.jpg",
-    "width": 2976,
-    "height": 3968,
-    "bytes": 2751864,
+    "width": 5184,
+    "height": 3456,
+    "bytes": 7964049,
     "untouched": true
   },
-  "credit": "Daredemodaisuki 114514 / Wikimedia Commons",
-  "license": "CC BY-SA 4.0",
-  "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
-  "source": "https://commons.wikimedia.org/wiki/File:Shibati_%E5%8D%81%E5%85%AB%E6%A2%AF_2022.1.1.jpg",
+  "credit": "Suicasmo / Wikimedia Commons",
+  "license": "CC0",
+  "licenseUrl": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+  "source": "https://commons.wikimedia.org/wiki/File:Eighteen_Stairs_20260507.jpg",
   "thumb": {
-    "src": "photo-library/ugc/shibati-new-street/thumb.webp",
-    "width": 480,
-    "height": 640,
-    "bytes": 24444
+    "src": "photo-library/ugc/shibati-new-street/thumb.webp?v=6e66f7514caa",
+    "width": 640,
+    "height": 427,
+    "bytes": 53310
   },
   "screen": {
-    "src": "photo-library/ugc/shibati-new-street/screen.webp",
-    "width": 1080,
-    "height": 1440,
-    "bytes": 155584
+    "src": "photo-library/ugc/shibati-new-street/screen.webp?v=6e66f7514caa",
+    "width": 1440,
+    "height": 960,
+    "bytes": 299608
   },
   "detail": {
-    "src": "photo-library/ugc/shibati-new-street/detail.webp",
-    "width": 1600,
-    "height": 2133,
-    "bytes": 328316
-  }
+    "src": "photo-library/ugc/shibati-new-street/detail.webp?v=6e66f7514caa",
+    "width": 2400,
+    "height": 1600,
+    "bytes": 869988
+  },
+  "sourceFile": "photo-library/ugc/shibati-new-street/original.jpg",
+  "originalFilename": "Eighteen Stairs 20260507.jpg",
+  "downloadUrl": "https://upload.wikimedia.org/wikipedia/commons/e/ec/Eighteen_Stairs_20260507.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+  "takenAt": "2026-05-07 15:07:24"
 }

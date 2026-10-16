@@ -1,0 +1,12 @@
+{
+  "source": "../original.jpg",
+  "sourceSha256": "5339db97fd0dd4b5588195bc76d96f5f4a143e03bf4a10ace7aa6aa70d08db21",
+  "displaySize": [
+    4000,
+    3000
+  ],
+  "displaySha256": "5339db97fd0dd4b5588195bc76d96f5f4a143e03bf4a10ace7aa6aa70d08db21",
+  "sourceAspect": 1.3333333333333333,
+  "encoding": "original JPEG bytes",
+  "sourcePage": "https://commons.wikimedia.org/wiki/File:Shantang_Street,_Suzhou_(December_2015)_-_03.JPG"
+}

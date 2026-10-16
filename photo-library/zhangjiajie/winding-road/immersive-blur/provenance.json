@@ -1,16 +1,12 @@
 {
-  "scene": "zjj-winding-road",
-  "city": "zhangjiajie",
   "source": "../original.jpg",
-  "sourceSha256": "cf876eb626e6e7fc349a7a9b3d8a6c67fcd97410dec34b54971728db659847f7",
-  "displayPhoto": "photo.jpg",
+  "sourceSha256": "235add2cd5ff6517bfcae93ea2ba12bde8a5f52aa9a36544df75da2af413e8b0",
   "displaySize": [
-    1680,
-    1120
+    4272,
+    2848
   ],
-  "displaySha256": "cf876eb626e6e7fc349a7a9b3d8a6c67fcd97410dec34b54971728db659847f7",
+  "displaySha256": "235add2cd5ff6517bfcae93ea2ba12bde8a5f52aa9a36544df75da2af413e8b0",
   "sourceAspect": 1.5,
-  "periphery": "blurred projection of the original photo, rendered at runtime (no AI content)",
   "encoding": "original JPEG bytes",
-  "preparedAt": "2026-09-26T17:07:20.451Z"
+  "sourcePage": "https://commons.wikimedia.org/wiki/File:Zhangjiajie,_Tianmen_mountain_-_panoramio.jpg"
 }

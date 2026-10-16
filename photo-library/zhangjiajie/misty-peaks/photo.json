@@ -2,15 +2,15 @@
   "city": "zhangjiajie",
   "dir": "misty-peaks",
   "id": "zjj-misty-peaks",
-  "src": "photo-library/zhangjiajie/misty-peaks/original.avif",
-  "sourceFile": "photo-library/zhangjiajie/misty-peaks/original.avif",
-  "originalFilename": "photo-1514920735211-8c697444a248.avif",
-  "sourceSha256": "0c5dfb9281568fb8940b2d3a8731be2dea10cb4490d05ee82aef01e863a434f1",
+  "src": "photo-library/zhangjiajie/misty-peaks/original.jpg",
+  "width": 7770,
+  "height": 5183,
+  "sourceSha256": "1a4d22ceddfaf84d93f29ad4f992e8ff062ec8d2e3e2e5797866b0ec28a7af15",
   "original": {
-    "src": "photo-library/zhangjiajie/misty-peaks/original.avif",
-    "width": 2670,
-    "height": 1781,
-    "bytes": 414542,
+    "src": "photo-library/zhangjiajie/misty-peaks/original.jpg",
+    "width": 7770,
+    "height": 5183,
+    "bytes": 9026265,
     "untouched": true
   },
   "credit": "Joshua Sortino / Unsplash",
@@ -18,21 +18,24 @@
   "licenseUrl": "https://unsplash.com/license",
   "source": "https://unsplash.com/photos/aerial-view-of-mountains-gii7lF4y0WY",
   "thumb": {
-    "src": "photo-library/zhangjiajie/misty-peaks/thumb.webp",
+    "src": "photo-library/zhangjiajie/misty-peaks/thumb.webp?v=1a4d22ceddfa",
     "width": 640,
-    "height": 427,
-    "bytes": 26798
+    "height": 426,
+    "bytes": 23324
   },
   "screen": {
-    "src": "photo-library/zhangjiajie/misty-peaks/screen.webp",
+    "src": "photo-library/zhangjiajie/misty-peaks/screen.webp?v=1a4d22ceddfa",
     "width": 1440,
-    "height": 961,
-    "bytes": 193872
+    "height": 960,
+    "bytes": 151180
   },
   "detail": {
-    "src": "photo-library/zhangjiajie/misty-peaks/detail.webp",
+    "src": "photo-library/zhangjiajie/misty-peaks/detail.webp?v=1a4d22ceddfa",
     "width": 2400,
     "height": 1601,
-    "bytes": 563844
-  }
+    "bytes": 565514
+  },
+  "sourceFile": "photo-library/zhangjiajie/misty-peaks/original.jpg",
+  "originalFilename": "photo-1514920735211-8c697444a248",
+  "downloadUrl": "https://images.unsplash.com/photo-1514920735211-8c697444a248?fm=jpg&q=95"
 }

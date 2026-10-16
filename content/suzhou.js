@@ -1,4 +1,4 @@
-// 苏州关卡：本轮素材库只保留虎丘一景，因此只有一处探索（题目仍为三道，均来自这一景）。
+// 苏州三场景：拙政园、虎丘、山塘街；原生高清横图与画面观察题。
 // 事实来源见各 source 字段与 photo-library/suzhou/SOURCES.md；游览时长为原型估计。
 window.CITY_SUZHOU = {
   id: 'suzhou',
@@ -7,67 +7,237 @@ window.CITY_SUZHOU = {
   lat: 31.324,
   lng: 120.624,
   scenes: [
-    {
-      id: 'suzhou-huqiu',
-      name: '虎丘云岩寺塔',
-      type: '古塔',
-      photo: {
-        src: 'photo-library/suzhou/huqiu/original.jpg',
-        width: 4032,
-        height: 3024,
-        screen: { src: 'photo-library/suzhou/huqiu/screen.webp', width: 1080, height: 1440 },
-        thumb: { src: 'photo-library/suzhou/huqiu/thumb.webp', width: 480, height: 640 },
-        detail: { src: 'photo-library/suzhou/huqiu/detail.webp', width: 1800, height: 2400 },
-        credit: 'Chainwit. / Wikimedia Commons',
-        license: 'CC BY 4.0',
-        licenseUrl: 'https://creativecommons.org/licenses/by/4.0/',
-        source: 'https://commons.wikimedia.org/wiki/File:2024-Apr_Suzhou_-_Tiger_Hill_Pagoda_%E8%99%8E%E4%B8%98%E5%A1%94_(Huqiu_Ta)_-_img_01.jpg'
+  {
+    "id": "suzhou-zhuozheng",
+    "name": "拙政园·池畔秋色",
+    "type": "古典园林",
+    "photo": {
+      "id": "suzhou-zhuozheng",
+      "src": "photo-library/suzhou/zhuozheng/original.jpg",
+      "width": 6016,
+      "height": 4016,
+      "credit": "King of Hearts / Wikimedia Commons",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Humble_Administrator%27s_Garden_Suzhou_November_2017_005.jpg",
+      "thumb": {
+        "src": "photo-library/suzhou/zhuozheng/thumb.webp?v=d149166470e7",
+        "width": 640,
+        "height": 427,
+        "bytes": 77018
       },
-      hotspots: [
-        {
-          x: 51, y: 27, title: '数一数塔檐', tag: '建筑',
-          text: '从上到下能数出七级塔檐。塔身平面是八角形，主体用砖砌成；建造始于后周显德六年（959年），至北宋建隆二年（961年）完成。眼前像木楼阁的层次，其实藏着一座砖塔。',
-          en: 'Count seven eaves from top to bottom. The plan is octagonal and the body is brick; building began in 959 and finished in 961. What looks like a timber pavilion is really a brick pagoda.',
-          source: 'https://ylj.suzhou.gov.cn/szsylj/ylwh/201604/f3f52d3ee502486b8a4873c36b0d24e0.shtml'
-        },
-        {
-          x: 55, y: 48, title: '砖砌的“木构”', tag: '建筑',
-          text: '放大看每层檐下层层挑出的细部，它们是用砖砌出的斗拱和出檐，模仿木构楼阁的节奏。远看像一层层屋顶，近看则能读出砖塔的做法。',
-          en: 'Zoom in on the brackets stepping out under each eave: they are brick imitations of timber bracket sets and eaves. From afar they read as roof after roof; up close they reveal how a brick pagoda was built.',
-          source: 'https://ylj.suzhou.gov.cn/szsylj/ylwh/201604/f3f52d3ee502486b8a4873c36b0d24e0.shtml'
-        },
-        {
-          x: 50, y: 61, title: '斜而未倒', tag: '历史',
-          text: '树梢遮住了塔基，但塔身上部的轻微偏斜仍值得留意。园林局记载，明代时第七层已经向西北倾斜。它因长期倾斜而闻名，不能只凭照片的透视去估计实际倾角。',
-          en: 'Trees hide the base, but look for the slight lean of the upper body. Records say the seventh storey was already tilting north-west in the Ming dynasty. The pagoda is famous for its long-standing lean; don’t judge the real angle from photo perspective.',
-          source: 'https://ylj.suzhou.gov.cn/szsylj/ylwh/201604/f3f52d3ee502486b8a4873c36b0d24e0.shtml'
-        }
-      ]
-    }
-  ],
+      "screen": {
+        "src": "photo-library/suzhou/zhuozheng/screen.webp?v=d149166470e7",
+        "width": 1440,
+        "height": 961,
+        "bytes": 493278
+      },
+      "detail": {
+        "src": "photo-library/suzhou/zhuozheng/detail.webp?v=d149166470e7",
+        "width": 2400,
+        "height": 1602,
+        "bytes": 1577580
+      }
+    },
+    "hotspots": [
+      {
+        "x": 50,
+        "y": 63,
+        "title": "一池水串起园景",
+        "tag": "自然",
+        "text": "池水占据画面中央，树木和岸边建筑在水中形成倒影。以水、石、植物与建筑组合出缩小的自然山水，是这类古典园林的造景方式。",
+        "en": "The central pond reflects trees and buildings. Water, rocks, plants and architecture combine to evoke a miniature natural landscape.",
+        "source": "https://whc.unesco.org/en/list/813/"
+      },
+      {
+        "x": 78,
+        "y": 32,
+        "title": "树叶给季节上色",
+        "tag": "自然",
+        "text": "画面中有常绿的深色树冠，也有转黄、转红的叶子。沿池岸看颜色与疏密的变化，同一处园景会随季节出现不同层次。",
+        "en": "Dark evergreen crowns mix with yellow and red leaves. Follow the changing colours and density around the pond: the same garden changes with the seasons.",
+        "source": "https://commons.wikimedia.org/wiki/File:Humble_Administrator%27s_Garden_Suzhou_November_2017_005.jpg"
+      },
+      {
+        "x": 18,
+        "y": 42,
+        "title": "沿岸而行的视线",
+        "tag": "建筑",
+        "text": "左岸的步道贴着水边延伸，树木将远处建筑时隐时现地遮住。沿步道前行，眼前的水面、树冠和屋檐会不断改变组合。",
+        "en": "A path follows the left bank while trees partly screen the distant buildings. As you walk, the pond, foliage and rooflines combine into changing views.",
+        "source": "https://whc.unesco.org/en/list/813/"
+      }
+    ]
+  },
+  {
+    "id": "suzhou-huqiu",
+    "name": "虎丘·古塔与山门",
+    "type": "古塔庭院",
+    "photo": {
+      "id": "suzhou-huqiu",
+      "src": "photo-library/suzhou/huqiu/original.jpg",
+      "width": 4000,
+      "height": 3000,
+      "credit": "Another Believer / Wikimedia Commons",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Tiger_Hill,_Suzhou,_December_2015_-_10.JPG",
+      "thumb": {
+        "src": "photo-library/suzhou/huqiu/thumb.webp?v=cdbe124a1678",
+        "width": 640,
+        "height": 480,
+        "bytes": 46350
+      },
+      "screen": {
+        "src": "photo-library/suzhou/huqiu/screen.webp?v=cdbe124a1678",
+        "width": 1440,
+        "height": 1080,
+        "bytes": 266434
+      },
+      "detail": {
+        "src": "photo-library/suzhou/huqiu/detail.webp?v=cdbe124a1678",
+        "width": 2400,
+        "height": 1800,
+        "bytes": 839316
+      }
+    },
+    "hotspots": [
+      {
+        "x": 47,
+        "y": 17,
+        "title": "树梢后面的古塔",
+        "tag": "历史",
+        "text": "顺着中间的道路向远处看，古塔从树梢后露出来。这座七层八角砖塔建于959至961年；照片表现的是从山门远望塔身的角度，并非塔基近景。",
+        "en": "Follow the central path towards the pagoda rising behind the trees. This seven-storey octagonal brick tower was built in 959–961. The photograph looks towards it from the entrance, rather than showing its base close up.",
+        "source": "https://ylj.suzhou.gov.cn/szsylj/ylwh/201604/f3f52d3ee502486b8a4873c36b0d24e0.shtml"
+      },
+      {
+        "x": 42,
+        "y": 40,
+        "title": "白墙与深色瓦檐",
+        "tag": "建筑",
+        "text": "近处两侧是白墙和深色瓦顶，门洞沿中轴前后相连。低矮的院落与远处高塔形成高低对比，把视线引向山上的塔。",
+        "en": "White walls and dark tiled roofs flank a sequence of gateways on the central axis. The low courtyard contrasts with the distant pagoda and directs the eye uphill.",
+        "source": "https://commons.wikimedia.org/wiki/File:Tiger_Hill,_Suzhou,_December_2015_-_10.JPG"
+      },
+      {
+        "x": 64,
+        "y": 36,
+        "title": "院中的树与石板路",
+        "tag": "体验",
+        "text": "石板路两侧留着成排树木，树干和屋檐一起形成通往山门的框景。照片摄于冬季，枝叶较疏，不能把它当成夏日树冠浓密的景象。",
+        "en": "Rows of trees frame the paved approach alongside the rooflines. This winter photograph has sparse foliage, rather than the dense canopy of summer.",
+        "source": "https://commons.wikimedia.org/wiki/File:Tiger_Hill,_Suzhou,_December_2015_-_10.JPG"
+      }
+    ]
+  },
+  {
+    "id": "suzhou-shantang",
+    "name": "山塘街·临河人家",
+    "type": "水巷街区",
+    "photo": {
+      "id": "suzhou-shantang",
+      "src": "photo-library/suzhou/shantang/original.jpg",
+      "width": 4000,
+      "height": 3000,
+      "credit": "Another Believer / Wikimedia Commons",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "source": "https://commons.wikimedia.org/wiki/File:Shantang_Street,_Suzhou_(December_2015)_-_03.JPG",
+      "thumb": {
+        "src": "photo-library/suzhou/shantang/thumb.webp?v=5339db97fd0d",
+        "width": 640,
+        "height": 480,
+        "bytes": 29176
+      },
+      "screen": {
+        "src": "photo-library/suzhou/shantang/screen.webp?v=5339db97fd0d",
+        "width": 1440,
+        "height": 1080,
+        "bytes": 148752
+      },
+      "detail": {
+        "src": "photo-library/suzhou/shantang/detail.webp?v=5339db97fd0d",
+        "width": 2400,
+        "height": 1800,
+        "bytes": 483978
+      }
+    },
+    "hotspots": [
+      {
+        "x": 50,
+        "y": 57,
+        "title": "房屋贴着水道排开",
+        "tag": "城市",
+        "text": "水道在画面中间延伸，两侧房屋沿岸紧密排列。临水而建的街屋让日常生活与河道相邻，沿着水面可以读出街区的方向。",
+        "en": "A canal runs through the middle with houses packed along both banks. Waterside buildings put daily life beside the water and make the canal the organising line of the neighbourhood.",
+        "source": "https://commons.wikimedia.org/wiki/File:Shantang_Street,_Suzhou_(December_2015)_-_03.JPG"
+      },
+      {
+        "x": 80,
+        "y": 34,
+        "title": "白墙上的深色窗框",
+        "tag": "建筑",
+        "text": "右岸连续的白墙上排列着深色窗框，屋顶覆盖深色瓦片。墙、窗和屋檐的明暗对比，比鲜艳的大面积涂色更突出建筑的轮廓。",
+        "en": "Dark window frames punctuate the continuous white walls on the right bank, beneath dark tiled roofs. The contrast makes the building outlines legible without large fields of bright colour.",
+        "source": "https://commons.wikimedia.org/wiki/File:Shantang_Street,_Suzhou_(December_2015)_-_03.JPG"
+      },
+      {
+        "x": 39,
+        "y": 80,
+        "title": "水里的另一排房子",
+        "tag": "摄影",
+        "text": "低头看水面，房屋的白墙与窗洞形成倒影。倒影随着轻微水纹变形，使狭长水巷在画面里产生向下延伸的空间感。",
+        "en": "White walls and windows are reflected in the canal. Small ripples distort the reflections, giving the narrow waterside scene an added sense of depth.",
+        "source": "https://commons.wikimedia.org/wiki/File:Shantang_Street,_Suzhou_(December_2015)_-_03.JPG"
+      }
+    ]
+  }
+],
   questions: [
-    {
-      q: '这座古塔从上到下是怎样的结构？',
-      options: ['七层八角的砖塔', '三层方形木楼', '单层石亭', '九层圆形铁塔'],
-      answer: 0, points: 30,
-      explain: '塔为七层八角砖构；檐下的砖砌斗拱让它远看具有木构楼阁的层次。',
-      source: 'https://ylj.suzhou.gov.cn/szsylj/ylwh/201604/f3f52d3ee502486b8a4873c36b0d24e0.shtml'
-    },
-    {
-      q: '远看一层层的塔檐和檐下挑出的细部，模仿的是哪种建筑？',
-      options: ['石拱桥', '西式钟楼', '蒙古包', '木构楼阁'],
-      answer: 3, points: 30,
-      source: '第 1 处 · 砖砌的“木构”',
-      explain: '檐下层层挑出的斗拱和出檐其实是砖砌的，模仿木构楼阁的节奏：远看像一层层屋顶。'
-    },
-    {
-      q: '仔细看塔身上部，这座塔最出名的特点是什么？',
-      options: ['塔身倾斜', '塔顶是金色圆球', '塔身爬满藤蔓', '塔上挂着大钟'],
-      answer: 0, points: 40,
-      source: '第 1 处 · 斜而未倒',
-      explain: '塔身上部有轻微偏斜，它因长期倾斜而闻名；明代时第七层已向西北倾斜。照片的透视不能用来估计实际倾角。'
-    }
-  ],
+  {
+    "sceneId": "suzhou-zhuozheng",
+    "q": "第一处园景中央，大面积的水面是什么？",
+    "options": [
+      "园林池塘",
+      "露天游泳池",
+      "港口航道",
+      "高山冰湖"
+    ],
+    "answer": 0,
+    "points": 20,
+    "explain": "画面中央是园林池塘，岸边的树木与建筑倒映在水中。",
+    "source": "https://whc.unesco.org/en/list/813/"
+  },
+  {
+    "sceneId": "suzhou-huqiu",
+    "q": "第二处场景中，沿着道路望向远处，树梢后露出的高建筑是什么？",
+    "options": [
+      "风车",
+      "古塔",
+      "现代电视塔",
+      "摩天轮"
+    ],
+    "answer": 1,
+    "points": 20,
+    "explain": "沿中间道路远望，能看到层层塔檐的古塔，高于近处的院落屋顶。",
+    "source": "https://ylj.suzhou.gov.cn/szsylj/ylwh/201604/f3f52d3ee502486b8a4873c36b0d24e0.shtml"
+  },
+  {
+    "sceneId": "suzhou-shantang",
+    "q": "第三处场景里，房屋主要沿着什么排列？",
+    "options": [
+      "沙丘",
+      "机场跑道",
+      "河道两岸",
+      "高架公路"
+    ],
+    "answer": 2,
+    "points": 20,
+    "explain": "水道从画面中间延伸，房屋沿两岸紧密排列，白墙和窗洞倒映在水中。",
+    "source": "https://commons.wikimedia.org/wiki/File:Shantang_Street,_Suzhou_(December_2015)_-_03.JPG"
+  }
+],
   stops: [
     {
       id: 'suzhou-stop-museum', name: '苏州博物馆本馆', lat: 31.3251, lng: 120.6235,

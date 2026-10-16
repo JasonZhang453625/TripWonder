@@ -53,15 +53,15 @@
           [52, 24, '自然', '红色的花', 'Red blossoms', '石阶上方的大树开着红花，给灰色老街添了一点颜色。', 'The big tree over the steps is in red bloom, colouring the grey old street.']
         ]),
         scene('ugc-shibati-new-street', '翻修后的梯街', 'The renovated street', '街区', 'Street', [
-          [30, 72, '建筑', '青瓦坡屋顶', 'Grey-tiled roofs', '翻修后的房子用了青瓦坡顶和木构外观，层层叠叠顺着山势往下。', 'The rebuilt houses use grey tiles and timber fronts, stacked down the slope.'],
-          [60, 82, '体验', '人挤人的台阶', 'Crowded steps', '台阶还是那条台阶，只是两边变成了店铺和小吃，周末人很多。', 'Same steps as ever, but now lined with shops and snacks, and packed at weekends.'],
-          [67, 44, '城市', '雾里的大桥', 'A bridge in the haze', '远处雾中露出一座斜拉桥的桥塔，说明这条街离江边不远。', 'A cable-stayed bridge tower appears in the haze: the river is not far away.']
+          [35, 54, '建筑', '青瓦坡屋顶', 'Grey-tiled roofs', '翻修后的房子用了青瓦坡顶和木构外观，层层叠叠顺着山势往下。', 'The rebuilt houses use grey tiles and timber fronts, stacked down the slope.'],
+          [72, 73, '体验', '人挤人的台阶', 'Crowded steps', '台阶还是那条台阶，只是两边变成了店铺和小吃，周末人很多。', 'Same steps as ever, but now lined with shops and snacks, and packed at weekends.'],
+          [62, 18, '城市', '新旧楼群的对照', 'Old roofs and modern towers', '近处是层层叠叠的灰瓦屋顶，远处是现代高楼。两种高度和形态的建筑同时出现在画面里，形成老街与新城的对照。', 'Layered grey roofs in the foreground contrast with modern towers in the distance. The two scales reveal an old neighbourhood within a growing city.']
         ])
       ],
       questions: [
         question('ugc-shibati-old-steps', '第一张照片里，这条老街主要靠什么方式通行？', 'In the first photo, how do people get along this old street?', ['走石阶', '坐有轨电车', '骑自行车', '坐缆车'], ['Walking the stone steps', 'Taking a tram', 'Cycling', 'Riding a cable car'], 0, '整条街就是一级级石阶，只能步行上下。', 'The street is one long flight of stone steps, so people walk up and down.'),
-        question('ugc-shibati-new-street', '第二张照片远处雾中两根高塔、拉着斜索的建筑，最可能是？', 'In the second photo, what is the tall twin-towered structure with slanted cables in the haze?', ['电视塔', '摩天轮', '跨江大桥', '寺庙佛塔'], ['A TV tower', 'A Ferris wheel', 'A river bridge', 'A temple pagoda'], 2, '两根桥塔加斜拉索，是一座斜拉桥，说明城市临江。', 'Two towers with slanted cables make a cable-stayed bridge, so the city sits on a river.'),
-        question('ugc-shibati-new-street', '依山而建、街巷全是台阶，又临着大江——这最符合哪种城市？', 'Built on a hillside, with streets made of steps and a big river nearby: which kind of city fits best?', ['平原上的水乡古镇', '山地江城', '草原上的牧区小城', '沙漠里的绿洲城市'], ['A canal town on the plains', 'A hilly river city', 'A grassland herding town', 'A desert oasis city'], 1, '高低起伏的梯坎街巷和江上的大桥，正是山地江城的样子。', 'Stepped streets on steep slopes and a bridge over a big river are classic signs of a hilly river city.')
+        question('ugc-shibati-new-street', '第二张照片中，近处老街屋顶与远处建筑形成什么对照？', 'In the second photo, what contrasts with the old roofs in front?', ['大片沙丘', '连绵雪山', '现代高楼', '海边灯塔'], ['Sand dunes', 'Snowy mountains', 'Modern high-rise buildings', 'A coastal lighthouse'], 2, '近处是低矮灰瓦屋顶，远处是现代高楼，两种尺度的建筑形成鲜明对照。', 'Low grey-tiled roofs in front contrast with modern high-rise buildings behind.'),
+        question('ugc-shibati-new-street', '对比两张照片，老街为什么主要用台阶连接不同高度？', 'Comparing the photos, why do steps connect the different levels of the neighbourhood?' , ['为了让汽车开得更快', '街区依山而建，高差明显', '因为街区漂浮在水面上', '为了避开机场跑道'], ['To let cars travel faster', 'It is built on a hillside with changing elevations', 'It floats on water', 'To avoid an airport runway'], 1, '两张照片中的街道都顺着坡地上下延伸，台阶用于连接不同高度。', 'The streets in both photographs follow sloping ground, with steps connecting different elevations.')
       ],
       stops: []
     },

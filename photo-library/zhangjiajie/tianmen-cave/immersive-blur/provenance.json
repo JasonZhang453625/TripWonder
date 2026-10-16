@@ -1,16 +1,12 @@
 {
-  "scene": "zjj-tianmen-cave",
-  "city": "zhangjiajie",
   "source": "../original.jpg",
-  "sourceSha256": "c15133d1a1cc82cb22ce26397c6a965dd00cd1e87c4ff00d59362bfb3eb2bef0",
-  "displayPhoto": "photo.jpg",
+  "sourceSha256": "1adffd9a412746b3a63a38168f41c2939f727aef76d52617e49a35cf614fdd75",
   "displaySize": [
-    3000,
-    1996
+    4000,
+    3000
   ],
-  "displaySha256": "c15133d1a1cc82cb22ce26397c6a965dd00cd1e87c4ff00d59362bfb3eb2bef0",
-  "sourceAspect": 1.503006012024048,
-  "periphery": "blurred projection of the original photo, rendered at runtime (no AI content)",
+  "displaySha256": "1adffd9a412746b3a63a38168f41c2939f727aef76d52617e49a35cf614fdd75",
+  "sourceAspect": 1.3333333333333333,
   "encoding": "original JPEG bytes",
-  "preparedAt": "2026-09-26T17:07:19.675Z"
+  "sourcePage": "https://commons.wikimedia.org/wiki/File:Tian_Menshan_Mountain_5.jpg"
 }

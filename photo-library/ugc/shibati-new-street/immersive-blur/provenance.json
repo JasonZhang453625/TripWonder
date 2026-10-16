@@ -1,0 +1,12 @@
+{
+  "source": "../original.jpg",
+  "sourceSha256": "6e66f7514caab13f46d3b551624ef2a3a56bff311b56b4fb5463e4751b974e50",
+  "displaySize": [
+    5184,
+    3456
+  ],
+  "displaySha256": "6e66f7514caab13f46d3b551624ef2a3a56bff311b56b4fb5463e4751b974e50",
+  "sourceAspect": 1.5,
+  "encoding": "original JPEG bytes",
+  "sourcePage": "https://commons.wikimedia.org/wiki/File:Eighteen_Stairs_20260507.jpg"
+}

@@ -31,85 +31,88 @@
     "source": "https://commons.wikimedia.org/wiki/File:1_tianzishan_wulingyuan_zhangjiajie_2012.jpg"
   },
   "zjj-misty-peaks": {
-    "src": "photo-library/zhangjiajie/misty-peaks/original.avif",
-    "width": 2670,
-    "height": 1781,
-    "screen": {
-      "src": "photo-library/zhangjiajie/misty-peaks/screen.webp",
-      "width": 1440,
-      "height": 961,
-      "bytes": 193872
-    },
-    "thumb": {
-      "src": "photo-library/zhangjiajie/misty-peaks/thumb.webp",
-      "width": 640,
-      "height": 427,
-      "bytes": 26798
-    },
-    "detail": {
-      "src": "photo-library/zhangjiajie/misty-peaks/detail.webp",
-      "width": 2400,
-      "height": 1601,
-      "bytes": 563844
-    },
+    "id": "zjj-misty-peaks",
+    "src": "photo-library/zhangjiajie/misty-peaks/original.jpg",
+    "width": 7770,
+    "height": 5183,
     "credit": "Joshua Sortino / Unsplash",
     "license": "Unsplash License",
     "licenseUrl": "https://unsplash.com/license",
-    "source": "https://unsplash.com/photos/aerial-view-of-mountains-gii7lF4y0WY"
-  },
-  "zjj-tianmen-cave": {
-    "src": "photo-library/zhangjiajie/tianmen-cave/original.jpg",
-    "width": 3000,
-    "height": 1996,
-    "screen": {
-      "src": "photo-library/zhangjiajie/tianmen-cave/screen.webp",
-      "width": 1440,
-      "height": 958,
-      "bytes": 589154
-    },
+    "source": "https://unsplash.com/photos/aerial-view-of-mountains-gii7lF4y0WY",
     "thumb": {
-      "src": "photo-library/zhangjiajie/tianmen-cave/thumb.webp",
+      "src": "photo-library/zhangjiajie/misty-peaks/thumb.webp?v=1a4d22ceddfa",
       "width": 640,
       "height": 426,
-      "bytes": 85712
+      "bytes": 23324
     },
-    "detail": {
-      "src": "photo-library/zhangjiajie/tianmen-cave/detail.webp",
-      "width": 2400,
-      "height": 1597,
-      "bytes": 1869650
-    },
-    "credit": "xiquinhosilva / Wikimedia Commons",
-    "license": "CC BY 2.0",
-    "licenseUrl": "https://creativecommons.org/licenses/by/2.0/",
-    "source": "https://commons.wikimedia.org/wiki/File:Tianmen_38330-Zhangjiajie_(49047525877).jpg"
-  },
-  "zjj-winding-road": {
-    "src": "photo-library/zhangjiajie/winding-road/original.jpg",
-    "width": 1680,
-    "height": 1120,
     "screen": {
-      "src": "photo-library/zhangjiajie/winding-road/screen.webp",
+      "src": "photo-library/zhangjiajie/misty-peaks/screen.webp?v=1a4d22ceddfa",
       "width": 1440,
       "height": 960,
-      "bytes": 592802
-    },
-    "thumb": {
-      "src": "photo-library/zhangjiajie/winding-road/thumb.webp",
-      "width": 640,
-      "height": 427,
-      "bytes": 98396
+      "bytes": 151180
     },
     "detail": {
-      "src": "photo-library/zhangjiajie/winding-road/detail.webp",
-      "width": 1680,
-      "height": 1120,
-      "bytes": 952652
+      "src": "photo-library/zhangjiajie/misty-peaks/detail.webp?v=1a4d22ceddfa",
+      "width": 2400,
+      "height": 1601,
+      "bytes": 565514
+    }
+  },
+  "zjj-tianmen-cave": {
+    "id": "zjj-tianmen-cave",
+    "src": "photo-library/zhangjiajie/tianmen-cave/original.jpg",
+    "width": 4000,
+    "height": 3000,
+    "credit": "Huangdan2060 / Wikimedia Commons",
+    "license": "Public domain (PD-self)",
+    "licenseUrl": "https://commons.wikimedia.org/wiki/File:Tian_Menshan_Mountain_5.jpg#Licensing",
+    "source": "https://commons.wikimedia.org/wiki/File:Tian_Menshan_Mountain_5.jpg",
+    "thumb": {
+      "src": "photo-library/zhangjiajie/tianmen-cave/thumb.webp?v=1adffd9a4127",
+      "width": 640,
+      "height": 480,
+      "bytes": 58822
     },
-    "credit": "王计 / Wikimedia Commons",
-    "license": "CC BY 2.5",
-    "licenseUrl": "https://creativecommons.org/licenses/by/2.5/",
-    "source": "https://commons.wikimedia.org/wiki/File:Winding_road,_Tianmen_Mountain.jpg"
+    "screen": {
+      "src": "photo-library/zhangjiajie/tianmen-cave/screen.webp?v=1adffd9a4127",
+      "width": 1440,
+      "height": 1080,
+      "bytes": 381262
+    },
+    "detail": {
+      "src": "photo-library/zhangjiajie/tianmen-cave/detail.webp?v=1adffd9a4127",
+      "width": 2400,
+      "height": 1800,
+      "bytes": 1177268
+    }
+  },
+  "zjj-winding-road": {
+    "id": "zjj-winding-road",
+    "src": "photo-library/zhangjiajie/winding-road/original.jpg",
+    "width": 4272,
+    "height": 2848,
+    "credit": "Kovacs Bela-Hungary / Wikimedia Commons",
+    "license": "CC BY 3.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/3.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Zhangjiajie,_Tianmen_mountain_-_panoramio.jpg",
+    "thumb": {
+      "src": "photo-library/zhangjiajie/winding-road/thumb.webp?v=235add2cd5ff",
+      "width": 640,
+      "height": 427,
+      "bytes": 64890
+    },
+    "screen": {
+      "src": "photo-library/zhangjiajie/winding-road/screen.webp?v=235add2cd5ff",
+      "width": 1440,
+      "height": 960,
+      "bytes": 405298
+    },
+    "detail": {
+      "src": "photo-library/zhangjiajie/winding-road/detail.webp?v=235add2cd5ff",
+      "width": 2400,
+      "height": 1600,
+      "bytes": 1264528
+    }
   }
 };
   // END GENERATED PHOTO METADATA
@@ -170,19 +173,19 @@
         id:'zjj-tianmen-cave', name:'天门山·天门洞', type:'穿山洞门', photo:photos['zjj-tianmen-cave'],
         hotspots:[
           {
-            x:48, y:44, title:'山体中间透出一片天空', tag:'自然',
+            x:50, y:42, title:'山体中间透出一片天空', tag:'自然',
             text:'抬头看，岩壁中央出现了一道天然穿山洞口，里面透出明亮的天空。它属于这座喀斯特山体的自然景观，洞口周围仍是连成一体的陡峭岩壁。',
             en:'A natural opening passes through the mountain, revealing the sky beyond. The cave belongs to a karst landscape and is framed by continuous steep cliffs.',
             source:reserve
           },
           {
-            x:47, y:67, title:'通往洞口的九百九十九级', tag:'文化',
+            x:50, y:71, title:'通往洞口的九百九十九级', tag:'文化',
             text:'这条直通洞口的长台阶叫“上天梯”，共 999 级。台阶中间设置了休息平台，也寄托了登高祈福的寓意。画面里密密的小人，让这段高度有了直观的参照。',
             en:'The stairway leading to the cave has 999 steps and rest platforms along the ascent. It is also associated with prayers for good fortune; the visitors reveal its scale.',
             source:mountain
           },
           {
-            x:58, y:27, title:'从砂岩峰林走到岩溶绝壁', tag:'自然',
+            x:73, y:26, title:'从砂岩峰林走到岩溶绝壁', tag:'自然',
             text:'这里的岩壁与前面细长的峰林并不相同：前面是石英砂岩峰林，这一带则是喀斯特岩溶地貌。观察连续的崖面与天然洞口，是区分两类山景的一个线索。',
             en:'This continuous cliff and its natural opening differ from the quartz sandstone pillars seen earlier. Here the landscape is karst, offering another clue to its geology.',
             source:reserve
@@ -199,7 +202,7 @@
             source:'photo-library/zhangjiajie/winding-road/original.jpg'
           },
           {
-            x:65, y:46, title:'路面下面藏着一个拱洞', tag:'建筑',
+            x:72, y:44, title:'路面下面藏着一个拱洞', tag:'建筑',
             text:'右侧上层公路下方有一个明显的拱洞，下层路段从它附近绕过。石砌挡墙把不同高度的路面托起来，让道路在狭窄的山坡上继续延伸。',
             en:'A visible arch sits beneath the upper road on the right. Stone retaining walls support the stacked road sections as they wind around the steep slope.',
             source:'photo-library/zhangjiajie/winding-road/original.jpg'

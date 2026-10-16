@@ -1,7 +1,79 @@
 window.PHOTOS = [
- {id:'yungang',name:'云冈石窟',city:'大同',src:'photo-library/datong/yungang/original.jpg',width:3072,height:4096,status:'已采用',original:'微信图片_20260919174904_59_26.jpg',note:'原生 3:4 竖图；完整保留原图。'},
- {id:'huayan',name:'华严寺',city:'大同',src:'photo-library/datong/huayan/original.jpg',width:2304,height:4096,status:'已采用',original:'微信图片_20260919174906_61_26.jpg',note:'原生 9:16 竖图；画面为寺内宝塔，勿将其等同于辽代原构。'},
- {id:'xuankong',name:'悬空寺',city:'大同',src:'photo-library/datong/xuankong/original.jpg',width:5472,height:3648,status:'已采用',original:'悬空寺.jpg',note:'原生 3:2 横图（Canon EOS 6D，2013-08-30）；完整保留原图，沉浸查看不含 AI 外围。旧竖图存于 legacy-20260919。'}
+  {
+    "id": "yungang",
+    "src": "photo-library/datong/yungang/original.jpg",
+    "width": 6000,
+    "height": 4000,
+    "credit": "Liuxingy / Wikimedia Commons",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "source": "https://commons.wikimedia.org/wiki/File:%E4%BA%91%E5%86%88%E7%9F%B3%E7%AA%9F%E4%B9%8B%E7%AC%AC20%E7%AA%9F_05.jpg",
+    "thumb": {
+      "src": "photo-library/datong/yungang/thumb.webp?v=e89f60e54398",
+      "width": 640,
+      "height": 427,
+      "bytes": 54742
+    },
+    "screen": {
+      "src": "photo-library/datong/yungang/screen.webp?v=e89f60e54398",
+      "width": 1440,
+      "height": 960,
+      "bytes": 334664
+    },
+    "detail": {
+      "src": "photo-library/datong/yungang/detail.webp?v=e89f60e54398",
+      "width": 2400,
+      "height": 1600,
+      "bytes": 1097550
+    },
+    "name": "云冈石窟",
+    "city": "大同",
+    "status": "已采用",
+    "note": "原生超高清横图；完整保留来源画面，未裁切、未扩图、未放大。"
+  },
+  {
+    "id": "huayan",
+    "src": "photo-library/datong/huayan/original.jpg",
+    "width": 6000,
+    "height": 4000,
+    "credit": "Liuxingy / Wikimedia Commons",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "source": "https://commons.wikimedia.org/wiki/File:%E5%B9%B3%E5%9F%8E_%E5%8D%8E%E4%B8%A5%E5%AF%BA%E4%B9%8B%E5%8D%8E%E4%B8%A5%E5%AE%9D%E5%A1%94_02.jpg",
+    "thumb": {
+      "src": "photo-library/datong/huayan/thumb.webp?v=b11f3c21a825",
+      "width": 640,
+      "height": 427,
+      "bytes": 26174
+    },
+    "screen": {
+      "src": "photo-library/datong/huayan/screen.webp?v=b11f3c21a825",
+      "width": 1440,
+      "height": 960,
+      "bytes": 148378
+    },
+    "detail": {
+      "src": "photo-library/datong/huayan/detail.webp?v=b11f3c21a825",
+      "width": 2400,
+      "height": 1600,
+      "bytes": 465966
+    },
+    "name": "华严寺",
+    "city": "大同",
+    "status": "已采用",
+    "note": "原生超高清横图；完整保留来源画面，未裁切、未扩图、未放大。"
+  },
+  {
+    "id": "xuankong",
+    "name": "悬空寺",
+    "city": "大同",
+    "src": "photo-library/datong/xuankong/original.jpg",
+    "width": 5472,
+    "height": 3648,
+    "status": "已采用",
+    "original": "悬空寺.jpg",
+    "note": "原生 3:2 横图（Canon EOS 6D，2013-08-30）；完整保留原图，沉浸查看不含 AI 外围。旧竖图存于 legacy-20260919。"
+  }
 ];
 window.SCENES = [
  {id:'yungang',type:'石窟艺术',hotspots:[

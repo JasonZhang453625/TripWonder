@@ -1,16 +1,12 @@
 {
-  "scene": "huayan",
-  "city": "datong",
   "source": "../original.jpg",
-  "sourceSha256": "14705002fdc6361d422ee342fd31370985fa0d14f9104bf667e719c379a475e2",
-  "displayPhoto": "photo.jpg",
+  "sourceSha256": "b11f3c21a825f62aa634b4cc2863139cd642a4007dd9a62ee0266c210a038a3f",
   "displaySize": [
-    2304,
-    4096
+    6000,
+    4000
   ],
-  "displaySha256": "14705002fdc6361d422ee342fd31370985fa0d14f9104bf667e719c379a475e2",
-  "sourceAspect": 0.5625,
-  "periphery": "blurred projection of the original photo, rendered at runtime (no AI content)",
-  "preparedAt": "2026-09-26T11:26:31.022Z",
-  "encoding": "original JPEG bytes"
+  "displaySha256": "b11f3c21a825f62aa634b4cc2863139cd642a4007dd9a62ee0266c210a038a3f",
+  "sourceAspect": 1.5,
+  "encoding": "original JPEG bytes",
+  "sourcePage": "https://commons.wikimedia.org/wiki/File:%E5%B9%B3%E5%9F%8E_%E5%8D%8E%E4%B8%A5%E5%AF%BA%E4%B9%8B%E5%8D%8E%E4%B8%A5%E5%AE%9D%E5%A1%94_02.jpg"
 }

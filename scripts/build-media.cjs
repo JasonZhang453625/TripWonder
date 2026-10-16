@@ -12,7 +12,7 @@ vm.runInNewContext(fs.readFileSync(path.join(root, 'data.js'), 'utf8'), context)
   for (const photo of context.window.PHOTOS) {
     const input = path.join(root, photo.src), dir = path.dirname(input);
     const entry = {originalBytes:fs.statSync(input).size};
-    for (const [name, width, quality] of [['thumb',480,76], ...(photo.status === '已采用' ? [['screen',1080,84],['detail',1600,86]] : [])]) {
+    for (const [name, width, quality] of [['thumb',640,78], ...(photo.status === '已采用' ? [['screen',1440,85],['detail',2400,90]] : [])]) {
       const output = path.join(dir, `${name}.webp`);
       const info = await sharp(input).rotate().resize({width,withoutEnlargement:true}).webp({quality,effort:5}).toFile(output);
       entry[name] = {src:path.relative(root,output).replaceAll('\\','/'),width:info.width,height:info.height,bytes:info.size};

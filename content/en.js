@@ -32,21 +32,42 @@ window.CONTENT_EN = {
   shenzhen: {
     name: 'Shenzhen', region: 'Guangdong',
     scenes: {
-      'sz-futian': { name: 'Futian CBD · Ping An Finance Centre', type: 'City skyline', hotspots: ['The tallest “needle”', 'The observation deck below the crown', 'The crossroads below'] },
+      'sz-futian': { name: 'Futian CBD · Ping An Finance Centre', type: 'City skyline', hotspots: ['The tallest “needle”', 'The observation deck below the crown', 'The city’s scale between the towers'] },
       'sz-houhai': { name: 'Shenzhen at night', type: 'View from above', hotspots: ['The distant cluster of towers', 'The ridge between the towers', 'A ribbon of light around the hill'] },
       'sz-qianhai': { name: 'Qianhai · Joy Harbour', type: 'Waterfront new district', hotspots: ['The glowing Ferris wheel', 'Cabins and one full turn', 'Two characters on the light sign'] }
     },
     questions: [
-      { q: 'What are the streaks of light along the streets at the bottom of the picture most likely to be?',
-        options: ['Lights buried under the road', 'Traffic in a long exposure', 'Lantern boats on a river', 'Trains on surface tracks'],
-        explain: 'Car lights blur into streaks in a long exposure; this is the junction of two main roads, busy with traffic.' },
-      { q: 'In the second night view, what is the rolling dark outline between the front and back clusters of buildings?',
-        options: ['A tree-covered ridge', 'A flat, open stretch of sea', 'A row of piers along the shore', 'A rectangular sports ground'],
-        explain: 'The dark outline in the middle of the picture has rolling slopes and trees, with lit buildings in front of and behind it and a curving road on the left. The clue “The ridge between the towers” points to exactly this terrain.' },
-      { q: 'What mainly makes the Ferris wheel in the third scene change colour at night?',
-        options: ['Full-colour LEDs on its rims and spokes', 'Moonlight reflected off the water', 'Neon signs inside the cabins', 'Searchlights on nearby towers'],
-        explain: 'Both rims and all 112 spokes carry a full-colour LED lighting array, so the whole wheel can change colour.' }
+  {
+    "q": "What distinguishes the tallest building in the first scene from its neighbours?",
+    "options": [
+      "It has one floor and spreads sideways",
+      "It is slender and tapers towards the top",
+      "It has a huge circular dome",
+      "It is a bridge spanning two banks"
     ],
+    "explain": "The tallest tower rises well above its neighbours, with a slender facade and a tapering crown."
+  },
+  {
+    "q": "In the second night view, what is the rolling dark outline between the front and back clusters of buildings?",
+    "options": [
+      "A tree-covered ridge",
+      "A flat, open stretch of sea",
+      "A row of piers along the shore",
+      "A rectangular sports ground"
+    ],
+    "explain": "The dark outline in the middle of the picture has rolling slopes and trees, with lit buildings in front of and behind it and a curving road on the left. The clue “The ridge between the towers” points to exactly this terrain."
+  },
+  {
+    "q": "What mainly makes the Ferris wheel in the third scene change colour at night?",
+    "options": [
+      "Full-colour LEDs on its rims and spokes",
+      "Moonlight reflected off the water",
+      "Neon signs inside the cabins",
+      "Searchlights on nearby towers"
+    ],
+    "explain": "Both rims and all 112 spokes carry a full-colour LED lighting array, so the whole wheel can change colour."
+  }
+],
     stops: {
       平安金融中心云际观光层: { name: 'Ping An Finance Centre Observation Deck', note: 'Level 116, about 541 metres up. Tickets required; opening times follow the official notice for the day.' },
       莲花山公园山顶广场: { name: 'Lianhuashan Park Summit Plaza', hours: '06:00–23:00; last entry 22:30', note: 'A city park at the north end of the central district; the summit looks back over the skyline. Involves an uphill walk.' },
@@ -59,19 +80,66 @@ window.CONTENT_EN = {
   suzhou: {
     name: 'Suzhou', region: 'Jiangsu',
     scenes: {
-      'suzhou-huqiu': { name: 'Yunyan Temple Pagoda, Tiger Hill', type: 'Ancient pagoda', hotspots: ['Count the eaves', '“Timberwork” made of brick', 'Leaning but still standing'] }
-    },
+  "suzhou-zhuozheng": {
+    "name": "Humble Administrator’s Garden · Autumn pond",
+    "type": "Classical garden",
+    "hotspots": [
+      "A pond connects the views",
+      "Leaves mark the season",
+      "A changing view along the bank"
+    ]
+  },
+  "suzhou-huqiu": {
+    "name": "Tiger Hill · Pagoda beyond the gate",
+    "type": "Pagoda courtyard",
+    "hotspots": [
+      "The pagoda above the trees",
+      "White walls and dark eaves",
+      "Trees and the paved approach"
+    ]
+  },
+  "suzhou-shantang": {
+    "name": "Shantang Street · Houses by the canal",
+    "type": "Canal neighbourhood",
+    "hotspots": [
+      "Houses line the canal",
+      "Dark frames on white walls",
+      "Another row of houses in the water"
+    ]
+  }
+},
     questions: [
-      { q: 'How is this ancient pagoda built, from top to bottom?',
-        options: ['A seven-storey octagonal brick pagoda', 'A three-storey square timber tower', 'A single-storey stone pavilion', 'A nine-storey round iron pagoda'],
-        explain: 'The pagoda is a seven-storey octagonal brick structure; the brick brackets under its eaves give it the layered look of a timber pavilion from afar.' },
-      { q: 'From a distance, the stacked eaves and the brackets under them imitate which kind of building?',
-        options: ['A stone arch bridge', 'A Western clock tower', 'A yurt', 'A timber pavilion tower'],
-        explain: 'The brackets and eaves are made of brick but copy the rhythm of a timber pavilion: from afar they read as roof after roof.' },
-      { q: 'Look closely at the upper part. What is this pagoda most famous for?',
-        options: ['It leans', 'A golden ball on top', 'Vines all over it', 'A big bell hanging on it'],
-        explain: 'The upper tower leans slightly, and the pagoda is famous for its long-standing tilt; records say the seventh storey already leaned northwest in the Ming dynasty. Photo perspective can’t measure the real angle.' }
+  {
+    "q": "What is the broad area of water at the centre of the first garden scene?",
+    "options": [
+      "A garden pond",
+      "An outdoor swimming pool",
+      "A harbour channel",
+      "An alpine glacial lake"
     ],
+    "explain": "A garden pond occupies the centre, reflecting the trees and buildings along its banks."
+  },
+  {
+    "q": "Looking along the path in the second scene, what rises behind the trees?",
+    "options": [
+      "A windmill",
+      "An ancient pagoda",
+      "A modern TV tower",
+      "A Ferris wheel"
+    ],
+    "explain": "A pagoda with stacked eaves rises above the trees and the low courtyard roofs."
+  },
+  {
+    "q": "In the third scene, what do the houses mainly line?",
+    "options": [
+      "Sand dunes",
+      "An airport runway",
+      "Both banks of a canal",
+      "An elevated highway"
+    ],
+    "explain": "The canal runs through the middle, with houses closely lining both banks and their windows reflected in the water."
+  }
+],
     stops: {
       苏州博物馆本馆: { name: 'Suzhou Museum (Main Building)', note: 'Next to the Humble Administrator’s Garden. Entry is by timed reservation; your slot follows your booking.' },
       拙政园: { name: 'Humble Administrator’s Garden', note: 'Mar–Oct 07:30–17:30; Nov–Feb 07:30–17:00. Hours may change on public holidays.' },
