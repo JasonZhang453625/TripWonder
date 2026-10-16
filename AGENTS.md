@@ -13,28 +13,26 @@
 
 除非仓库所有者在当前任务中明确要求直接提交主分支，否则禁止在 `main` 上开发、提交或推送。每个功能、缺陷修复或独立文档改动使用一个短期分支。
 
-### Fork 工作流
+### 协作者工作流
 
-首次参与时，先确认已接受私有仓库邀请，并在 GitHub 中 fork 本仓库。若仓库设置不允许 fork，则使用下方“受邀协作者工作流”。
+团队成员均以 GitHub 仓库协作者身份参与。首次参与时，先确认已接受仓库邀请，然后直接克隆上游仓库；无需 fork：
 
 ```bash
-git clone https://github.com/<你的 GitHub 用户名>/TripWonder.git
+git clone https://github.com/JasonZhang453625/TripWonder.git
 cd TripWonder
-git remote add upstream https://github.com/JasonZhang453625/TripWonder.git
-git fetch upstream
-git switch -c feat/简短主题 upstream/main
+git switch -c feat/简短主题
 ```
 
-每次开始新任务时，以最新的 `upstream/main` 建立新分支：
+每次开始新任务时，先同步 `origin/main`，再从最新主分支创建独立工作分支：
 
 ```bash
-git fetch upstream
+git fetch origin
 git switch main
-git pull --ff-only upstream main
+git pull --ff-only origin main
 git switch -c fix/简短主题
 ```
 
-完成后只暂存本任务相关文件，提交并推送到自己的 fork：
+完成后只暂存本任务相关文件，提交并推送到上游仓库的个人工作分支：
 
 ```bash
 git status
@@ -43,21 +41,7 @@ git commit -m "feat: 简述改动"
 git push -u origin feat/简短主题
 ```
 
-随后建立 Pull Request：**base 为 `JasonZhang453625/TripWonder:main`，compare 为自己 fork 的工作分支**。说明改动内容、验证方式、已知限制及关联 Issue。不要把 PR 合并到自己的 fork 后误以为上游已更新。
-
-### 受邀协作者工作流
-
-如果作为有写入权限的直接协作者克隆上游仓库，仍然只在功能分支上开发并推送该分支，然后向上游 `main` 提 PR：
-
-```bash
-git clone https://github.com/JasonZhang453625/TripWonder.git
-cd TripWonder
-git switch main
-git pull --ff-only origin main
-git switch -c feat/简短主题
-```
-
-向上游提交 PR 时，base 选 `main`，compare 选你推送的分支。不要直接推送 `main`。
+随后建立 Pull Request：base 为 `JasonZhang453625/TripWonder:main`，compare 为刚推送的工作分支。说明改动内容、验证方式、已知限制及关联 Issue。不要直接推送 `main`。
 
 ## Pull Request 与合并
 
