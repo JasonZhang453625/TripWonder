@@ -73,7 +73,7 @@
   };
   // Gameplay layer (tw-store.js): coins, simulated PK and scene notes, each switchable for the live demo.
   const feature = name => !!window.TW_FEATURES?.[name] && !!window.TWStore && !!{wallet:window.Wallet,pk:window.PKMode,bubbles:window.SceneBubbles}[name];
-  let bubbles=null, pkMatching=false, hubCards=null;
+  let bubbles=null, pkMatching=false, hubCards=null, hubWarm=null, hubWarmTask=null;
   let timer, viewer, mapView, resultReveal, coverCarousel, clueSheet, toastTimer, transition=0, pendingCleanup, rulesCleanup, previousFocus, activeShare, resultRouteReturn;
   const cityProgress = new Map();
   const journeyById = id => C.cities.find(c => c.id === id) || C.ugc?.find(c => c.id === id);
@@ -470,7 +470,21 @@
     }catch(error){if(ticket===transition){if(!transferred&&s.view==='quiz'){s.exploring=false;resumeQuizTimer();}if(error.name!=='AbortError')toast(tr('场景暂未载入，请重试','This scene didn’t load. Please try again.'));}}
     finally{if(ticket===transition){cleanup();pendingCleanup=null;}}
   }
+  function cancelHubWarm(keep=false) {
+    clearTimeout(hubWarmTask);hubWarmTask=null;
+    if(!keep&&hubWarm){hubWarm.cards?.destroy(false);hubWarm.page.remove();hubWarm=null;}
+  }
+  function warmHub() {
+    clearTimeout(hubWarmTask);hubWarmTask=null;
+    if(s.view!=='home'||hubWarm||!window.HubCards3D||document.hidden)return hubWarm;
+    const frame=document.createElement('div');frame.innerHTML=hub();const page=frame.firstElementChild,style=getComputedStyle(app);
+    const width=app.clientWidth-parseFloat(style.paddingLeft)-parseFloat(style.paddingRight),height=app.clientHeight-parseFloat(style.paddingTop)-parseFloat(style.paddingBottom);
+    page.style.cssText=`position:absolute;left:0;top:0;width:${width}px;height:${height}px;visibility:hidden;pointer-events:none`;
+    page.inert=true;page.setAttribute('aria-hidden','true');page.dataset.hubPrewarm='true';app.append(page);
+    const cards=window.HubCards3D.mount(page,{suspended:true});hubWarm={page,cards};return hubWarm;
+  }
   function render(ready,prepared,{deferRules=false}={}) {
+    const warmed=s.view==='hub'?hubWarm:null;cancelHubWarm(!!warmed);if(warmed)hubWarm=null;
     hubCards?.destroy();hubCards=null;
     Community.releasePress();
     QuizScene.destroy();
@@ -486,11 +500,12 @@
     const views={home,cover,explore,quiz,guess,result,route,atlas,ranking,itinerary,profile,mall,hub,feed,journey,publish};
     const frame=document.createElement('div');
     if(prepared){prepared.page.classList.remove('scene-staging');prepared.page.inert=false;prepared.page.removeAttribute('aria-hidden');frame.append(prepared.page);}
+    else if(warmed){warmed.page.removeAttribute('style');warmed.page.inert=false;warmed.page.removeAttribute('aria-hidden');delete warmed.page.dataset.hubPrewarm;frame.append(warmed.page);}
     else frame.innerHTML=(views[s.view]||home)();
     frame.firstElementChild.dataset.view=s.view;
     if(ready){const placeholder=frame.querySelector('.photo-plane>img,.cover-hero>img,.result-visual>img,.route-hero>img'); if(placeholder){ready.alt=placeholder.alt;placeholder.replaceWith(ready);}}
     app.replaceChildren(...frame.childNodes);app.scrollTop=0;showOpeningWarnings();showFriendComparison();
-    if(s.view==='hub')hubCards=window.HubCards3D?.mount(app.firstElementChild);
+    if(s.view==='hub'){hubCards=warmed?.cards||window.HubCards3D?.mount(app.firstElementChild);hubCards?.present();}
     document.querySelectorAll('.flow button').forEach(b=>b.classList.toggle('active',b.dataset.go===s.view || (b.dataset.go==='today'&&s.mode==='challenge'&&['cover','explore','quiz','guess','atlas','ranking'].includes(s.view)) || (b.dataset.go==='feed'&&['journey','publish'].includes(s.view)) || (b.dataset.go==='feed'&&s.mode!=='challenge'&&['cover','explore','quiz','guess'].includes(s.view))));
     app.querySelectorAll('img').forEach(el=>el.addEventListener('error',()=>{el.insertAdjacentHTML('afterend','<span class="error-image">'+tr('照片未能载入','Photo failed to load')+'</span>');},{once:true}));
     if(s.view==='explore') { const root=app.querySelector('.photo-viewport'),config=immersiveConfig(activePhoto());viewer=prepared?.viewer||(config&&window.ImmersivePhotoViewer?new ImmersivePhotoViewer(root,activePhoto(),config):new PhotoViewer(root,activePhoto()));viewer.ready?.then(()=>{if(viewer?.root===root)viewer.present?.();},()=>{}); rememberExplored(); if(feature('bubbles')&&s.mode==='browse'&&Community.boardOpen(city(),true)){bubbles=SceneBubbles.mount({root,viewer,scene:city().scenes[s.scene],hiddenNames:[],onCompose:composeNote});if(s.composeScene===s.scene){s.composeScene=null;bubbles.place?.();}} }
@@ -502,6 +517,7 @@
     if(s.view==='cover' && !s.rulesSeen&&!deferRules){s.rulesSeen=true;showRules();}
     if(s.view==='home'&&!s.promoSeen){s.promoSeen=true;HomePromo.show({phone:document.querySelector('#phone'),getTarget:()=>app.querySelector('.th-wonder .th-app-icon'),onAccept:()=>go('hub')});}else if(s.view!=='home')HomePromo.dismiss();
     if(s.view==='cover')mountCover();else SceneMedia.retain([]);
+    if(s.view==='home')hubWarmTask=setTimeout(()=>warmHub(),200);
   }
   const freshProgress = () => ({scene:0,exploring:false,deadline:0,quizRemaining:QUIZ_DURATION,clues:new Set(),visited:new Set([0]),questions:[],answers:[],q:0,selected:null,guess:null,guessDone:false,pk:null});
   // Progress is kept per mode and journey, so a community visit never touches today's challenge state.
@@ -549,6 +565,11 @@
     if(view==='itinerary'&&view!==s.view)s.itineraryBack=s.view==='profile'?'profile':'home';
     if(view!=='quiz')pauseQuizTimer();if(view==='result')s.result=current().result||s.result;
     const previous=s.view,commit=()=>{if(view==='cover'||view==='explore')return loadView(view,view==='cover'?0:s.scene);s.view=view;render();};
+    if(previous==='home'&&view==='hub')return ChallengeMotion.slide(commit,{force,prepare:async()=>{
+      const warmed=warmHub();if(!warmed)return;
+      // A cold/failed image must not hold navigation; native cards remain usable meanwhile.
+      await new Promise(resolve=>{const timeout=setTimeout(resolve,120);warmed.cards.ready.then(()=>{clearTimeout(timeout);resolve();});});
+    }});
     if((previous==='result'&&view==='route')||(previous==='route'&&view==='result')){
       if(previous==='result')resultRouteReturn={cityId:s.cityId,state:resultReveal?.snapshot()};
       const targetPhoto=view==='result'?ResultReveal.destination(city()).scene.photo:city().scenes.at(-1).photo;

@@ -90,14 +90,16 @@ function sheen(material,uniforms){
 }
 let current=null;
 class HubCards {
-  constructor(root){
+  constructor(root,{suspended=false}={}){
     this.root=root;this.buttons=[...root.querySelectorAll('.cm-entry')];this.models=[];this.frame=0;this.destroyed=false;
+    this.suspended=suspended;this.initializing=true;
     this.events=new AbortController();this.reduced=matchMedia('(prefers-reduced-motion: reduce)');this.cancelled=new WeakSet();
     this.ready=this.init().catch(error=>{this.fail(error);return false;});
   }
   async init(){
     await Promise.all([...this.root.querySelectorAll('.cm-entry img')].map(image=>image.decode().catch(()=>{})));
-    await document.fonts.ready;if(this.destroyed||!this.root.isConnected)return false;
+    // The card uses the system UI font; unrelated brush-font downloads must not block it.
+    if(this.destroyed||!this.root.isConnected)return false;
     this.stage=document.createElement('div');this.stage.className='hub3d-stage';this.stage.setAttribute('aria-hidden','true');this.root.prepend(this.stage);
     this.renderer=new THREE.WebGLRenderer({alpha:true,antialias:true,powerPreference:'low-power',preserveDrawingBuffer:true});
     this.renderer.setPixelRatio(Math.min(devicePixelRatio,1.75));this.renderer.outputColorSpace=THREE.SRGBColorSpace;
@@ -110,7 +112,10 @@ class HubCards {
     const rim=new THREE.DirectionalLight(0xc0d5ff,1.3);rim.position.set(350,-100,200);this.scene.add(rim);
     this.shadow=shadowTexture();
     this.resize();this.observer=new ResizeObserver(()=>this.resize());this.observer.observe(this.root);
-    this.bind();this.request();return true;
+    await this.renderer.compileAsync(this.scene,this.camera);
+    if(this.destroyed)return false;
+    this.models.forEach(model=>this.renderer.initTexture(model.texture));this.renderer.initTexture(this.shadow);
+    this.bind();this.initializing=false;this.draw(performance.now());return true;
   }
   createModel(button,index,w,h){
     const uniforms={cardTilt:{value:new THREE.Vector2()}};
@@ -200,7 +205,8 @@ class HubCards {
     // Let even a short tap show its elastic release before the radial navigation.
     this.activation=setTimeout(()=>{if(!this.destroyed)commit();},this.reduced.matches?0:180);
   }
-  request(){if(!this.frame&&!this.destroyed&&!document.hidden&&this.renderer)this.frame=requestAnimationFrame(time=>this.draw(time));}
+  present(){this.suspended=false;this.last=0;this.resize();this.request();}
+  request(){if(!this.frame&&!this.destroyed&&!this.initializing&&!document.hidden&&this.renderer)this.frame=requestAnimationFrame(time=>this.draw(time));}
   draw(time){
     this.frame=0;if(this.destroyed||document.hidden||!this.renderer)return;
     const active=this.models.some(m=>m.held||[m.x,m.y,m.press,m.lift].some(s=>Math.abs(s.value-s.target)>.001||Math.abs(s.velocity)>.008));
@@ -219,7 +225,7 @@ class HubCards {
     }
     this.renderer.render(this.scene,this.camera);this.lastDraw=time;
     this.frames=(this.frames||0)+1;this.root.classList.add('is-three-ready');this.root.dataset.hubRenderer='three';
-    if(!this.reduced.matches||unsettled)this.request();
+    if(!this.suspended&&(!this.reduced.matches||unsettled))this.request();
   }
   disposeModel(model){
     this.scene.remove(model.mesh,model.shadow);model.geometry.dispose();model.faceGeometry.dispose();model.side.dispose();model.face.dispose();model.texture.dispose();model.shadow.material.dispose();
@@ -239,4 +245,4 @@ class HubCards {
     if(current===this)current=null;
   }
 }
-window.HubCards3D=Object.freeze({mount(root){current?.destroy();current=new HubCards(root);return current;},release(){current?.release();},inspect(){return current?.inspect()||null;}});
+window.HubCards3D=Object.freeze({mount(root,options){current?.destroy();current=new HubCards(root,options);return current;},release(){current?.release();},inspect(){return current?.inspect()||null;}});
