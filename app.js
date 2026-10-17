@@ -56,11 +56,11 @@
   const ugcInvitation=invitation&&C.ugc?.some(j=>j.id===invitation.cityId);
   // A shared destination must stay playable even when it is outside today's draw.
   if(invitation&&!ugcInvitation&&!order.includes(invitation.cityId))order[order.length-1]=invitation.cityId;
-  // Restore today's completed destinations so reloading cannot start a second attempt.
-  // Older results outside today's draw still feed the atlas and the mall.
-  for(const [id,record] of Object.entries(challenged))if(record?.result&&C.cities.some(c=>c.id===id)){
-    if(record.completedDay===day||record.result.date===day)daily[id]={result:record.completedDay===day?(record.dailyResult||record.result):record.result,skipped:false};
-    else if(!order.includes(id))daily[id]={result:record.result,skipped:false};
+  // Today's draw starts fresh on every page load so the demo can be replayed.
+  // Historical results outside the draw still feed the atlas and mall. Persistent
+  // challenged records retain community history and wallet award limits.
+  for(const [id,record] of Object.entries(challenged))if(record?.result&&!order.includes(id)&&C.cities.some(c=>c.id===id)){
+    daily[id]={result:record.result,skipped:false};
   }
   // One clock covers looking at the scenes and answering: it starts on entering the first scene and keeps running
   // until the last answer (or time-out), also while the player is back on the cover. A journey may set rules.challengeSeconds.
