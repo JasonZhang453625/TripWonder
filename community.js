@@ -139,7 +139,7 @@
   }
 
   function board(ctx, c, played) {
-    if (!commentsOpen(c, played)) return `<section class="cm-board is-locked"><h3>${t('评论区', 'Comments')}</h3><p>${t('完成挑战后就能看到大家的评论，防止剧透。', 'Finish the challenge to read the comments without spoilers.')}</p></section>`;
+    if (!commentsOpen(c, played)) return `<section class="cm-board is-locked"><h3>${t('评论区', 'Comments')}</h3><p>${t('完成挑战后就能看到大家的评论，防止剧透。', 'Finish the challenge to read the comments without spoilers.')}</p><button class="primary" data-action="ugc-start">${t('开始挑战', 'Start challenge')}</button></section>`;
     const notes = boardNotes(c);
     const shown = notes.slice().sort((a,b)=>(b.mine-a.mine)||(b.at||0)-(a.at||0)||b.likes-a.likes);
     return `<section class="cm-board" data-comment-journey="${esc(c.id)}" data-filter="all"><div class="cm-board-head"><h3>${t(`共 ${noteCount(c)} 条评论`,`${noteCount(c)} comments`)}</h3></div><div class="cm-comments">${shown.length?shown.map(note=>noteMarkup(note)).join(''):`<p class="cm-board-empty">${t('还没有评论，说点什么吧','No comments yet. Start the conversation.')}</p>`}</div>${shown.length?`<p class="cm-comments-end">- THE END -</p>`:''}</section>`;

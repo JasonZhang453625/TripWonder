@@ -73,6 +73,8 @@ async function drag(p,dy){const box=await p.locator('.journey-comments-head').bo
   assert.equal(await p.locator('.journey-comments-layer,.scene-staging').count(),0);
   await p.locator('[data-journey="ugc-shapowei"] [data-feed-discuss]').first().click();await p.locator('.cm-journey').waitFor();await idle(p);
   assert.equal(await p.locator('.cm-board.is-locked').count(),1,'unplayed UGC comments stay locked');
+  assert.equal(await p.locator('.photo-viewport[data-rendered="true"]').count(),1,'unplayed player journey still uses immersive photos');
+  assert.equal(await p.locator('.hotspot').count(),0,'unplayed player scene does not reveal clue hotspots');
   assert.deepEqual(errors,[]);console.log(`PASS ${width}: immersive view, half/full drag, comments, replies, likes, system back, scene navigation, UGC lock`);await p.close();
  }
 }finally{await browser.close();}})().catch(e=>{console.error(e);process.exitCode=1;});

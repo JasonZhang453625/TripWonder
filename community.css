@@ -231,7 +231,7 @@
 .result-discuss>.icon:last-child{color:#a5b0c4;width:18px;height:18px;margin-left:auto}
 .result-discuss span{display:flex;flex-direction:column;gap:3px}
 .result-discuss strong{font-size:14px}.result-discuss small{font-size:11.5px;color:#7f8aa0}
-.result-page .ugc-result-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;padding:0;margin:12px 0 18px}
+.result-page .ugc-result-actions{display:grid;grid-template-columns:minmax(0,1fr);gap:10px;padding:0;margin:12px 0 18px}
 .result-page .ugc-result-actions>button{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;min-width:0;min-height:46px;padding:10px 8px;font-size:13px;line-height:1.35}
 .result-page .ugc-result-actions .icon{width:18px;height:18px}
 .ugc-result-maker{display:flex;align-items:center;flex-wrap:wrap;gap:6px;font-size:12px;color:#6d7890}
