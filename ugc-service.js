@@ -6,7 +6,7 @@
   const states = {draft:'草稿', processing:'正在处理照片', pending:'待审核', approved:'已发布', rejected:'已退回', disabled:'已下架', failed:'生成失败'};
   let db, backend = false, storageError = '', editingId = null, timer, saveTimer, writeQueue = Promise.resolve(), submitting = false, photoTask = Promise.resolve(), photoGeneration = 0;
   const emit = () => window.dispatchEvent(new CustomEvent('tw-ugc-updated'));
-  const navigate = view => window.dispatchEvent(new CustomEvent('tw-ugc-navigate', {detail:{view}}));
+  const navigate = (view, options = {}) => window.dispatchEvent(new CustomEvent('tw-ugc-navigate', {detail:{view,...options}}));
   const request = async (url, options) => {
     const response = await fetch(url, {...options, signal: AbortSignal.timeout(15000)});
     const data = await response.json().catch(() => ({}));
@@ -169,9 +169,9 @@
       if (row?.remoteJobId === job.id && row.state !== 'draft' && job.status === 'failed') await save({...row,state:'failed',feedback:job.error},false);
     }
   }
-  function management(ctx, review = false) {
-    const list = [...rows.values()].filter(r => !review || (!r.remoteJobId && r.state !== 'draft')).sort((a,b) => b.updatedAt-a.updatedAt);
-    return `<div class="page cm-page cm-submissions">${ctx.head(t(review ? '本机审核工作台' : '我的发布',review ? 'Local review' : 'My journeys'),'feed')}<p class="cm-management-note">${t(backend ? '已连接后台。后台审核后，社区目录会同步更新。' : '本机原型：投稿和审核结果只影响此设备。',backend ? 'Connected to the admin. The community updates after review.' : 'Prototype: submissions and reviews affect this device only.')}</p><div class="cm-management-tools"><button class="secondary" data-ugc-new>${t('发布 Journey','New journey')}</button>${!backend ? `<button class="secondary" data-ugc-review>${t(review ? '我的发布' : '本机审核工作台',review ? 'My journeys' : 'Local review')}</button>` : '<a href="photos.html#tab=ugc" target="_blank" rel="noopener">打开后台审核 ↗</a>'}</div><p class="cm-error" data-ugc-error hidden role="alert"></p>${list.length ? list.map(row => `<article class="cm-submission"><div class="row"><strong>${esc(row.fields.title || t('未命名草稿','Untitled draft'))}</strong><span class="pill">${esc(states[row.state] || row.state)}</span></div><p>${row.photos.length} ${t('张照片','photos')} · ${esc(row.fields.author || t('我','Me'))}</p>${row.feedback ? `<p class="cm-review-feedback">${esc(row.feedback)}</p>` : ''}<div class="cm-management-tools">${review ? `<button class="primary" data-ugc-inspect="${esc(row.id)}">${t('检查投稿','Inspect submission')}</button><button class="secondary" data-ugc-approve="${esc(row.id)}">${t('审核通过','Approve')}</button><button class="secondary" data-ugc-reject="${esc(row.id)}">${t('退回修改','Return for changes')}</button>${row.state === 'approved' ? `<button class="secondary" data-ugc-disable="${esc(row.id)}">${t('下架','Unpublish')}</button>` : ''}` : `<button class="secondary" data-ugc-edit="${esc(row.id)}">${t('修改 / 继续填写','Edit / continue')}</button>${row.state === 'approved' ? `<button class="primary" data-journey="${esc(row.id)}">${t('开始挑战','Start challenge')}</button>` : ''}`}</div></article>`).join('') : `<p class="cm-empty">${t('暂无记录','No submissions yet')}</p>`}</div>`;
+  function management(ctx, review = false, embedded = false) {
+    const list = [...rows.values()].filter(r => !r.imported && (!review || (!r.remoteJobId && r.state !== 'draft'))).sort((a,b) => b.updatedAt-a.updatedAt);
+    return `<${embedded ? 'section' : 'div'} class="${embedded ? 'cm-mine-management' : 'page cm-page cm-submissions'}">${embedded ? '' : ctx.head(t(review ? '本机审核工作台' : '我的发布',review ? 'Local review' : 'My journeys'),'feed')}<p class="cm-management-note">${t(backend ? '已连接后台。后台审核后，社区目录会同步更新。' : '本机原型：投稿和审核结果只影响此设备。',backend ? 'Connected to the admin. The community updates after review.' : 'Prototype: submissions and reviews affect this device only.')}</p><div class="cm-management-tools"><button class="secondary" data-ugc-new>${t('发布 Journey','New journey')}</button><button class="secondary" data-ugc-import>${t('导入旅程','Import journey')}</button>${!backend ? `<button class="secondary" data-ugc-review>${t(review ? '我的发布' : '本机审核工作台',review ? 'My journeys' : 'Local review')}</button>` : '<a href="photos.html#tab=ugc" target="_blank" rel="noopener">打开后台审核 ↗</a>'}</div><p class="cm-error" data-ugc-error hidden role="alert"></p>${list.length ? list.map(row => `<article class="cm-submission"><div class="row"><strong>${esc(row.fields.title || t('未命名草稿','Untitled draft'))}</strong><span class="pill">${esc(states[row.state] || row.state)}</span></div><p>${row.photos.length} ${t('张照片','photos')} · ${esc(row.fields.author || t('我','Me'))}</p>${row.feedback ? `<p class="cm-review-feedback">${esc(row.feedback)}</p>` : ''}<div class="cm-management-tools">${review ? `<button class="primary" data-ugc-inspect="${esc(row.id)}">${t('检查投稿','Inspect submission')}</button><button class="secondary" data-ugc-approve="${esc(row.id)}">${t('审核通过','Approve')}</button><button class="secondary" data-ugc-reject="${esc(row.id)}">${t('退回修改','Return for changes')}</button>${row.state === 'approved' ? `<button class="secondary" data-ugc-disable="${esc(row.id)}">${t('下架','Unpublish')}</button>` : ''}` : `<button class="secondary" data-ugc-edit="${esc(row.id)}"${row.state === 'processing' ? ' disabled' : ''}>${t('修改 / 继续填写','Edit / continue')}</button>${row.state === 'approved' ? `<button class="primary" data-journey="${esc(row.id)}">${t('开始挑战','Start challenge')}</button><button class="secondary" data-ugc-withdraw="${esc(row.id)}">${t('下架','Unpublish')}</button>` : ''}`}</div></article>`).join('') : `<p class="cm-empty">${t('还没有上传的 Journey，发布你的第一段旅程吧。','No uploads yet. Share your first journey.')}</p>`}</${embedded ? 'section' : 'div'}>`;
   }
   function release() { clearInterval(timer); }
   function mountManagement() { release(); if (backend) timer = setInterval(async () => { try { const before = JSON.stringify([...rows.values()].map(r => [r.id,r.state,r.feedback])); await refresh(); if (before !== JSON.stringify([...rows.values()].map(r => [r.id,r.state,r.feedback]))) emit(); } catch(error) { const box = document.querySelector('[data-ugc-error]'); if(box){box.hidden=false;box.textContent=error.message;} } },2000); }
@@ -199,10 +199,10 @@
     const photos=[];
     for(const p of pack.photos){if(typeof p.data!=='string'||!/^data:image\/(jpeg|png|webp|avif);base64,/.test(p.data))throw Error('旅程包含无效图片');const blob=await fetch(p.data).then(r=>r.blob());photos.push(await processPhoto(new File([blob],String(p.name||'photo.jpg'),{type:blob.type})));}
     const row={id:pack.id,state:'approved',fields:pack.fields,photos,revision:Number(pack.revision)||Date.now(),publishedAt:pack.publishedAt||new Date().toISOString(),updatedAt:Date.now(),imported:true};
-    await save(row,false);register(row);emit();navigate('feed');
+    await save(row,false);register(row);emit();navigate('feed',{tab:'ugc'});
   }
   document.addEventListener('click',async event => {
-    const button = event.target.closest('[data-ugc-new],[data-ugc-mine],[data-ugc-review],[data-ugc-edit],[data-ugc-approve],[data-ugc-reject],[data-ugc-disable],[data-ugc-inspect],[data-ugc-export],[data-ugc-import]');
+    const button = event.target.closest('[data-ugc-new],[data-ugc-mine],[data-ugc-review],[data-ugc-edit],[data-ugc-approve],[data-ugc-reject],[data-ugc-disable],[data-ugc-inspect],[data-ugc-export],[data-ugc-import],[data-ugc-withdraw]');
     if (!button || submitting) return;
     try {
       if(button.dataset.ugcExport){await exportJourney(button.dataset.ugcExport);}
@@ -210,7 +210,16 @@
       else if (button.hasAttribute('data-ugc-new')) { editingId=null; navigate('publish'); }
       else if (button.hasAttribute('data-ugc-mine')) navigate('myjourneys');
       else if (button.hasAttribute('data-ugc-review')) navigate(document.querySelector('#app [data-view="ugcreview"]') ? 'myjourneys' : 'ugcreview');
-      else if (button.dataset.ugcEdit) { const row = rows.get(button.dataset.ugcEdit); if (!row) return; editingId=row.id; await save({...row,state:'draft',updatedAt:Date.now()},false); if(!row.remoteJobId)Community.unregister(row.id); navigate('publish'); }
+      else if (button.dataset.ugcWithdraw) {
+        const row = rows.get(button.dataset.ugcWithdraw);
+        if (!row || row.imported || row.state !== 'approved') throw Error('只能下架自己已发布的 Journey');
+        button.disabled = true;
+        try {
+          if (row.remoteJobId) await post('/api/journeys/' + encodeURIComponent(row.id) + '/status',{status:'disabled'});
+          await save({...row,state:'disabled',updatedAt:Date.now()},false);Community.unregister(row.id);emit();
+        } finally { button.disabled = false; }
+      }
+      else if (button.dataset.ugcEdit) { const row = rows.get(button.dataset.ugcEdit); if (!row || row.imported || row.state === 'processing') return; editingId=row.id; await save({...row,state:'draft',updatedAt:Date.now()},false); if(!row.remoteJobId)Community.unregister(row.id); navigate('publish'); }
       else if (button.dataset.ugcApprove) await reviewRecord(button.dataset.ugcApprove,'approved');
       else if (button.dataset.ugcDisable) await reviewRecord(button.dataset.ugcDisable,'disabled');
       else if (button.dataset.ugcReject) { const feedback = prompt('请填写退回原因，发布者可以据此修改后重新提交'); if (feedback?.trim()) await reviewRecord(button.dataset.ugcReject,'rejected',feedback.trim()); }
