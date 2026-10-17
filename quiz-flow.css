@@ -117,6 +117,8 @@
   padding: 24px 26px 0;
 }
 
+#app .quiz-page:not(:has(.quiz-submit)) .quiz-body { padding-bottom: calc(28px + var(--safe-bottom, 0px)); }
+
 #app .quiz-top { padding: 0; }
 #app .quiz-progress { display: flex; gap: 6px; height: 3px; margin: 0; overflow: visible; background: none; }
 #app .quiz-progress span {
@@ -186,7 +188,7 @@
   transition: color .24s, border-color .24s, background .24s;
 }
 
-#app .quiz-options .option-text { flex: 1; min-width: 0; overflow-wrap: anywhere; text-wrap: pretty; }
+#app .quiz-options .option-text { flex: 1; min-width: 0; font-weight: 700; overflow-wrap: anywhere; text-wrap: pretty; }
 #app .quiz-options .option-check {
   display: grid;
   flex: none;

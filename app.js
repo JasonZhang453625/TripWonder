@@ -181,35 +181,31 @@
     return `<section class="quiz-top"><div class="quiz-progress" aria-label="${tr(`第 ${s.q+1} 题，共 3 题`,`Question ${s.q+1} of 3`)}">${s.questions.map((_,i)=>`<span class="${i<s.q?'done':i===s.q?'current':''}"></span>`).join('')}</div><h1 class="quiz-question" tabindex="-1">${esc(f(q,'q'))}</h1></section><div class="question-card quiz-options${done?' revealed':''}" role="group" aria-label="${tr('选择答案','Choose an answer')}">${f(q,'options').map((o,i)=>`<button class="option ${optionState(i)}" data-option="${i}" aria-pressed="${s.selected===i}"${done?' disabled':''}><b class="option-letter">${String.fromCharCode(65+i)}</b><span class="option-text">${esc(o)}</span><span class="option-check" aria-hidden="true">${icon(done&&i!==q.answer?'close':'check')}</span></button>`).join('')}${done?revealMarkup():''}</div>`;
   }
   function quiz() {
-    return `<div class="page quiz-page${s.pk?' pk-quiz':''}"><div class="quiz-backdrop" aria-hidden="true"></div><header class="page-head quiz-header"><button class="glass round quiz-back" data-action="quiz-back"${s.mode==='challenge'?' hidden':''} aria-label="${s.mode==='challenge'?tr('返回今日挑战','Back to today’s challenge'):tr('返回刚刚的场景','Back to the last scene')}">${icon('back')}</button>${s.pk?PKMode.hud(s.pk,{mine:s.answers.length,total:s.questions.length,elapsed:quizMs()-remaining()}):`<strong>${tr('限时答题','Quick quiz')}</strong>`}<span class="glass timer quiz-timer" role="timer" aria-label="${tr('挑战剩余时间','Time left')}"><svg class="icon quiz-clock" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l3 2"/></svg><b id="timer">${mmss(remaining())}</b></span></header><main class="quiz-body">${quizBody()}</main><footer class="quiz-submit"><button class="primary" data-action="submit" ${s.selected===null&&!revealed()?'disabled':''}><span>${submitLabel()}</span>${icon('next')}</button></footer></div>`;
+    return `<div class="page quiz-page${s.pk?' pk-quiz':''}"><div class="quiz-backdrop" aria-hidden="true"></div><header class="page-head quiz-header"><button class="glass round quiz-back" data-action="quiz-back"${s.mode==='challenge'?' hidden':''} aria-label="${s.mode==='challenge'?tr('返回今日挑战','Back to today’s challenge'):tr('返回刚刚的场景','Back to the last scene')}">${icon('back')}</button>${s.pk?PKMode.hud(s.pk,{mine:s.answers.length,total:s.questions.length,elapsed:quizMs()-remaining()}):`<strong>${tr('限时答题','Quick quiz')}</strong>`}<span class="glass timer quiz-timer" role="timer" aria-label="${tr('挑战剩余时间','Time left')}"><svg class="icon quiz-clock" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l3 2"/></svg><b id="timer">${mmss(remaining())}</b></span></header><main class="quiz-body">${quizBody()}</main>${revealed()?quizFooter():''}</div>`;
   }
-  function submitLabel() { return !revealed()?tr('确认答案','Check answer'):s.q===2?tr('前往地图','Go to the map'):tr('下一题','Next question');
-  }
+  function submitLabel() { return s.q===2?tr('前往地图','Go to the map'):tr('下一题','Next question'); }
+  function quizFooter() { return `<footer class="quiz-submit"><button class="primary" data-action="submit"><span>${submitLabel()}</span>${icon('next')}</button></footer>`; }
   // Reading the explanation costs no challenge time: the deadline is cleared while a reveal is on screen.
   // The sticky footer can cover the explanation on short screens, so bring it into view above the button.
   function showReveal() { app.querySelector('.quiz-reveal')?.scrollIntoView({block:'nearest',behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'}); }
   function freezeClock() { pauseQuizTimer();s.deadline=0;window.QuizUrgency?.clear();app.querySelector('.quiz-timer')?.classList.add('paused'); }
   function thawClock() { if(!s.deadline&&s.quizRemaining>0)s.deadline=Date.now()+s.quizRemaining;app.querySelector('.quiz-timer')?.classList.remove('paused'); }
   function selectAnswer(index) {
-    if(s.view!=='quiz'||ChallengeMotion.busy||revealed())return;
+    if(s.view!=='quiz'||ChallengeMotion.busy||revealed()||!Number.isInteger(index)||index<0||index>=f(s.questions[s.q],'options').length)return;
     if(expired()){tick();return;}
-    const changed=s.selected!==index;s.selected=index;persistUgc();
-    app.querySelectorAll('[data-option]').forEach(button=>{const selected=Number(button.dataset.option)===index;button.classList.toggle('selected',selected);button.setAttribute('aria-pressed',String(selected));});
-    const submit=app.querySelector('[data-action="submit"]'),wasDisabled=submit.disabled;submit.disabled=false;
-    if(changed)ChallengeMotion.select(app.querySelector('[data-option="'+index+'"]'));
-    if(wasDisabled)ChallengeMotion.activate(submit);
+    s.selected=index;submitAnswer();
   }
   function submitAnswer() {
     if(s.view!=='quiz'||s.selected===null||ChallengeMotion.busy)return;
-    const index=s.q,submit=app.querySelector('[data-action="submit"]');
+    const index=s.q;
     if(!revealed()){
       if(expired()){tick();return;}
       const selected=s.selected,q=s.questions[index],correct=q.answer===selected;
       s.answers.push({...q,selected,correct});freezeClock();persistUgc();
       const card=app.querySelector('.quiz-options');card.classList.add('revealed');
-      card.querySelectorAll('[data-option]').forEach(button=>{const i=Number(button.dataset.option);button.disabled=true;button.className=`option ${optionState(i)}`;if(i!==q.answer)button.querySelector('.option-check').innerHTML=icon('close');});
+      card.querySelectorAll('[data-option]').forEach(button=>{const i=Number(button.dataset.option);button.disabled=true;button.setAttribute('aria-pressed',String(i===selected));button.className=`option ${optionState(i)}`;if(i!==q.answer)button.querySelector('.option-check').innerHTML=icon('close');});
       card.insertAdjacentHTML('beforeend',revealMarkup());
-      submit.querySelector('span').textContent=submitLabel();
+      app.querySelector('.quiz-page').insertAdjacentHTML('beforeend',quizFooter());
       ChallengeMotion.answer(card,correct);showReveal();
       return;
     }
@@ -221,7 +217,7 @@
       s.q++;s.selected=null;persistUgc();
       app.querySelector('.quiz-body').innerHTML=quizBody();
       QuizScene.set(app.querySelector('.quiz-page'),city(),s.questions[s.q]);
-      submit.disabled=true;submit.querySelector('span').textContent=submitLabel();
+      app.querySelector('.quiz-submit')?.remove();
     },{kind:'question'});
   }
   function guess() { return `<div class="page guess-page${s.guessDone?' done':''}"><div class="guess-map" id="guess-map" role="application" aria-label="${tr('中国地图：轻点放置落点，双指或滚轮缩放，拖动平移','Map of China: tap to drop a pin, pinch or scroll to zoom, drag to pan')}"></div><header class="guess-top"><button class="glass-light round" data-action="guess-back" aria-label="${s.guessDone?exitLabel():tr('返回第 3 题','Back to question 3')}"${s.mode==='challenge'?' hidden disabled':!s.guessDone&&s.quizRemaining<=0?' disabled':''}>${icon('back')}</button><div><h2>${tr('这个目的地在哪里？','Where is this destination?')}</h2></div><span class="glass-light timer map-timer" role="timer" aria-label="${tr('挑战剩余时间','Time left')}"><b id="timer">${mmss(remaining())}</b></span>${bgmButton()}</header><div class="guess-zoom"><button class="glass-light" data-action="zoom-in" aria-label="${tr('放大地图','Zoom in')}">+</button><button class="glass-light" data-action="zoom-out" aria-label="${tr('缩小地图','Zoom out')}">−</button></div><section class="guess-card" aria-live="polite">${guessCard()}</section></div>`; }

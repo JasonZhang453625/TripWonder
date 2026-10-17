@@ -67,7 +67,7 @@ async function reveal(page){await idle(page);await page.locator('.guess-map').cl
     // Answer two questions, then go back to a scene: the clock keeps running there.
     const answers=await page.evaluate(()=>TRIPWONDER_CATALOG.cities.find(c=>c.id==='datong').questions.map(q=>q.answer));
     for(const i of [0,1]){
-      await idle(page);await page.locator(`[data-option="${answers[i]}"]`).click();await page.locator('[data-action="submit"]').click();
+      await idle(page);await page.locator(`[data-option="${answers[i]}"]`).click();
       await page.locator('.quiz-reveal.is-correct').waitFor();
       if(i===0){await advance(page,5);await timerIs(page,'00:09');assert.equal(await page.locator('.quiz-timer.paused').count(),1,'reading the explanation costs no time');}
       await page.locator('[data-action="submit"]').click();
@@ -76,8 +76,7 @@ async function reveal(page){await idle(page);await page.locator('.guess-map').cl
     await timerIs(page,'00:09');assert.ok(await page.locator('.explore-timer.urgent').count(),'urgency also shows in the scene');
     await page.locator('[data-action="next-scene"]').click();
     await page.locator('.quiz-page').waitFor();await idle(page);
-    // Time-out on the last question submits the selected answer and opens the map without a way back.
-    await page.locator(`[data-option="${(answers[2]+1)%4}"]`).click();
+    // Time-out on the last unanswered question submits remaining answers and opens the map without a way back.
     await advance(page,9);await page.locator('.countdown-edge.is-ended').waitFor();
     assert.equal((await edge()).length,0,'both paths meet at the bottom centre at zero');
     await shot(page,'edge-end');
@@ -85,7 +84,7 @@ async function reveal(page){await idle(page);await page.locator('.guess-map').cl
     await page.locator('.countdown-edge').waitFor({state:'detached'});
     assert.equal(await page.locator('[data-action="guess-back"]').isDisabled(),true);
     await reveal(page);
-    assert.match(await page.locator('.result-score-breakdown').textContent(),/限时答题\s*40\s*\/ 60/,'two right answers, the third selected answer was wrong');
+    assert.match(await page.locator('.result-score-breakdown').textContent(),/限时答题\s*40\s*\/ 60/,'two right answers, the unanswered third question scores zero');
 
     // Ignoring a system-back exit attempt still allows timeout to submit unanswered questions.
     const other=await page.evaluate(()=>TRIPWONDER_CATALOG.cities.find(c=>c.id!=='datong').id);

@@ -45,7 +45,7 @@ async function complete(page){
     await idle(page);
   }
   for(let i=0;i<3;i++){
-    await page.locator('[data-option="0"]').click();await page.locator('[data-action="submit"]').click();await page.locator('.quiz-reveal').waitFor();await page.locator('[data-action="submit"]').click();await idle(page);
+    await page.locator('[data-option="0"]').click();await page.locator('.quiz-reveal').waitFor();await page.locator('[data-action="submit"]').click();await idle(page);
   }
   await page.locator('.guess-map').click({position:{x:170,y:260}});
   await page.locator('[data-action="guess-submit"]').click();await page.locator('[data-action="show-result"]').click();await idle(page);

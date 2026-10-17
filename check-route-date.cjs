@@ -24,8 +24,7 @@ const assert = require('node:assert/strict');
     await page.locator('[data-action="start"]').click();
     for(let i=0;i<3;i++)await page.locator('[data-action="next-scene"]').click();
     for(let i=0;i<3;i++){
-      await page.locator('[data-option="0"]').click();
-      await page.locator('[data-action="submit"]').click();await page.locator('.quiz-reveal').waitFor();
+      await page.locator('[data-option="0"]').click();await page.locator('.quiz-reveal').waitFor();
       await page.locator('[data-action="submit"]').click();
     }
     await page.locator('.guess-map').click({position:{x:200,y:300}});await page.locator('[data-action="guess-submit"]').click();await page.locator('.guess-card [data-action="show-result"]').click();

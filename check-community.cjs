@@ -14,7 +14,7 @@ const idle=page=>page.waitForFunction(()=>!window.ChallengeMotion?.busy&&!docume
 const ready=page=>page.waitForFunction(()=>window.TWStore&&window.Community&&document.querySelector('#app').firstElementChild);
 async function closeRules(page){if(await page.locator('.rules-popover').count()){await page.locator('.rules-popover [data-action="close"]').click();await page.locator('.rules-popover').waitFor({state:'detached'});}}
 async function advance(page,seconds){const now=await page.evaluate(()=>Date.now());await page.clock.setFixedTime(new Date(now+seconds*1000));}
-async function answerAll(page,choice=0){for(let i=0;i<3;i++){await idle(page);await page.locator(`[data-option="${choice}"]`).click();await page.locator('[data-action="submit"]').click();await page.locator('.quiz-reveal').waitFor();await page.locator('[data-action="submit"]').click();}await page.locator('.guess-map').waitFor();await idle(page);}
+async function answerAll(page,choice=0){for(let i=0;i<3;i++){await idle(page);await page.locator(`[data-option="${choice}"]`).click();await page.locator('.quiz-reveal').waitFor();await page.locator('[data-action="submit"]').click();}await page.locator('.guess-map').waitFor();await idle(page);}
 async function reveal(page){await idle(page);await page.locator('.guess-map').click({position:{x:200,y:300}});await page.locator('[data-action="guess-submit"]').click();await page.locator('.guess-card [data-action="show-result"]').click();await page.locator('.result-hero').waitFor();await idle(page);}
 
 (async()=>{
@@ -68,7 +68,7 @@ async function reveal(page){await idle(page);await page.locator('.guess-map').cl
     assert.equal(await page.locator('#timer').textContent(),'00:35','the clock keeps running on the cover');
     await page.locator('[data-action="go-quiz"]').click();await page.locator('.quiz-page').waitFor();await idle(page);
     assert.equal(await page.locator('#timer').textContent(),'00:35','answering shares the same clock');
-    await page.locator('[data-option="0"]').click();await page.locator('[data-action="submit"]').click();await idle(page);
+    await page.locator('[data-option="0"]').click();await idle(page);
     await page.locator('[data-action="quiz-back"]').click();await page.locator('.explore-page').waitFor();await idle(page);
     assert.equal(await page.locator('.hotspot').count(),0);
     await advance(page,40);await page.locator('.guess-map').waitFor();await idle(page);
