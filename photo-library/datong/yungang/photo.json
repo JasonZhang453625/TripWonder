@@ -3,40 +3,40 @@
   "dir": "yungang",
   "id": "yungang",
   "src": "photo-library/datong/yungang/original.jpg",
-  "width": 6000,
-  "height": 4000,
-  "sourceSha256": "e89f60e54398aad98c96138a6aa9761b2855a4740904a8d17a38e383a537e4d4",
+  "width": 5472,
+  "height": 3648,
+  "sourceSha256": "e642543cb18303c505bb033c59227f8efdf9aad9aa92817de235f40db7708e2f",
   "original": {
     "src": "photo-library/datong/yungang/original.jpg",
-    "width": 6000,
-    "height": 4000,
-    "bytes": 10964753,
+    "width": 5472,
+    "height": 3648,
+    "bytes": 9380673,
     "untouched": true
   },
-  "credit": "Liuxingy / Wikimedia Commons",
-  "license": "CC BY-SA 4.0",
-  "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
-  "source": "https://commons.wikimedia.org/wiki/File:%E4%BA%91%E5%86%88%E7%9F%B3%E7%AA%9F%E4%B9%8B%E7%AC%AC20%E7%AA%9F_05.jpg",
+  "credit": "Zhangzhugang / Wikimedia Commons",
+  "license": "CC BY-SA 3.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0/",
+  "source": "https://commons.wikimedia.org/wiki/File:Datong_Yungang_Shiku_2013.08.29_15-08-05.jpg",
   "thumb": {
-    "src": "photo-library/datong/yungang/thumb.webp?v=e89f60e54398",
+    "src": "photo-library/datong/yungang/thumb.webp?v=e642543cb183",
     "width": 640,
     "height": 427,
-    "bytes": 54742
+    "bytes": 52366
   },
   "screen": {
-    "src": "photo-library/datong/yungang/screen.webp?v=e89f60e54398",
+    "src": "photo-library/datong/yungang/screen.webp?v=e642543cb183",
     "width": 1440,
     "height": 960,
-    "bytes": 334664
+    "bytes": 295198
   },
   "detail": {
-    "src": "photo-library/datong/yungang/detail.webp?v=e89f60e54398",
+    "src": "photo-library/datong/yungang/detail.webp?v=e642543cb183",
     "width": 2400,
     "height": 1600,
-    "bytes": 1097550
+    "bytes": 1001470
   },
   "sourceFile": "photo-library/datong/yungang/original.jpg",
-  "originalFilename": "云冈石窟之第20窟 05.jpg",
-  "downloadUrl": "https://upload.wikimedia.org/wikipedia/commons/c/c6/%E4%BA%91%E5%86%88%E7%9F%B3%E7%AA%9F%E4%B9%8B%E7%AC%AC20%E7%AA%9F_05.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
-  "takenAt": "2025-08-30 11:09:42"
+  "originalFilename": "Datong Yungang Shiku 2013.08.29 15-08-05.jpg",
+  "downloadUrl": "https://upload.wikimedia.org/wikipedia/commons/d/db/Datong_Yungang_Shiku_2013.08.29_15-08-05.jpg",
+  "takenAt": "2013-08-29 15:08:05"
 }

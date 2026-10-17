@@ -2,29 +2,29 @@ window.PHOTOS = [
   {
     "id": "yungang",
     "src": "photo-library/datong/yungang/original.jpg",
-    "width": 6000,
-    "height": 4000,
-    "credit": "Liuxingy / Wikimedia Commons",
-    "license": "CC BY-SA 4.0",
-    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
-    "source": "https://commons.wikimedia.org/wiki/File:%E4%BA%91%E5%86%88%E7%9F%B3%E7%AA%9F%E4%B9%8B%E7%AC%AC20%E7%AA%9F_05.jpg",
+    "width": 5472,
+    "height": 3648,
+    "credit": "Zhangzhugang / Wikimedia Commons",
+    "license": "CC BY-SA 3.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0/",
+    "source": "https://commons.wikimedia.org/wiki/File:Datong_Yungang_Shiku_2013.08.29_15-08-05.jpg",
     "thumb": {
-      "src": "photo-library/datong/yungang/thumb.webp?v=e89f60e54398",
+      "src": "photo-library/datong/yungang/thumb.webp?v=e642543cb183",
       "width": 640,
       "height": 427,
-      "bytes": 54742
+      "bytes": 52366
     },
     "screen": {
-      "src": "photo-library/datong/yungang/screen.webp?v=e89f60e54398",
+      "src": "photo-library/datong/yungang/screen.webp?v=e642543cb183",
       "width": 1440,
       "height": 960,
-      "bytes": 334664
+      "bytes": 295198
     },
     "detail": {
-      "src": "photo-library/datong/yungang/detail.webp?v=e89f60e54398",
+      "src": "photo-library/datong/yungang/detail.webp?v=e642543cb183",
       "width": 2400,
       "height": 1600,
-      "bytes": 1097550
+      "bytes": 1001470
     },
     "name": "云冈石窟",
     "city": "大同",
@@ -77,9 +77,9 @@ window.PHOTOS = [
 ];
 window.SCENES = [
  {id:'yungang',type:'石窟艺术',hotspots:[
-  {x:46,y:28,title:'为什么露天',tag:'历史',source:'https://www.dt.gov.cn/dtszf/sxyw/202503/8058be5b462146dd8a0e49eff844902f.shtml',text:'眼前是第20窟的主佛。它原本位于洞窟内，前壁后来坍塌，才形成今天的露天景象。主佛两侧原来各有一尊立佛，如今西立佛已毁，画面右侧留下的是东立佛。残缺的崖壁和不对称的造像，记录了洞窟的变化。',en:'This is the main Buddha of Cave 20. It once stood inside a cave; the collapse of the front wall exposed it. Standing Buddhas originally flanked it on both sides. The western figure was lost, while the eastern figure remains on the right of this photo. The asymmetry records the cave’s damage.'},
-  {x:61,y:49,title:'北魏的皇家石窟',tag:'历史',source:'https://whc.unesco.org/uploads/nominations/1039.pdf',text:'公元460年，北魏文成帝时期，僧人昙曜主持开凿了最早的一组五座洞窟，也就是今天的第16至20窟。这不是民间零散开凿的小佛龛，而是得到皇室支持的大型工程。巨大的主佛体量，与当时佛教和皇权的紧密联系有关。',en:'In 460 CE, during Emperor Wencheng’s reign in the Northern Wei dynasty, the monk Tanyao directed the earliest group of five caves, now numbered 16–20. These were an imperially sponsored project rather than scattered private shrines. Their monumental scale reflects the close relationship between Buddhism and imperial power.'},
-  {x:42,y:69,title:'袈裟与背光',tag:'艺术',source:'https://www.dpm.org.cn/Uploads/File/2020/08/31/u5f4ccd18d47c9.pdf',text:'主佛的袈裟披在左肩，右肩袒露，衣纹从胸前斜向下铺开，这是早期佛教造像常见的服饰形式。头部后方刻出的火焰状纹样属于“背光”，用来表现佛的光明。衣纹和背光都是识别造像风格的细节，不是岩石自然形成的纹理。',en:'The robe covers the Buddha’s left shoulder and leaves the right shoulder bare, a dress form common in early Buddhist sculpture. Its folds run diagonally across the chest. The flame-like carving behind the head forms an aureole, symbolizing radiance. Both the folds and the aureole are deliberate sculptural details, not natural rock patterns.'}]},
+  {x:50,y:28,title:'石壁里的大佛',tag:'艺术',source:'https://commons.wikimedia.org/wiki/File:Datong_Yungang_Shiku_2013.08.29_15-08-05.jpg',text:'画面是云冈第16窟的大佛。佛像并不是雕好后再搬进洞窟，而是从山体原有的岩石中开凿出来的。佛像两侧与洞壁连成一体，周围一层层的岩石纹理，也让人看见这尊造像与山体的关系。',en:'This is the Buddha in Cave 16 at Yungang. It was carved from the existing cliff rather than made elsewhere and carried into the cave. The rock around it and the layers in the walls show how the figure belongs to the mountain itself.'},
+  {x:60,y:47,title:'北魏的皇家石窟',tag:'历史',source:'https://whc.unesco.org/uploads/nominations/1039.pdf',text:'公元460年，北魏文成帝时期，僧人昙曜主持开凿了最早的一组五座洞窟，也就是今天的第16至20窟。这不是民间零散开凿的小佛龛，而是得到皇室支持的大型工程。巨大的主佛体量，与当时佛教和皇权的紧密联系有关。',en:'In 460 CE, during Emperor Wencheng’s reign in the Northern Wei dynasty, the monk Tanyao directed the earliest group of five caves, now numbered 16–20. These were an imperially sponsored project rather than scattered private shrines. Their monumental scale reflects the close relationship between Buddhism and imperial power.'},
+  {x:38,y:54,title:'衣纹与石层',tag:'艺术',source:'https://commons.wikimedia.org/wiki/File:Datong_Yungang_Shiku_2013.08.29_15-08-05.jpg',text:'大佛身上的衣纹沿身体垂下，洞壁的天然石层则大多横向延展。把两种线条放在一起看，就能区分人工雕刻的衣褶与天然岩石纹理。抬起的手掌、衣袖与胸前的褶皱，也构成了画面里清楚可见的造型细节。',en:'The carved folds fall down the body, while natural rock layers run mostly across the cave walls. Comparing the two distinguishes sculpted clothing from geological texture. The raised palm, sleeves and folds across the chest are visible details of the figure.'}]},
  {id:'huayan',type:'寺院建筑',hotspots:[
   {x:56,y:31,title:'榫卯木塔',tag:'建筑',source:'https://www.dt.gov.cn/dtszf/bmdt/202402/36078b1b7bc14518a89bc2928ff5c0f8.shtml',text:'照片中的华严宝塔是一座方形木塔，采用木构榫卯连接。榫卯把一个构件凸出的榫头嵌入另一个构件的卯口，使梁柱等木件相互咬合。它和寺里的古代殿堂并不是同一座建筑，不能把寺院的建寺年代直接当成这座塔的年代。',en:'The Huayan Pagoda in this photo is a square wooden tower with mortise-and-tenon joints. A projecting tenon fits into a matching socket, connecting timber members. This pagoda is distinct from the temple’s historic halls: the date when the temple was founded does not automatically date this tower.'},
   {x:44,y:49,title:'辽金两座大殿',tag:'历史',source:'https://pingcheng.gov.cn/pcqrmzfz/wmdt/202009/123563f2543c4a559af4a9190169eda5.shtml',text:'寺院里辨认辽金建筑，要看薄伽教藏殿与大雄宝殿。薄伽教藏殿建于辽重熙七年（1038年）；大雄宝殿在战火后，于金天眷三年（1140年）重建。两殿保存了不同朝代的建筑与造像，也是这座寺院被称为辽金艺术宝库的重要原因。',en:'Two halls anchor the temple’s Liao–Jin heritage. The Bhagavat Sutra Repository Hall dates to 1038 in the Liao dynasty. The Great Buddha Hall was rebuilt after warfare in 1140, during the Jin dynasty. Their architecture and sculpture preserve distinct chapters of the temple’s history.'},

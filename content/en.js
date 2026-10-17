@@ -5,7 +5,7 @@ window.CONTENT_EN = {
   datong: {
     name: 'Datong', region: 'Shanxi',
     scenes: {
-      yungang: { name: 'Yungang Grottoes', type: 'Cave art', hotspots: ['Why is it open to the sky?', 'Imperial caves of the Northern Wei', 'Robe and aureole'] },
+      yungang: { name: 'Yungang Grottoes', type: 'Cave art', hotspots: ['A Buddha carved from the cliff', 'Imperial caves of the Northern Wei', 'Robe folds and rock layers'] },
       huayan: { name: 'Huayan Temple', type: 'Temple architecture', hotspots: ['A mortise-and-tenon timber pagoda', 'Two halls from the Liao and Jin', 'The copper crypt beneath the pagoda'] },
       xuankong: { name: 'Hanging Temple', type: 'Cliffside architecture', hotspots: ['How the beams carry the load', 'Why this cliff face?', 'Three teachings in one'] }
     },

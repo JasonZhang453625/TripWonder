@@ -1,12 +1,12 @@
 {
   "source": "../original.jpg",
-  "sourceSha256": "e89f60e54398aad98c96138a6aa9761b2855a4740904a8d17a38e383a537e4d4",
+  "sourceSha256": "e642543cb18303c505bb033c59227f8efdf9aad9aa92817de235f40db7708e2f",
   "displaySize": [
-    6000,
-    4000
+    5472,
+    3648
   ],
-  "displaySha256": "e89f60e54398aad98c96138a6aa9761b2855a4740904a8d17a38e383a537e4d4",
+  "displaySha256": "e642543cb18303c505bb033c59227f8efdf9aad9aa92817de235f40db7708e2f",
   "sourceAspect": 1.5,
   "encoding": "original JPEG bytes",
-  "sourcePage": "https://commons.wikimedia.org/wiki/File:%E4%BA%91%E5%86%88%E7%9F%B3%E7%AA%9F%E4%B9%8B%E7%AC%AC20%E7%AA%9F_05.jpg"
+  "sourcePage": "https://commons.wikimedia.org/wiki/File:Datong_Yungang_Shiku_2013.08.29_15-08-05.jpg"
 }

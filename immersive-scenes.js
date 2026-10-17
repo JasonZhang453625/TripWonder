@@ -6,10 +6,10 @@ window.IMMERSIVE_SCENES = {
   'yungang': {
     ...SPHERE_SCENE,
     id: 'yungang',
-    assetScript: 'immersive-yungang-assets.js?v=e89f60e54398',
-    sourceUrl: 'photo-library/datong/yungang/immersive-blur/photo.jpg?v=e89f60e54398',
+    assetScript: 'immersive-yungang-assets.js?v=e642543cb183',
+    sourceUrl: 'photo-library/datong/yungang/immersive-blur/photo.jpg?v=e642543cb183',
     sourceAspect: 1.5,
-    focusX: 0.53
+    focusX: 0.5
   },
   'huayan': {
     ...SPHERE_SCENE,
