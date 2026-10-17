@@ -9,13 +9,14 @@
 /* Result page */
 .result-page .tw-earned{padding:10px 12px 9px!important;margin:0 0 6px!important;border-radius:14px!important;background:linear-gradient(135deg,#fff8e4,#fff1cf)!important}
 .tw-earned-head{display:flex;align-items:center;gap:10px}
-.tw-earned-head>div{flex:1;display:grid}
+.tw-earned-total{flex:1;min-width:0;display:grid}
 .tw-earned-head small{font-size:11px;color:#9a6a1a}
 .tw-earned-head b{font-size:20px;line-height:1.25;font-weight:750;color:#7a4300;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.tw-earned-actions{flex:none;display:flex;align-items:center;gap:8px}
+.tw-earned-balance{color:#9a6a1a;font-size:11px;white-space:nowrap}
+.tw-earned-balance b{font-size:13px}
 .tw-earned-head button{min-height:32px;padding:0 12px;border-radius:17px;background:#ff9f1c;color:#fff;font-size:13px;font-weight:650;white-space:nowrap}
-.tw-earned-items{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
-.tw-earned-items span{padding:2px 7px;border-radius:10px;background:#ffffffb3;color:#8a5200;font-size:11px}
-.tw-earned p{margin:4px 0 0;font-size:10px;line-height:1.4;color:#a07a3c}
+.tw-earned-note{margin:4px 0 0;font-size:10px;line-height:1.4;color:#a07a3c}
 .tw-slot{margin:6px 0 10px}
 .tw-earned.counting .tw-coin.big{animation:tw-coin-spin .9s ease-out}
 @keyframes tw-coin-spin{0%{transform:rotateY(0) scale(.6)}60%{transform:rotateY(540deg) scale(1.15)}100%{transform:rotateY(720deg) scale(1)}}
