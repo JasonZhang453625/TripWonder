@@ -1,6 +1,6 @@
 /* Device-local storage for the gameplay layer: coins, redemptions, scene bubbles, explored scenes, PK history,
    challenged official cities (with their badge) and played community (UGC) journeys.
-   Daily challenge progress stays in memory (app.js); only what must survive a reload lives here.
+   Daily challenge progress stays in memory; player-journey progress also survives a reload.
    Every read and write tolerates blocked storage, so the prototype keeps working in private windows. */
 (() => {
   'use strict';

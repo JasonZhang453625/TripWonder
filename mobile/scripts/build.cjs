@@ -32,6 +32,8 @@ async function build() {
     if(rel.endsWith('.js'))write(rel,fs.readFileSync(file,'utf8').replace(/(photo-library\/[^/'"\s]+\/[^/'"\s]+\/)original\.(?:jpg|jpeg|png|avif|webp)/gi,'$1immersive-blur/photo.jpg'));
     else write(rel,fs.readFileSync(file));
   }
+  const {publishedJourneys,publishedScript}=await import('../../admin/export.mjs');
+  write('published-journeys.js',publishedScript(await publishedJourneys()).replace(/(photo-library\/[^/'"\s]+\/[^/'"\s]+\/)original\.(?:jpg|jpeg|png|avif|webp)/gi,'$1immersive-blur/photo.jpg'));
   const sceneFiles=walk(path.join(root,'photo-library')).filter(f=>/(?:[\\/](?:thumb|screen|detail)\.webp|[\\/]immersive-blur[\\/]photo\.jpg|[\\/]ATTRIBUTION\.md)$/.test(f));
   for(const file of sceneFiles)write(relative(root,file),fs.readFileSync(file));
   write('THREE-LICENSE.txt',fs.readFileSync(path.join(root,'THREE-LICENSE.txt')));

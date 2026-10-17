@@ -12,7 +12,7 @@
 
   // Register approved UGC journeys beside the official catalog (works for the static and the database catalog.js).
   // Sample journeys (content/ugc.js) plus reviewed UGC from the admin database (served only by admin/server.mjs).
-  const ugc = [...(window.UGC_JOURNEYS || []), ...(window.DB_JOURNEYS || []).filter(j => j.channel === 'ugc').map(j => ({...j, review: 'approved'}))].filter((j, i, all) => all.findIndex(other => other.id === j.id) === i).filter(j => j.channel === 'ugc' && j.review === 'approved' && j.scenes?.length && j.scenes.every(scene => scene.photo));
+  const ugc = [...(window.UGC_JOURNEYS || []), ...(window.PUBLISHED_JOURNEYS || []), ...(window.DB_JOURNEYS || []).filter(j => j.channel === 'ugc').map(j => ({...j, review: 'approved'}))].filter((j, i, all) => all.findLastIndex(other => other.id === j.id) === i).filter(j => j.channel === 'ugc' && j.review === 'approved' && j.scenes?.length >= 3 && j.scenes.length <= 9 && j.scenes.every(scene => scene.photo));
   for (const journey of ugc) {
     journey.questions.forEach((question, index) => { question.sceneId ||= journey.scenes[index]?.id || journey.scenes[0].id; });
     for (const scene of journey.scenes) {
@@ -24,6 +24,30 @@
     }
   }
   C.ugc = ugc;
+  function register(journey) {
+    if (journey.channel !== 'ugc' || journey.scenes?.length < 3 || journey.scenes?.length > 9 || journey.questions?.length !== 3 || !journey.scenes?.every(s => s.photo)) return false;
+    if (typeof journey.author !== 'object') journey.author = {name:journey.author || t('玩家','Player')};
+    const index=ugc.findIndex(j=>j.id===journey.id);
+    if(index<0)ugc.push(journey);else ugc[index]=journey;
+    for(const scene of journey.scenes){
+      const p=scene.photo;p.id=scene.id;p.name ||= scene.name;p.city=journey.name;
+      p.width=p.screen?.width||p.width;p.height=p.screen?.height||p.height;
+      C.photoById.set(scene.id,p);
+      if(p.screen&&p.thumb&&window.MEDIA_ASSETS)window.MEDIA_ASSETS[scene.id]={screen:p.screen,thumb:p.thumb,detail:p.detail||p.screen};
+    }
+    return true;
+  }
+  function unregister(id) { const index=ugc.findIndex(j=>j.id===id);if(index>=0&&!window.UGC_JOURNEYS?.some(j=>j.id===id)){for(const s of ugc[index].scenes){C.photoById.delete(s.id);if(window.MEDIA_ASSETS)delete window.MEDIA_ASSETS[s.id];}ugc.splice(index,1);} }
+
+  // A changed sample set starts fresh once, without resetting official progress or user-created journeys.
+  function initializeSamples() {
+    const revision = window.UGC_SAMPLE_REVISION, store = window.TWStore;
+    if (!revision || !store || store.get().prefs.ugcSampleRevision === revision) return;
+    store.update(data => {
+      for (const journey of ugc) if (journey.sampleRevision === revision) { delete data.ugcPlayed[journey.id]; if(data.ugcProgress)delete data.ugcProgress[journey.id]; }
+      data.prefs.ugcSampleRevision = revision;
+    });
+  }
 
   const isUgc = c => c?.channel === 'ugc';
   // Admin-generated UGC carries a plain author name; samples carry {name, nameEn}.
@@ -111,7 +135,7 @@
     const list = tab === 'official'
       ? (officials.length ? officials.map(c => postCard(ctx, c)).join('') : `<div class="cm-empty"><p>${t('完成今日挑战后，你去过的目的地会出现在这里，可以看看大家的留言。', 'Finish today’s challenge and the destinations you’ve been to will appear here, with everyone’s notes.')}</p><button class="primary" data-go="today">${t('去今日挑战', 'Go to today’s challenge')}</button></div>`)
       : [...(tab === 'all' ? officials : []), ...ugc].map(c => postCard(ctx, c)).join('');
-    return `<div class="page cm-page cm-feed">${ctx.head(t('社区', 'Community'), 'hub')}<div class="cm-tabs" role="tablist" aria-label="${t('社区分类', 'Community categories')}">${tabs}</div><div class="cm-feed-scroll"><div class="cm-list">${list || `<div class="cm-empty">${t('还没有新的分享，来发布第一篇吧。', 'No stories yet. Share the first one.')}</div>`}</div></div><button class="cm-publish-fab" data-go="publish" aria-label="${t('发布 Journey', 'Post a journey')}"><span aria-hidden="true">+</span></button></div>`;
+    return `<div class="page cm-page cm-feed">${ctx.head(t('社区', 'Community'), 'hub')}<div class="cm-community-tools"><button data-ugc-import>${t('导入旅程','Import journey')}</button><button data-ugc-mine>${t('我的发布','My journeys')}</button><button data-ugc-review>${t('本机审核','Local review')}</button></div><div class="cm-tabs" role="tablist" aria-label="${t('社区分类', 'Community categories')}">${tabs}</div><div class="cm-feed-scroll"><div class="cm-list">${list || `<div class="cm-empty">${t('还没有新的分享，来发布第一篇吧。', 'No stories yet. Share the first one.')}</div>`}</div></div><button class="cm-publish-fab" data-go="publish" aria-label="${t('发布 Journey', 'Post a journey')}"><span aria-hidden="true">+</span></button></div>`;
   }
 
   function board(ctx, c, played) {
@@ -154,10 +178,10 @@
 
   function publish(ctx) {
     const field = (id, label, input, hint = '') => `<label class="cm-field" for="${id}"><span>${label}</span>${input}${hint ? `<small>${hint}</small>` : ''}</label>`;
-    const question = i => `<fieldset class="cm-question"><legend>${t(`第 ${i + 1} 题`, `Question ${i + 1}`)}</legend><input name="q${i}" maxlength="60" placeholder="${t('题目（只看照片就能回答）', 'Question (answerable from the photos)')}">${[0, 1, 2, 3].map(j => `<span class="cm-option"><input type="radio" name="a${i}" value="${j}" aria-label="${t(`选项 ${'ABCD'[j]} 为正确答案`, `Option ${'ABCD'[j]} is correct`)}"><input name="o${i}-${j}" maxlength="24" placeholder="${t(`选项 ${'ABCD'[j]}`, `Option ${'ABCD'[j]}`)}"></span>`).join('')}</fieldset>`;
+    const question = i => `<fieldset class="cm-question"><legend>${t(`第 ${i + 1} 题`, `Question ${i + 1}`)}</legend><label class="cm-question-scene">${t('对应照片','Photo')}<select name="scene${i}" data-question-scene><option value="${i}">${t(`第 ${i+1} 张照片`,`Photo ${i+1}`)}</option></select></label><input name="q${i}" maxlength="70" placeholder="${t('题目（只看照片就能回答）', 'Question (answerable from the photos)')}">${[0, 1, 2, 3].map(j => `<span class="cm-option"><input type="radio" name="a${i}" value="${j}" aria-label="${t(`选项 ${'ABCD'[j]} 为正确答案`, `Option ${'ABCD'[j]} is correct`)}"><input name="o${i}-${j}" maxlength="24" placeholder="${t(`选项 ${'ABCD'[j]}`, `Option ${'ABCD'[j]}`)}"></span>`).join('')}<input name="explain${i}" maxlength="120" placeholder="${t('答案解析（可选）','Explanation (optional)')}"></fieldset>`;
     return `<div class="page cm-page cm-publish">${ctx.head(t('发布 Journey', 'Post a journey'), 'feed')}<form class="cm-form" novalidate>
-      <p class="cm-note-line">${t('分享一个你熟悉的小众地点，让其他玩家猜猜它在哪里。审核通过后会出现在社区。', 'Share a lesser-known place you know well and let others guess where it is. It appears in the community after review.')}</p>
-      <section class="cm-form-block"><h3>${t('照片', 'Photos')}</h3><label class="cm-drop"><input type="file" name="photos" accept="image/*" multiple hidden>${icon('spark')}<span>${t('选择 1–5 张照片', 'Choose 1–5 photos')}</span></label><div class="cm-previews" aria-live="polite"></div></section>
+      <p class="cm-note-line">${t('分享你熟悉的地点，选择 3–9 张照片，填写三道题。标题和介绍请保留悬念。审核通过后进入社区。','Share a place with 3–9 photos and three questions. Keep its name out of the title and introduction. Publish after review.')}</p><p class="cm-draft-status" data-draft-status role="status"></p>
+      <section class="cm-form-block"><h3>${t('照片', 'Photos')}</h3><label class="cm-drop"><input type="file" name="photos" accept="image/*" multiple hidden>${icon('spark')}<span>${t('选择 3–9 张照片', 'Choose 3–9 photos')}</span></label><div class="cm-previews" aria-live="polite"></div></section>
       <section class="cm-form-block"><h3>${t('目的地信息', 'Place')}</h3>
         ${field('pub-name', t('地点名称（答案）', 'Place name (the answer)'), `<input id="pub-name" name="name" maxlength="20" placeholder="${t('如：沙坡尾避风坞', 'e.g. Shapowei Typhoon Shelter')}">`)}
         ${field('pub-title', t('挑战标题（不能透露地名）', 'Challenge title (no place names)'), `<input id="pub-title" name="title" maxlength="20" placeholder="${t('如：十年前后的渔港老街', 'e.g. A fishing harbour, ten years apart')}">`)}
@@ -169,15 +193,15 @@
       <section class="cm-form-block cm-switches"><label class="cm-switch"><input type="checkbox" name="board" checked><span><b>${t('开启场景留言气泡', 'Enable scene bubbles')}</b><small>${t('在沉浸场景中查看和放置气泡，不影响独立评论区', 'View and place bubbles in scenes; independent comments stay available')}</small></span></label>${field('pub-author', t('昵称', 'Nickname'), `<input id="pub-author" name="author" maxlength="16" placeholder="${t('展示为发布者', 'Shown as the author')}">`)}</section>
       <p class="cm-error" role="alert" hidden></p>
       <button class="primary cm-submit" type="submit">${t('提交审核', 'Submit for review')}</button>
-      <p class="cm-foot">${t('演示：上传服务尚未接入，提交后不会保存或上传任何内容。', 'Demo: uploads aren’t connected yet, so nothing is saved or sent.')}</p>
+      <p class="cm-foot">${t('照片与填写内容自动保存为草稿。可在「我的发布」继续填写、查看审核结果或修改重提。','Photos and text are saved as a draft. Open My journeys to continue, check review results or resubmit.')}</p>
     </form></div>`;
   }
   // Client-side checks for the prototype form; returns an error message or ''.
   function validate(form) {
     const data = new FormData(form), text = name => String(data.get(name) || '').trim();
     const photos = form.querySelector('input[type=file]').files.length;
-    if (!photos) return t('请至少选择 1 张照片', 'Choose at least one photo');
-    if (photos > 5) return t('最多 5 张照片', 'Five photos at most');
+    if (photos < 3) return t('请至少选择 3 张照片', 'Choose at least three photos');
+    if (photos > 9) return t('最多 9 张照片', 'Nine photos at most');
     if (!text('name') || !text('title') || !text('region')) return t('请填写地点名称、挑战标题和所在城市', 'Fill in the place name, title and city');
     if (text('title').includes(text('name'))) return t('挑战标题不能包含地点名称', 'The title can’t include the place name');
     const lat = Number(text('lat')), lng = Number(text('lng'));
@@ -186,12 +210,13 @@
       if (!text(`q${i}`) || [0, 1, 2, 3].some(j => !text(`o${i}-${j}`))) return t(`请把第 ${i + 1} 题和 4 个选项填完整`, `Complete question ${i + 1} and its four options`);
       if (data.get(`a${i}`) === null) return t(`请为第 ${i + 1} 题选出正确答案`, `Pick the right answer for question ${i + 1}`);
     }
+    if (window.UGCContract) { try { window.UGCContract.questions([0,1,2].map(i=>({q:text(`q${i}`),options:[0,1,2,3].map(j=>text(`o${i}-${j}`)),answer:data.get(`a${i}`),sceneIndex:Number(data.get(`scene${i}`)??i)})), photos, text('name'), text('region')); } catch(error) { return error.message; } }
     return '';
   }
   function previews(input) {
     const box = input.closest('.cm-form').querySelector('.cm-previews');
     box.querySelectorAll('img').forEach(img => URL.revokeObjectURL(img.src));
-    box.innerHTML = [...input.files].slice(0, 5).map((file, i) => `<span class="cm-preview"><img src="${URL.createObjectURL(file)}" alt=""><b>${i + 1}</b></span>`).join('') + (input.files.length > 5 ? `<p class="cm-hint">${t('只会使用前 5 张', 'Only the first five are used')}</p>` : '');
+    box.innerHTML = [...input.files].slice(0, 9).map((file, i) => `<span class="cm-preview"><img src="${URL.createObjectURL(file)}" alt=""><b>${i + 1}</b></span>`).join('') + (input.files.length > 9 ? `<p class="cm-hint">${t('最多 9 张，请重新选择照片', 'Up to nine photos. Please choose again.')}</p>` : '');
   }
 
   // Feed reactions use the same device-local store and reset as the rest of the prototype.
@@ -384,5 +409,5 @@
     galleryCleanup = () => { sync(); controller.abort(); resize.disconnect(); galleryCleanup = () => {}; };
   }
   function releasePress(){galleryCleanup();window.HubCards3D?.release();}
-  window.Community = Object.freeze({isUgc, label, boardOpen, hub, feed, journey, publish, validate, previews, releasePress, mountJourney});
+  window.Community = Object.freeze({isUgc, label, boardOpen, hub, feed, journey, publish, validate, previews, releasePress, mountJourney, initializeSamples, register, unregister});
 })();

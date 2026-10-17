@@ -8,6 +8,7 @@ const sha=file=>crypto.createHash('sha256').update(fs.readFileSync(file)).digest
   const report=[];
   for(const city of [...ctx.window.TRIPWONDER_CATALOG.cities,...ctx.window.UGC_JOURNEYS]){
     if(city.channel!=='ugc')assert.ok(city.scenes.length>=3,`${city.id}: at least three official scenes`);
+    else assert.ok(city.scenes.length>=3&&city.scenes.length<=9,`${city.id}: 3–9 UGC photos`);
     assert.equal(city.questions.length,3,`${city.id}: three questions`);
     for(const question of city.questions)if(question.sceneId)assert.ok(city.scenes.some(s=>s.id===question.sceneId),`${city.id}: question scene exists`);
     for(const scene of city.scenes){

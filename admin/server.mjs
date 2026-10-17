@@ -72,10 +72,12 @@ async function api(req, res, url) {
     return send(res, 200, {uploadId, width: meta.width, height: meta.height, format: meta.format});
   }
   if (pathname === '/api/journeys' && method === 'POST') {
-    const input = normalizeInput(await readJson(req));
-    if (getJourney(input.id)) return send(res, 409, {error: `目的地「${input.id}」已存在`});
+    const raw = await readJson(req), input = normalizeInput(raw);
+    const existing = getJourney(input.id);
+    if (existing && !(raw.resubmit === true && input.channel === 'ugc' && existing.channel === 'ugc')) return send(res, 409, {error: `目的地「${input.id}」已存在`});
     const jobs = listJobs().filter(job => job.destinationId === input.id);
     if (jobs.some(job => job.status === 'queued' || job.status === 'running')) return send(res, 409, {error: '该目的地正在生成中'});
+    if (existing) setReview(input.id, 'pending');
     for (const old of jobs) deleteJob(old.id);
     const id = crypto.randomUUID();
     createJob({id, destinationId: input.id, name: input.name, input, steps: STEPS.map(s => ({...s, status: 'pending', detail: ''}))});
@@ -112,9 +114,10 @@ async function api(req, res, url) {
       setStatus(id, status); return send(res, 200, {ok: true});
     }
     if (method === 'POST' && m[2] === 'review') {
-      const {review} = await readJson(req);
-      if (!['pending', 'approved'].includes(review)) return send(res, 400, {error: 'review 无效'});
-      setReview(id, review); return send(res, 200, {ok: true});
+      const {review, note = ''} = await readJson(req);
+      if (!['pending', 'approved', 'rejected'].includes(review)) return send(res, 400, {error: 'review 无效'});
+      if (review === 'rejected' && !String(note).trim()) return send(res, 400, {error: '请填写退回原因'});
+      setReview(id, review, String(note).trim().slice(0, 400)); return send(res, 200, {ok: true});
     }
     if (method === 'DELETE' && !m[2]) {
       deleteJourney(id);

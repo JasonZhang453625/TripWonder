@@ -9,6 +9,7 @@ import {ADMIN_DIR, DATA_DIR, getJob, updateJob, saveJourney} from './db.mjs';
 import {chatJson, MODEL} from './mimo.mjs';
 
 const require = createRequire(import.meta.url);
+const UGCContract = require('../ugc-contract.js');
 export const ROOT = path.resolve(ADMIN_DIR, '..');
 export const UPLOAD_DIR = path.join(DATA_DIR, 'uploads');
 fs.mkdirSync(UPLOAD_DIR, {recursive: true});
@@ -83,8 +84,15 @@ export function normalizeInput(raw) {
   const title = str(raw.title, 20);
   if (channel === 'ugc' && !title) fail('玩家 Journey 需要一个不含地名的挑战标题');
   if (channel === 'ugc' && title.includes(name)) fail('挑战标题不能包含目的地名称');
+  let authored;
+  if (raw.questions != null) {
+    if (channel !== 'ugc') fail('自主出题仅用于玩家 Journey');
+    if (lat == null) fail('自主出题请填写目的地坐标');
+    try { authored = UGCContract.questions(raw.questions, scenes.length, name, region); } catch (error) { fail(error.message); }
+    if ([name, ...region.split(/[·,，\s]+/)].filter(s => s.length >= 2).some(word => (title + String(raw.intro || '')).includes(word))) fail('挑战标题和介绍不能透露目的地或所在城市');
+  }
   const ugc = channel === 'ugc' ? {title, boardEnabled: raw.boardEnabled !== false, author: {name: str(raw.author, 16) || '玩家'}} : {};
-  return {id, name, nameEn: str(raw.nameEn, 60), region, intro: str(raw.intro, 400), lat, lng, rules, scenes, channel, ...ugc};
+  return {id, name, nameEn: str(raw.nameEn, 60), region, intro: str(raw.intro, 400), lat, lng, rules, scenes, channel, ...ugc, ...(authored ? {questions: authored} : {})};
 }
 const inChina = (lat, lng) => Number.isFinite(lat) && Number.isFinite(lng) &&
   lat >= CHINA.minLat && lat <= CHINA.maxLat && lng >= CHINA.minLng && lng <= CHINA.maxLng;
@@ -153,12 +161,15 @@ async function stepImages({input, state, progress}) {
     fs.mkdirSync(abs(dir), {recursive: true});
     const original = `${dir}/original.${ext}`;
     fs.copyFileSync(upload, abs(original));
+    fs.mkdirSync(abs(`${dir}/immersive-blur`), {recursive: true});
+    if (meta.format === 'jpeg' && (!meta.orientation || meta.orientation === 1)) fs.copyFileSync(upload, abs(`${dir}/immersive-blur/photo.jpg`));
+    else await sharp(upload).rotate().jpeg({quality: 95}).toFile(abs(`${dir}/immersive-blur/photo.jpg`));
     const variant = async (name, edge, quality) => {
       const info = await sharp(upload).rotate().resize(edge, edge, {fit: 'inside', withoutEnlargement: true}).webp({quality}).toFile(abs(`${dir}/${name}.webp`));
       return {src: `${dir}/${name}.webp`, width: info.width, height: info.height, bytes: info.size};
     };
     const thumb = await variant('thumb', 640, 80), screen = await variant('screen', 1440, 82), detail = await variant('detail', 2400, 84);
-    const oriented = !!meta.orientation && meta.orientation > 1;
+    const oriented = meta.orientation >= 5 && meta.orientation <= 8;
     const upright = oriented ? {width: meta.height, height: meta.width} : {width: meta.width, height: meta.height};
     state.photos[id] = {
       src: original, width: screen.width, height: screen.height, screen, thumb, detail,
@@ -198,6 +209,10 @@ const leaks = (text, banned) => banned.filter(word => String(text).includes(word
 // ---------- step 2: hotspots (vision, one call per scene; shown only when browsing in the community) ----------
 async function stepHotspots({input, state, progress}) {
   state.hotspots ||= {}; state.types ||= {}; state.recognized ||= {};
+  if (input.questions) {
+    for (const [index] of input.scenes.entries()) { const id = sceneId(input, index); state.hotspots[id] = UGCContract.observations(); state.types[id] = '玩家实景'; }
+    return {detail: '自主出题 · 保留原始画面，提供三个观察位置'};
+  }
   const banned = bannedWords(input), prompt = loadPrompt('scene-hotspots.md');
   const pending = input.scenes.map((scene, index) => ({scene, index, id: sceneId(input, index)})).filter(x => !state.hotspots[x.id]);
   let done = input.scenes.length - pending.length;
@@ -268,6 +283,7 @@ async function sceneImage(state, id) {
 
 async function stepQuestions({input, state, progress}) {
   if (state.generated) return {detail: '3 道题 · 由易到难'};
+  if (input.questions) { state.generated = {questions: input.questions, location: {lat: input.lat, lng: input.lng}, stops: []}; return {detail: '已保留发布者的三道原题与答案'}; }
   const banned = bannedWords(input), prompt = loadPrompt('journey-questions.md');
   const ids = input.scenes.map((_, index) => sceneId(input, index));
   const images = await Promise.all(ids.map(id => sceneImage(state, id)));
@@ -395,13 +411,19 @@ export function validateJourney(journey) {
   if (!/^[a-z][a-z0-9-]{0,79}$/.test(journey.id) || !text(journey.name)) bad('id / name');
   if (!inChina(journey.lat, journey.lng)) bad('坐标超出中国范围');
   if (!Array.isArray(journey.scenes) || journey.scenes.length < 1) bad('没有场景');
+  if (journey.channel === 'ugc' && (journey.scenes.length < 3 || journey.scenes.length > 9)) bad('玩家 Journey 需要 3–9 张场景图片');
   const ids = new Set();
   for (const scene of journey.scenes) {
     if (!text(scene.id) || ids.has(scene.id) || !text(scene.name)) bad('场景 id / 名称');
     ids.add(scene.id);
     const p = scene.photo;
     if (!p?.screen?.src || !p.thumb?.src || !p.detail?.src || !p.width || !p.height) bad(`${scene.id} 缺少图片版本`);
-    for (const variant of [p.screen, p.thumb, p.detail, p.original]) if (!fs.existsSync(abs(variant.src))) bad(`文件不存在：${variant.src}`);
+    for (const variant of [p.screen, p.thumb, p.detail, p.original]) {
+      if (!variant?.src) bad(`${scene.id} 缺少原始图片`);
+      const relative = decodeURIComponent(String(variant.src).split(/[?#]/)[0]);
+      const file = path.resolve(ROOT, relative);
+      if (!file.startsWith(ROOT + path.sep) || !fs.existsSync(file)) bad(`文件不存在：${variant.src}`);
+    }
     if (!Array.isArray(scene.hotspots) || scene.hotspots.length !== 3) bad(`${scene.id} 需要 3 个讲解点`);
     for (const h of scene.hotspots) if (!(h.x >= 0 && h.x <= 100 && h.y >= 0 && h.y <= 100) || !text(h.title) || !text(h.text)) bad(`${scene.id} 讲解点`);
   }

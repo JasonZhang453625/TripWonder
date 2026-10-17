@@ -67,5 +67,57 @@
     "licenseUrl": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
     "artist": "pxhere 匿名作者",
     "date": "2015-05-27"
+  },
+  {
+    "dir": "shapowei-harbor-wide",
+    "title": "File:网红化沙坡尾1.jpg",
+    "artist": "向史公哲曰",
+    "date": "2026-02-03",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/b/b0/%E7%BD%91%E7%BA%A2%E5%8C%96%E6%B2%99%E5%9D%A1%E5%B0%BE1.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File%3A%E7%BD%91%E7%BA%A2%E5%8C%96%E6%B2%99%E5%9D%A1%E5%B0%BE1.jpg",
+    "w": 4800,
+    "h": 3200,
+    "name": "网红化沙坡尾1.jpg"
+  },
+  {
+    "dir": "shibati-street-2024",
+    "title": "File:Chongqing, January 22, 2024 (11).jpg",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/2/21/Chongqing%2C_January_22%2C_2024_(11).jpg",
+    "page": "https://commons.wikimedia.org/wiki/File%3AChongqing%2C_January_22%2C_2024_(11).jpg",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "artist": "メイド理世",
+    "date": "2024-01-22",
+    "w": 4080,
+    "h": 2292,
+    "name": "Chongqing, January 22, 2024 (11).jpg"
+  },
+  {
+    "dir": "dongjiao-theatre",
+    "title": "File:20250516 CGT48 Xingmeng Juyuan.jpg",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/c/c5/20250516_CGT48_Xingmeng_Juyuan.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File%3A20250516_CGT48_Xingmeng_Juyuan.jpg",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "artist": "Yumeto",
+    "date": "2025-05-16",
+    "w": 4096,
+    "h": 3072,
+    "name": "20250516 CGT48 Xingmeng Juyuan.jpg"
+  },
+  {
+    "dir": "dongjiao-metro-platform",
+    "title": "File:Platform of Dongjiao Memory Station, Chengdu Metro Line 8.jpg",
+    "artist": "来斤小仓鼠吧",
+    "date": "2021-02-01",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/e/e8/Platform_of_Dongjiao_Memory_Station%2C_Chengdu_Metro_Line_8.jpg",
+    "page": "https://commons.wikimedia.org/wiki/File%3APlatform_of_Dongjiao_Memory_Station%2C_Chengdu_Metro_Line_8.jpg",
+    "w": 3868,
+    "h": 2901,
+    "name": "Platform of Dongjiao Memory Station, Chengdu Metro Line 8.jpg"
   }
 ]

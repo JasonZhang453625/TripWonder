@@ -1,0 +1,38 @@
+{
+  "city": "ugc",
+  "dir": "dongjiao-theatre",
+  "id": "ugc-dongjiao-theatre",
+  "src": "photo-library/ugc/dongjiao-theatre/original.jpg",
+  "width": 4096,
+  "height": 3072,
+  "sourceSha256": "3941e729282d90c04bbc1242469be1473f9528cc10aaef5bcbde228774429e43",
+  "original": {
+    "src": "photo-library/ugc/dongjiao-theatre/original.jpg",
+    "width": 4096,
+    "height": 3072,
+    "bytes": 5697972,
+    "untouched": true
+  },
+  "credit": "Yumeto / Wikimedia Commons",
+  "license": "CC BY-SA 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+  "source": "https://commons.wikimedia.org/wiki/File%3A20250516_CGT48_Xingmeng_Juyuan.jpg",
+  "thumb": {
+    "src": "photo-library/ugc/dongjiao-theatre/thumb.webp",
+    "width": 480,
+    "height": 360,
+    "bytes": 19090
+  },
+  "screen": {
+    "src": "photo-library/ugc/dongjiao-theatre/screen.webp",
+    "width": 1080,
+    "height": 810,
+    "bytes": 157890
+  },
+  "detail": {
+    "src": "photo-library/ugc/dongjiao-theatre/detail.webp",
+    "width": 1600,
+    "height": 1200,
+    "bytes": 376908
+  }
+}

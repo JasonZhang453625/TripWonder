@@ -74,7 +74,8 @@ window.ChallengeMotion=(()=>{
       const ready=prepare?await prepare():undefined;
       if(ticket!==serial)return false;
       const outgoing=app.querySelector(':scope > .page'),fromKey=key(outgoing);
-      if(fromKey)scrollPositions.set(fromKey,{top:app.scrollTop,left:app.scrollLeft});
+      const nestedScroll=page=>['.cm-feed-scroll','.cm-journey-scroll'].map(selector=>{const node=page?.querySelector(selector);return node?{selector,top:node.scrollTop,left:node.scrollLeft}:null;}).filter(Boolean);
+      if(fromKey)scrollPositions.set(fromKey,{top:app.scrollTop,left:app.scrollLeft,nested:nestedScroll(outgoing)});
       const before=outgoing&&capture(outgoing);
       const pending=commit(ready);
       // Legacy async commits retain their own transition. New media routes should
@@ -84,7 +85,10 @@ window.ChallengeMotion=(()=>{
       const incoming=app.querySelector(':scope > .page'),toKey=key(incoming);
       if(!incoming||incoming===outgoing||!fromKey||!toKey)return true;
       const saved=restoreScroll&&scrollPositions.get(toKey);
-      if(saved){app.scrollTop=saved.top;app.scrollLeft=saved.left;}
+      if(saved){
+        app.scrollTop=saved.top;app.scrollLeft=saved.left;
+        for(const position of saved.nested||[]){const node=incoming.querySelector(position.selector);if(node){node.scrollTop=position.top;node.scrollLeft=position.left;}}
+      }
       if(reduce())return true;
       const after=capture(incoming),viewport=app.getBoundingClientRect();
       const targetScroll={top:app.scrollTop,left:app.scrollLeft},restores=[];

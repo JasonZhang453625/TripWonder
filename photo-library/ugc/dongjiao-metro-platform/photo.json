@@ -1,0 +1,38 @@
+{
+  "city": "ugc",
+  "dir": "dongjiao-metro-platform",
+  "id": "ugc-dongjiao-metro-platform",
+  "src": "photo-library/ugc/dongjiao-metro-platform/original.jpg",
+  "width": 3868,
+  "height": 2901,
+  "sourceSha256": "4045d30cf1d689cd6a08b84280146854ee6997a125650e0c197799b57c53a070",
+  "original": {
+    "src": "photo-library/ugc/dongjiao-metro-platform/original.jpg",
+    "width": 3868,
+    "height": 2901,
+    "bytes": 3050630,
+    "untouched": true
+  },
+  "credit": "来斤小仓鼠吧 / Wikimedia Commons",
+  "license": "CC BY-SA 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+  "source": "https://commons.wikimedia.org/wiki/File%3APlatform_of_Dongjiao_Memory_Station%2C_Chengdu_Metro_Line_8.jpg",
+  "thumb": {
+    "src": "photo-library/ugc/dongjiao-metro-platform/thumb.webp",
+    "width": 480,
+    "height": 360,
+    "bytes": 29004
+  },
+  "screen": {
+    "src": "photo-library/ugc/dongjiao-metro-platform/screen.webp",
+    "width": 1080,
+    "height": 810,
+    "bytes": 165810
+  },
+  "detail": {
+    "src": "photo-library/ugc/dongjiao-metro-platform/detail.webp",
+    "width": 1600,
+    "height": 1200,
+    "bytes": 353904
+  }
+}

@@ -1,19 +1,24 @@
-/* Floating notes over the explore scene: what earlier travellers left here, tagged "been" or "not yet".
+/* Notes over the explore scene: what earlier travellers left here, tagged "been" or "not yet".
    Each note is anchored to a photo position (like a hotspot) and follows the view as it is dragged:
    the flat viewer scales the plane, and the immersive viewer projects them with its own hotspot markers.
-   A few notes float at a time and take turns. New notes go where the user taps the view.
+   The three most-liked notes show as strips (avatar, one line, tail); every other note is counted once in a
+   small envelope bubble, and ordinary notes close together share one. Near the view's edge both fade and shrink
+   around their anchor; off screen they are invisible and inert. New notes go where the user taps the view.
    Notes live on this device (TWStore); samples come from content/bubble-seed.js. */
 (() => {
   'use strict';
   const t = (zh, en) => window.I18N.t(zh, en), isEn = () => window.I18N.isEn();
   const esc = value => String(value ?? '').replace(/[&<>"']/g, char => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[char]));
   const FILTERS = ['all', 'been', 'want', 'off'], PREF = 'tripwonder-bubble-filter', MAX_LENGTH = 40;
-  const MAX_VISIBLE = 3, ROTATE_MS = 4200, SNIPPET = 15;
+  // STRIPS most-liked notes get a strip. GROUP: notes closer than this (in photo heights) share a bubble.
+  // EDGE: px from the view's edge where fading starts; EDGE_SCALE: size at the edge. BOB: float animation height.
+  const STRIPS = 3, GROUP = .1, EDGE = 42, EDGE_SCALE = .86, BOB = 6;
   const readPref = () => { try { const v = localStorage.getItem(PREF); return FILTERS.includes(v) ? v : 'all'; } catch { return 'all'; } };
   const writePref = value => { try { localStorage.setItem(PREF, value); } catch {} };
   const kindLabel = kind => kind === 'been' ? t('去过', 'Been') : t('没去过', 'Not yet');
   const filterLabel = value => ({all: t('全部', 'All'), been: t('去过', 'Been'), want: t('没去过', 'Not yet'), off: t('已关闭', 'Off')})[value];
   const icon = name => window.TWIcon?.(name) || '';
+  const ENVELOPE = '<svg class="tw-bundle-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5.5" width="17" height="13" rx="2.5"/><path d="m4.5 7.5 7.5 5.5 7.5-5.5"/></svg>';
   const rad = d => d * Math.PI / 180;
   const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 
@@ -42,8 +47,32 @@
     const plane = root.querySelector('.photo-plane').getBoundingClientRect();
     return {u: (clientX - plane.left) / plane.width, v: (clientY - plane.top) / plane.height};
   }
-  // A small coloured initial stands in for a profile picture.
-  const hueOf = text => { let h = 0; for (const c of String(text)) h = (h * 31 + c.codePointAt(0)) % 360; return h; };
+  const hashOf = text => { let h = 0; for (const c of String(text)) h = (h * 31 + c.codePointAt(0)) % 9973; return h; };
+  // The same five profile pictures as the community comments; the people who appear there keep their own,
+  // everyone else gets one by note id. My notes use the picture the comment box shows for me.
+  const AVATAR_NAMES = ['小满', '米粒', '阿哲', '晚风', '南风'];
+  const avatarOf = note => {
+    const known = note.mine ? 0 : AVATAR_NAMES.indexOf(note.name);
+    return `assets/community/user-${(known >= 0 ? known : hashOf(note.id) % AVATAR_NAMES.length) + 1}.jpg`;
+  };
+  const avatar = (note, size) => `<img class="tw-bubble-avatar" src="${avatarOf(note)}" alt="" width="${size}" height="${size}" decoding="async" draggable="false">`;
+
+  // Merge the two nearest groups until none are closer than GROUP. Distances are in photo heights, so
+  // `aspect` (photo width / height) keeps horizontal and vertical spacing comparable.
+  function group(list, aspect) {
+    const groups = list.map(note => ({notes: [note], u: note.u, v: note.v}));
+    for (;;) {
+      let best = null;
+      for (let i = 0; i < groups.length; i++) for (let j = i + 1; j < groups.length; j++) {
+        const d = Math.hypot((groups[i].u - groups[j].u) * aspect, groups[i].v - groups[j].v);
+        if (d < GROUP && (!best || d < best.d)) best = {i, j, d};
+      }
+      if (!best) return groups;
+      const merged = [...groups[best.i].notes, ...groups[best.j].notes];
+      groups[best.i] = {notes: merged, u: merged.reduce((s, n) => s + n.u, 0) / merged.length, v: merged.reduce((s, n) => s + n.v, 0) / merged.length};
+      groups.splice(best.j, 1);
+    }
+  }
 
   function mount({root, viewer, scene, hiddenNames = [], onCompose}) {
     const page = root.closest('.page'), plane = root.querySelector('.photo-plane');
@@ -53,7 +82,12 @@
     const mask = text => pattern.length ? text.replace(new RegExp(pattern.join('|'), 'gi'), t('这里', 'here')) : text;
     const textOf = note => mask(note.mine ? note.text : isEn() ? note.textEn : note.text);
     const nameOf = note => note.mine ? t('我', 'Me') : isEn() ? note.nameEn : note.name;
-    let filter = readPref(), list = [], shown = [], cursor = 0, timer = 0, destroyed = false, placing = null, freshId = null;
+    const photo = window.TRIPWONDER_CATALOG?.photoById?.get(scene.id) || scene.photo;
+    const aspect = photo?.width > 0 && photo?.height > 0 ? photo.width / photo.height : 1.5;
+    let filter = readPref(), destroyed = false, placing = null, freshId = null;
+    // Anchored elements (strips and bubbles), with their unscaled size and the viewer marker that positions them.
+    let anchored = [];
+    const sizes = new Map(), markerOf = new Map(), edge = new Map();
 
     const bar = document.createElement('div');
     bar.className = 'tw-bubble-bar';
@@ -63,42 +97,93 @@
       bar.innerHTML = `<button class="tw-bubble-filter" data-bubble-filter aria-label="${t(`切换留言显示，当前：${filterLabel(filter)}`, `Change which notes show. Now: ${filterLabel(filter)}`)}">${icon('message')}<span>${filterLabel(filter)}${filter === 'off' ? '' : ` ${count}`}</span></button><button class="tw-bubble-new" data-bubble-new aria-label="${t('在这个场景留言', 'Leave a note here')}">${icon('spark')}<span>${t('留言', 'Note')}</span></button>`;
     };
 
+    const likeButton = note => `<button class="tw-bubble-like" aria-pressed="${liked(note)}" aria-label="${t('点赞', 'Like')}">♥ <b>${likes(note)}</b></button>`;
+    const pos = (u, v) => `data-u="${u}" data-v="${v}" style="left:${(u * 100).toFixed(2)}%;top:${(v * 100).toFixed(2)}%"`;
+    const strip = (note, i) => `<div class="tw-bubble kind-${note.kind}${note.mine ? ' mine' : ''}" data-id="${esc(note.id)}" ${pos(note.u, note.v)}><div class="tw-bubble-float" style="--float-delay:${(-i * 1.37).toFixed(2)}s"><button class="tw-bubble-body" aria-expanded="false">${avatar(note, 22)}<span class="tw-bubble-text">${esc(textOf(note))}</span></button><div class="tw-bubble-more"><p>${esc(textOf(note))}</p><div class="tw-bubble-meta"><span>${esc(nameOf(note))}</span>${likeButton(note)}</div></div></div></div>`;
+    const bundle = g => `<div class="tw-bundle${g.notes.some(n => n.mine) ? ' mine' : ''}" ${pos(g.u, g.v)}><div class="tw-bubble-float"><button class="tw-bundle-pill" aria-expanded="false" aria-label="${t(`这里还有 ${g.notes.length} 条留言`, `${g.notes.length} more ${g.notes.length === 1 ? 'note' : 'notes'} here`)}">${ENVELOPE}<b>${g.notes.length}</b></button><div class="tw-bundle-list" role="list">${g.notes.map(note => `<div class="tw-bundle-note" role="listitem" data-id="${esc(note.id)}">${avatar(note, 26)}<div class="tw-bundle-copy"><span>${esc(nameOf(note))}</span><p>${esc(textOf(note))}</p></div>${likeButton(note)}</div>`).join('')}</div></div></div>`;
+
     function markers() {
       if (!Array.isArray(viewer?.markers)) return;
-      viewer.markers = viewer.markers.filter(m => !m.element.classList.contains('tw-bubble') && !m.element.classList.contains('tw-pin'));
-      plane.querySelectorAll('.tw-bubble, .tw-pin').forEach(element => viewer.markers.push({element, u: Number(element.dataset.u), v: Number(element.dataset.v), x: NaN, y: NaN, hidden: null}));
+      const own = element => element.matches('.tw-bubble, .tw-pin, .tw-bundle');
+      viewer.markers = viewer.markers.filter(m => !own(m.element));
+      markerOf.clear();
+      plane.querySelectorAll('.tw-bubble, .tw-pin, .tw-bundle').forEach(element => {
+        const marker = {element, u: Number(element.dataset.u), v: Number(element.dataset.v), x: NaN, y: NaN, hidden: null};
+        viewer.markers.push(marker); markerOf.set(element, marker);
+      });
       viewer.projectMarkers?.();
     }
     function build() {
-      plane.querySelectorAll('.tw-bubble:not(.tw-pin)').forEach(el => el.remove());
-      list = filter === 'off' ? [] : notes(scene.id).filter(n => filter === 'all' || n.kind === filter);
-      plane.insertAdjacentHTML('beforeend', list.map((note, i) => `<div class="tw-bubble kind-${note.kind}${note.mine ? ' mine' : ''}" data-id="${esc(note.id)}" data-u="${note.u}" data-v="${note.v}" style="left:${(note.u * 100).toFixed(2)}%;top:${(note.v * 100).toFixed(2)}%"><div class="tw-bubble-float" style="--float-delay:${(-i * 1.37).toFixed(2)}s"><button class="tw-bubble-body" aria-expanded="false"><span class="tw-bubble-avatar" style="--hue:${note.mine ? 222 : hueOf(note.id)}" aria-hidden="true">${esc([...nameOf(note)][0] || '')}</span><span class="tw-bubble-text">${esc([...textOf(note)].length > SNIPPET ? [...textOf(note)].slice(0, SNIPPET).join('') + '…' : textOf(note))}</span></button><div class="tw-bubble-more"><p>${esc(textOf(note))}</p><div class="tw-bubble-meta"><span>${esc(nameOf(note))}</span><button class="tw-bubble-like" aria-pressed="${liked(note)}" aria-label="${t('点赞', 'Like')}">♥ <b>${likes(note)}</b></button></div></div></div></div>`).join(''));
-      shown = []; cursor = 0;
-      const first = list.slice(0, MAX_VISIBLE).map(n => n.id);
-      if (freshId && !first.includes(freshId)) first[first.length - 1] = freshId;
-      first.forEach(show);
-      if (viewer?.ready) Promise.resolve(viewer.ready).then(() => { if (!destroyed) markers(); }, () => {}); else markers();
+      plane.querySelectorAll('.tw-bubble:not(.tw-pin), .tw-bundle').forEach(el => el.remove());
+      const list = filter === 'off' ? [] : notes(scene.id).filter(n => filter === 'all' || n.kind === filter);
+      // Ranked once per build, so liking a note never moves it under the finger. A note just posted keeps a strip
+      // of its own until the scene is left; every note is shown exactly once.
+      const ranked = list.filter(n => n.id !== freshId).map((note, index) => ({note, index})).sort((a, b) => likes(b.note) - likes(a.note) || a.index - b.index).map(x => x.note);
+      const strips = [...ranked.slice(0, STRIPS), ...list.filter(n => n.id === freshId)];
+      plane.insertAdjacentHTML('beforeend', strips.map(strip).join('') + group(ranked.slice(STRIPS), aspect).map(bundle).join(''));
+      anchored = [...plane.querySelectorAll('.tw-bubble:not(.tw-pin), .tw-bundle')];
+      sizes.clear(); edge.clear();
+      if (viewer?.ready) Promise.resolve(viewer.ready).then(() => { if (!destroyed) { markers(); measure(); } }, () => {}); else markers();
+      measure();
       paintBar();
     }
     const el = id => plane.querySelector(`.tw-bubble[data-id="${CSS.escape(id)}"]`);
-    function show(id) { const node = el(id); if (!node) return; node.classList.add('on'); shown.push(id); }
-    function hide(id) { const node = el(id); node?.classList.remove('on', 'open'); node?.querySelector('.tw-bubble-body')?.setAttribute('aria-expanded', 'false'); shown = shown.filter(x => x !== id); }
-    function rotate() {
-      if (destroyed || document.hidden || placing || list.length <= MAX_VISIBLE || plane.querySelector('.tw-bubble.open')) return;
-      const out = shown.find(id => id !== freshId);
-      const candidates = list.map(n => n.id).filter(id => !shown.includes(id));
-      if (!out || !candidates.length) return;
-      hide(out); show(candidates[cursor++ % candidates.length]);
-    }
 
+    // Edge fade: the distance from the element's unscaled box to the nearest edge of the view sets its opacity,
+    // and its size from 100% down to EDGE_SCALE. The scale is applied to the zero-size anchor, so it shrinks
+    // towards the anchored photo point without moving it. Sizes are measured on build and on open/close only.
+    function measureOne(node) {
+      const box = node.querySelector('.tw-bubble-float'), size = {w: box.offsetWidth, h: box.offsetHeight};
+      if (size.w) sizes.set(node, size);
+      return size;
+    }
+    function measure() { anchored.forEach(measureOne); fade(); }
+    function anchorAt(node) {
+      const marker = markerOf.get(node);
+      if (marker) return marker.hidden || !Number.isFinite(marker.x) ? null : {x: marker.x, y: marker.y, w: viewer.w, h: viewer.h};
+      if (viewer?.bw) {
+        const u = Number(node.dataset.u), v = Number(node.dataset.v);
+        return {x: viewer.w / 2 + viewer.x + (u - .5) * viewer.bw * viewer.zoom, y: viewer.h / 2 + viewer.y + (v - .5) * viewer.bh * viewer.zoom, w: viewer.w, h: viewer.h};
+      }
+      return null;
+    }
+    function fade() {
+      if (destroyed) return;
+      for (const node of anchored) {
+        const at = anchorAt(node), size = at && (sizes.get(node) || measureOne(node));
+        let k = 0;
+        if (at && size.w) {
+          const gap = Math.min(at.x - size.w / 2, at.w - at.x - size.w / 2, at.y - 4 - size.h - BOB, at.h - at.y);
+          k = Math.round(clamp(gap / EDGE, 0, 1) * 100) / 100;
+        }
+        if (edge.get(node) === k) continue;
+        edge.set(node, k);
+        node.style.setProperty('--edge-alpha', k);
+        node.style.setProperty('--edge-scale', (EDGE_SCALE + (1 - EDGE_SCALE) * k).toFixed(3));
+        const out = k === 0;
+        if (node.inert !== out) { node.inert = out; node.classList.toggle('is-out', out); }
+      }
+    }
+    // Run after every viewer repaint: the immersive viewer reprojects its markers each frame, the flat one paints.
+    const hookName = typeof viewer?.projectMarkers === 'function' ? 'projectMarkers' : typeof viewer?.paint === 'function' ? 'paint' : '';
+    const hookOwn = hookName && Object.prototype.hasOwnProperty.call(viewer, hookName), hookOriginal = hookName && viewer[hookName];
+    if (hookName) viewer[hookName] = function (...args) { const result = hookOriginal.apply(this, args); fade(); return result; };
+    const unhook = () => { if (!hookName) return; if (hookOwn) viewer[hookName] = hookOriginal; else delete viewer[hookName]; };
+
+    const toggleButton = node => node.querySelector('.tw-bubble-body, .tw-bundle-pill');
+    function setOpen(node, open) {
+      node.classList.toggle('open', open);
+      toggleButton(node).setAttribute('aria-expanded', String(open));
+      measureOne(node);
+    }
     function toggleOpen(node) {
       const open = !node.classList.contains('open');
-      plane.querySelectorAll('.tw-bubble.open').forEach(other => { other.classList.remove('open'); other.querySelector('.tw-bubble-body').setAttribute('aria-expanded', 'false'); });
-      node.classList.toggle('open', open);
-      node.querySelector('.tw-bubble-body').setAttribute('aria-expanded', String(open));
+      plane.querySelectorAll('.tw-bubble.open, .tw-bundle.open').forEach(other => { if (other !== node) setOpen(other, false); });
+      setOpen(node, open);
+      fade();
     }
-    function like(node, button) {
-      const id = node.dataset.id, on = window.TWStore.update(data => { if (data.likes[id]) delete data.likes[id]; else data.likes[id] = true; return !!data.likes[id]; });
+    function like(holder, button) {
+      const id = holder.dataset.id, on = window.TWStore.update(data => { if (data.likes[id]) delete data.likes[id]; else data.likes[id] = true; return !!data.likes[id]; });
       const note = notes(scene.id).find(n => n.id === id);
       button.setAttribute('aria-pressed', String(on)); button.querySelector('b').textContent = likes(note);
       if (on) { button.classList.remove('pop'); void button.offsetWidth; button.classList.add('pop'); }
@@ -109,7 +194,7 @@
       picked = {u, v};
       let pin = plane.querySelector('.tw-pin');
       if (!pin) {
-        plane.insertAdjacentHTML('beforeend', `<div class="tw-pin"><div class="tw-bubble-float"><span class="tw-bubble-body"><span class="tw-bubble-avatar" style="--hue:222" aria-hidden="true">${t('我', 'Me')}</span><span class="tw-bubble-text">${t('我的留言', 'My note')}</span></span></div></div>`);
+        plane.insertAdjacentHTML('beforeend', `<div class="tw-pin"><div class="tw-bubble-float"><span class="tw-bubble-body">${avatar({mine: true}, 22)}<span class="tw-bubble-text">${t('我的留言', 'My note')}</span></span></div></div>`);
         pin = plane.querySelector('.tw-pin');
       }
       pin.dataset.u = u; pin.dataset.v = v;
@@ -164,18 +249,17 @@
       if (target.closest('[data-bubble-new]')) { startPlacing(); return; }
       if (target.closest('[data-place-cancel]')) { stopPlacing(); return; }
       if (target.closest('[data-place-ok]')) { confirmPlace(); return; }
-      const node = target.closest('.tw-bubble');
-      if (!node) return;
-      const likeButton = target.closest('.tw-bubble-like');
-      if (likeButton) like(node, likeButton); else if (target.closest('.tw-bubble-body')) toggleOpen(node);
+      const node = target.closest('.tw-bubble, .tw-bundle');
+      if (!node || node.classList.contains('tw-pin')) return;
+      const heart = target.closest('.tw-bubble-like');
+      if (heart) like(heart.closest('[data-id]'), heart); else if (target.closest('.tw-bubble-body, .tw-bundle-pill')) toggleOpen(node);
     };
     page.addEventListener('click', onClick);
     build();
-    timer = setInterval(rotate, ROTATE_MS);
     return {
       add,
       place: startPlacing,
-      destroy() { destroyed = true; clearInterval(timer); page.removeEventListener('click', onClick); stopPlacing(); bar.remove(); plane.querySelectorAll('.tw-bubble').forEach(node => node.remove()); }
+      destroy() { destroyed = true; unhook(); page.removeEventListener('click', onClick); stopPlacing(); bar.remove(); plane.querySelectorAll('.tw-bubble, .tw-bundle').forEach(node => node.remove()); }
     };
   }
 

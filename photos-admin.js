@@ -39,7 +39,7 @@
     if (d.kind === 'job') return d.status === 'failed' ? '<span class="pill err">生成失败</span>' : '<span class="pill warn">生成中…</span>';
     if (d.kind === 'builtin') return '<span class="pill mute">内置示例 · 只读</span>';
     if (d.status === 'disabled') return '<span class="pill mute">已停用</span>';
-    if (d.channel === 'ugc') return d.review === 'approved' ? '<span class="pill ok">审核通过 · 社区可见</span>' : '<span class="pill warn">待审核 · 社区隐藏</span>';
+    if (d.channel === 'ugc') return d.review === 'approved' ? '<span class="pill ok">审核通过 · 社区可见</span>' : `<span class="pill warn">${d.review==='rejected'?'已退回 · 等待修改':'待审核 · 社区隐藏'}</span>`;
     return d.review === 'approved' ? '<span class="pill ok">已启用 · 已核对</span>' : '<span class="pill warn">已启用 · 待核对</span>';
   }
   function stepList(job) {
@@ -77,7 +77,7 @@
     }
     const r = d.rules, g = r.guess;
     const reviewAction = d.channel === 'ugc'
-      ? `<button class="btn${d.review !== 'approved' ? ' solid' : ''}" data-review="${d.review === 'approved' ? 'pending' : 'approved'}">${d.review === 'approved' ? '撤回审核（社区隐藏）' : '审核通过'}</button>`
+      ? `<button class="btn${d.review !== 'approved' ? ' solid' : ''}" data-review="${d.review === 'approved' ? 'pending' : 'approved'}">${d.review === 'approved' ? '撤回审核（社区隐藏）' : '审核通过'}</button><button class="btn" data-review="rejected">退回修改</button>`
       : (d.review !== 'approved' ? '<button class="btn" data-review="approved">标记为已核对</button>' : '');
     const actions = d.kind === 'db' ? `<div class="detail-actions">${reviewAction}<button class="btn" data-toggle="${d.status === 'disabled' ? 'ready' : 'disabled'}">${d.status === 'disabled' ? '重新启用' : '停用'}</button><button class="btn danger" data-delete="1">删除</button></div>` : '';
     const flags = d.generated?.flags?.length ? `<div class="notice"><b>待人工核对：</b><ul>${d.generated.flags.map(f => `<li>${esc(f)}</li>`).join('')}</ul></div>` : '';
@@ -130,7 +130,7 @@
       const toggle = t.closest('[data-toggle]');
       if (toggle) { toggle.disabled = true; await call(`/api/journeys/${id}/status`,'POST',{status:toggle.dataset.toggle}); return refresh(); }
       const review = t.closest('[data-review]');
-      if (review) { review.disabled = true; await call(`/api/journeys/${id}/review`,'POST',{review:review.dataset.review}); return refresh(); }
+      if (review) { const note=review.dataset.review==='rejected'?prompt('请填写退回原因，发布者可在「我的发布」查看并修改'):'';if(review.dataset.review==='rejected'&&!note?.trim())return;review.disabled = true; await call(`/api/journeys/${id}/review`,'POST',{review:review.dataset.review,note}); return refresh(); }
       if (t.closest('[data-delete]')) {
         if (confirm('删除该目的地？数据库记录和已生成的图片会被永久删除。')) {
           await call(`/api/journeys/${id}`,'DELETE'); location.hash = listUrl(channelOf(d)); await refresh();

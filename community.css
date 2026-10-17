@@ -252,3 +252,25 @@
 #app .cover-page.cover-ugc .cover-dock{grid-template-columns:1fr}
 /* Player-journey places have longer names than the two-character city names the brush headline is sized for. */
 .result-ugc .result-arrival>strong{font-size:clamp(40px,calc(var(--result-width,390px)*.12),56px);white-space:normal;line-height:1.12}
+.cm-community-tools{display:flex;justify-content:flex-end;gap:16px;padding:0 18px 10px;flex:none;background:#fff}
+.cm-community-tools button{border:0;background:transparent;color:#657189;font-size:12px;padding:6px 0}
+.cm-draft-status{font-size:12px;line-height:1.6;color:#64748b}
+.cm-question-scene{display:flex;align-items:center;gap:10px;font-size:12px;color:#64748b;margin-bottom:10px}
+.cm-question-scene select{flex:1;min-width:0;border:1px solid #dce3eb;border-radius:8px;background:#fff;padding:8px}
+.cm-submissions{padding:0 18px 32px}
+.cm-submissions .page-head{margin:0 -18px}
+.cm-management-note{font-size:12px;line-height:1.7;color:#7b8494}
+.cm-management-tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:12px 0}
+.cm-management-tools button,.cm-management-tools a{font-size:12px;padding:9px 12px;min-height:38px;min-width:0;border-radius:12px}
+.cm-submission{padding:16px;margin:14px 0;border:1px solid #edf0f3;border-radius:16px;background:#fff}
+.cm-submission .row{gap:10px;align-items:flex-start}
+.cm-submission strong{overflow-wrap:anywhere;font-size:15px;flex:1}
+.cm-submission .pill{white-space:nowrap;font-size:11px}
+.cm-submission p{font-size:12px;line-height:1.7;color:#7b8494}
+.cm-review-feedback{color:#b36a2d!important;background:#fff7ec;padding:10px;border-radius:8px}
+.cm-review-dialog{border:0;border-radius:20px;max-width:calc(100% - 28px);max-height:85%;padding:20px;color:#172033}
+.cm-review-dialog::backdrop{background:#0006}
+.cm-review-dialog p{font-size:13px;line-height:1.8;overflow-wrap:anywhere}
+.cm-review-photos{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.cm-review-photos figure{margin:0;min-width:0;font-size:11px;color:#8791a0}
+.cm-review-photos img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:8px}

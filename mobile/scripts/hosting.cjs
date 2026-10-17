@@ -14,6 +14,8 @@ async function hosting(){
     if(/(?:^|\/)check-[^/]*\//.test(rel)||/\/immersive\//.test(rel))continue;
     if(/\.(jpg|jpeg|png|avif|webp|woff2?|json|js|md|mp3)$/i.test(rel)||/^assets\/fonts\/[^/]+-OFL\.txt$/.test(rel))copy(file,rel);
   }
+  const {publishedJourneys,publishedScript}=await import('../../admin/export.mjs');
+  fs.writeFileSync(path.join(staticDir,'published-journeys.js'),publishedScript(await publishedJourneys()));
   const routes=[{
     src:'/photo-library/[^/]+/[^/]+/immersive-blur/photo\\.jpg',
     has:[{type:'query',key:'v',value:'[a-f0-9]{12}'}],

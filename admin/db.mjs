@@ -38,12 +38,13 @@ CREATE TABLE IF NOT EXISTS jobs (
 // journey_meta.status: ready | disabled.  jobs.status: queued | running | done | failed.
 
 const now = () => new Date().toISOString();
+if (!db.prepare('PRAGMA table_info(journey_meta)').all().some(c => c.name === 'review_note')) db.exec("ALTER TABLE journey_meta ADD COLUMN review_note TEXT NOT NULL DEFAULT ''");
 const parse = text => (text == null ? null : JSON.parse(text));
 
 export function listJourneys() {
-  return db.prepare(`SELECT j.journey, m.status, m.review, m.created_at AS createdAt
+  return db.prepare(`SELECT j.journey, m.status, m.review, m.review_note AS reviewNote, m.created_at AS createdAt
     FROM destination_journeys j JOIN journey_meta m USING (destination_id) ORDER BY m.created_at`).all()
-    .map(row => ({...parse(row.journey), status: row.status, review: row.review, createdAt: row.createdAt}));
+    .map(row => ({...parse(row.journey), status: row.status, review: row.review, reviewNote: row.reviewNote, createdAt: row.createdAt}));
 }
 export function getJourney(id) {
   const row = db.prepare('SELECT journey FROM destination_journeys WHERE destination_id = ?').get(id);
@@ -64,15 +65,15 @@ export function saveJourney(id, journey, {status = 'ready', review = 'pending'} 
 export function setStatus(id, status) {
   return db.prepare('UPDATE journey_meta SET status = ?, updated_at = ? WHERE destination_id = ?').run(status, now(), id).changes > 0;
 }
-export function setReview(id, review) {
-  return db.prepare('UPDATE journey_meta SET review = ?, updated_at = ? WHERE destination_id = ?').run(review, now(), id).changes > 0;
+export function setReview(id, review, note = '') {
+  return db.prepare('UPDATE journey_meta SET review = ?, review_note = ?, updated_at = ? WHERE destination_id = ?').run(review, note, now(), id).changes > 0;
 }
 export function deleteJourney(id) {
   db.prepare('DELETE FROM destination_journeys WHERE destination_id = ?').run(id);
   db.prepare('DELETE FROM journey_meta WHERE destination_id = ?').run(id);
 }
 
-const jobRow = row => row && ({...row, input: parse(row.input), steps: parse(row.steps), state: parse(row.state)});
+const jobRow = row => row && ({...row, destinationId: row.destination_id, input: parse(row.input), steps: parse(row.steps), state: parse(row.state)});
 export function createJob(job) {
   const t = now();
   db.prepare(`INSERT INTO jobs (id, destination_id, name, status, input, steps, state, created_at, updated_at)

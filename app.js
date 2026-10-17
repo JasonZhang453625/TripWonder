@@ -1,6 +1,8 @@
-(() => {
+(async () => {
   'use strict';
+  await window.UGCService?.ready;
   const C = window.TRIPWONDER_CATALOG;
+  window.Community?.initializeSamples();
   // Language: tr('中文','English') for UI copy, f() for data fields, term()/place() for data vocabularies.
   const {t:tr, f, term, place} = I18N, en = () => I18N.isEn();
   const cname = item => f(item,'name');
@@ -49,9 +51,11 @@
   const order = libraryOrder.slice(0,5);
   const daily = {}, benefits = {};
   let invitation=null;
-  try { const raw=new URL(location.href).searchParams.get('challenge');if(raw){const token=raw.replace(/-/g,'+').replace(/_/g,'/'),candidate=JSON.parse(atob(token));if(libraryOrder.includes(candidate.cityId)&&Number.isInteger(candidate.score)&&candidate.score>=0&&candidate.score<=100)invitation=candidate;} } catch {}
+  let unavailableInvitation=false;
+  try { const raw=new URL(location.href).searchParams.get('challenge');if(raw){const token=raw.replace(/-/g,'+').replace(/_/g,'/'),candidate=JSON.parse(atob(token));if(Number.isInteger(candidate.score)&&candidate.score>=0&&candidate.score<=100){if(libraryOrder.includes(candidate.cityId)||C.ugc?.some(j=>j.id===candidate.cityId))invitation=candidate;else unavailableInvitation=true;}} } catch { unavailableInvitation=true; }
+  const ugcInvitation=invitation&&C.ugc?.some(j=>j.id===invitation.cityId);
   // A shared destination must stay playable even when it is outside today's draw.
-  if(invitation&&!order.includes(invitation.cityId))order[order.length-1]=invitation.cityId;
+  if(invitation&&!ugcInvitation&&!order.includes(invitation.cityId))order[order.length-1]=invitation.cityId;
   // Earlier results of challenged cities that are not part of today's draw feed the atlas and the mall.
   for(const [id,record] of Object.entries(challenged))if(record?.result&&!order.includes(id)&&C.cities.some(c=>c.id===id))daily[id]={result:record.result,skipped:false};
   // One clock covers looking at the scenes and answering: it starts on entering the first scene and keeps running
@@ -69,12 +73,13 @@
     daily, benefits, badges:Object.fromEntries(Object.entries(challenged).filter(([,record])=>record?.badge).map(([id,record])=>[id,record.badge])), invitation, itineraries:{}, bookmarks:{}, rulesSeen:false, pk:null, mallBack:'home',
     // Entry split: challenge = today's official draw (rewards, no notes); browse = a community visit to a journey
     // (clues and notes, no quiz); ugc = a player journey's game (no rewards of any kind).
-    mode:'challenge', ugcResults:{}, journeyId:null, journeyBack:'feed', journeyReturn:null, feedTab:'all', boardFilter:'all', composeScene:null
+    mode:ugcInvitation?'ugc':'challenge', ugcResults:{}, journeyId:null, journeyBack:'feed', journeyReturn:null, feedTab:'all', boardFilter:'all', composeScene:null
   };
   // Gameplay layer (tw-store.js): coins, simulated PK and scene notes, each switchable for the live demo.
   const feature = name => !!window.TW_FEATURES?.[name] && !!window.TWStore && !!{wallet:window.Wallet,pk:window.PKMode,bubbles:window.SceneBubbles}[name];
   let bubbles=null, pkMatching=false, hubCards=null, hubWarm=null, hubWarmTask=null;
   let timer, viewer, mapView, resultReveal, coverCarousel, clueSheet, toastTimer, transition=0, pendingCleanup, rulesCleanup, previousFocus, activeShare, resultRouteReturn;
+  let feedResultReturn=null,ugcBack='feed';
   const cityProgress = new Map();
   const journeyById = id => C.cities.find(c => c.id === id) || C.ugc?.find(c => c.id === id);
   const city = () => journeyById(s.cityId) || C.cities[0];
@@ -85,7 +90,7 @@
   const GUESS = {max:40, fullKm:25, decayKm:450};
   const guessRule = () => ({...GUESS, ...city().guess});
   function guessScore(km,sameCity=false) { const c=guessRule(); return sameCity||km<=c.fullKm?c.max:Math.round(c.max*Math.exp(-(km-c.fullKm)/c.decayKm)); }
-  const guessVerdict = ({km,sameCity}) => sameCity?tr('同城命中','Right city!'):km<=25?tr('精准命中','Bullseye'):km<=100?tr('近在咫尺','So close'):km<=300?tr('八九不离十','Nearly there'):km<=800?tr('方向对了','Right direction'):tr('下次再近一点','Closer next time');
+  const guessVerdict = ({km,sameCity}) => sameCity?tr('同城命中','Right city!'):km<=guessRule().fullKm?tr('精准命中','Bullseye'):km<=100?tr('近在咫尺','So close'):km<=300?tr('八九不离十','Nearly there'):km<=800?tr('方向对了','Right direction'):tr('下次再近一点','Closer next time');
   function nextDestination(fromId=s.cityId, includeSkipped=false) {
     const index=Math.max(0,order.indexOf(fromId));
     const following=order.slice(index+1).concat(order.slice(0,index));
@@ -172,7 +177,7 @@
   function selectAnswer(index) {
     if(s.view!=='quiz'||ChallengeMotion.busy)return;
     if(expired()){tick();return;}
-    const changed=s.selected!==index;s.selected=index;
+    const changed=s.selected!==index;s.selected=index;persistUgc();
     app.querySelectorAll('[data-option]').forEach(button=>{const selected=Number(button.dataset.option)===index;button.classList.toggle('selected',selected);button.setAttribute('aria-pressed',String(selected));});
     const submit=app.querySelector('[data-action="submit"]'),wasDisabled=submit.disabled;submit.disabled=false;
     if(changed)ChallengeMotion.select(app.querySelector('[data-option="'+index+'"]'));
@@ -186,7 +191,7 @@
     ChallengeMotion.run(()=>{
       if(s.view!=='quiz'||s.q!==index)return;
       if(expired()){tick();return;}
-      s.answers.push({...q,selected,correct:q.answer===selected});s.q++;s.selected=null;
+      s.answers.push({...q,selected,correct:q.answer===selected});s.q++;s.selected=null;persistUgc();
       app.querySelector('.quiz-body').innerHTML=quizBody();
       QuizScene.set(app.querySelector('.quiz-page'),city(),s.questions[s.q]);
       const submit=app.querySelector('[data-action="submit"]');submit.disabled=true;submit.querySelector('span').textContent=submitLabel();
@@ -206,7 +211,7 @@
     if(s.guess)mapView.setPin(s.guess,s.guess.province,s.guess.city);
   }
   function pickGuess(point) {
-    s.guess={lat:point.lat,lng:point.lng,x:point.x,y:point.y,province:point.province,city:point.city};
+    s.guess={lat:point.lat,lng:point.lng,x:point.x,y:point.y,province:point.province,city:point.city};persistUgc();
     const status=app.querySelector('.guess-status'),submit=app.querySelector('[data-action="guess-submit"]');
     if(status){status.innerHTML=guessStatus();ChallengeMotion.update(status);}if(submit){const wasDisabled=submit.disabled;submit.disabled=false;if(wasDisabled)ChallengeMotion.activate(submit);}
   }
@@ -281,7 +286,7 @@
         <div class="result-copy"><div class="result-region">${icon('pin')}${esc(f(c,'region'))} · ${name}</div><h1 class="result-arrival${en()?' is-en':''}">${en()?`<span>Hello,</span><strong>${name}<i>.</i></strong>`:`<span>你好，</span><strong>${name}<i>。</i></strong>`}</h1></div>
         <p class="result-description">${esc(f(story,'description')||tr('沿着眼前的风景，继续发现这座城市。','Follow the view in front of you and keep discovering this city.'))}</p>
         <div class="result-score-module"><div class="result-score-label">${tr('本次探索得分','Your score')}</div><div class="result-score-number">${r.score}<small>/ 100</small></div></div>
-        <div class="result-score-breakdown"><span>${tr('地图定位','Map guess')} <b>${r.guess?.points??0}<small> / ${GUESS.max}</small></b></span><span>${tr('限时答题','Quiz')} <b>${r.quiz??r.score}<small> / ${quizTotal(c)}</small></b></span></div>
+        <div class="result-score-breakdown"><span>${tr('地图定位','Map guess')} <b>${r.guess?.points??0}<small> / ${guessRule().max}</small></b></span><span>${tr('限时答题','Quiz')} <b>${r.quiz??r.score}<small> / ${quizTotal(c)}</small></b></span></div>
         <button class="result-scroll-cue" aria-label="${tr('向下查看地图与探索详情','Scroll down for the map and details')}">${tr('向下，继续这段旅程','Scroll on to continue the journey')} ${icon('down')}</button>
       </div>
     </section>`;
@@ -289,8 +294,8 @@
   function guessCardMarkup(r,c,name) { return r.guess?`<section class="content-card guess-summary"><div class="row"><h3>${tr('地图定位','Map guess')}</h3><span class="pill">${esc(guessVerdict(r.guess))}</span></div><div class="guess-mini">${GuessMap.snapshot(r.guess,c)}</div><div class="guess-legend"><span class="you">${tr('你的落点','Your pin')}</span><span class="target">${name}</span></div><div class="guess-stats"><div><b>${r.guess.km} km</b><small>${tr('直线距离','Straight-line distance')}</small></div><div><b>+${r.guess.points}</b><small>${tr(`定位得分 / ${guessRule().max}`,`Map points / ${guessRule().max}`)}</small></div><div><b>${esc(place(r.guess.city||r.guess.province)||'—')}</b><small>${tr('你的落点','Your pin')}</small></div></div></section>`:''; }
   function answersMarkup(r) { return `<section class="content-card"><h3>${tr('三题一起揭晓','Your three answers')}</h3>${r.answers.map((a,i)=>`<button class="answer-line" data-review="${i}" style="width:100%;text-align:left">${icon(a.correct?'check':'book')}<span>${tr(`第 ${i+1} 题 · ${a.correct?'答对':'查看解析'}`,`Question ${i+1} · ${a.correct?'Correct':'See explanation'}`)}</span><b>${tr(`${a.correct?'+'+a.points:'0'} 分`,`${a.correct?'+'+a.points:'0'} pts`)}</b>${icon('next')}</button>`).join('')}</section>`; }
   // A player journey's result: score, map and answers only. No badge, perks, coins, PK, rankings or route.
-  function ugcResult(r) { const c=city(),name=esc(cname(c)); return `<div class="page result-page result-ugc">${resultOpening(c,r)}<div class="result-details"><section class="content-card ugc-result-note"><div class="ugc-result-maker"><span>${tr('制作人：','Creator:')}</span><span class="cm-channel is-ugc">${esc(f(c.author,'name'))}</span></div><p>${tr('社区Journey不获取奇境币和目的地徽章','Community Journeys earn no Wonder Coins or destination badges')}</p></section><div class="result-actions ugc-result-actions"><button class="primary" data-action="result-exit">${tr('查看评论','Read comments')} ${icon('next')}</button><button class="secondary" data-go="feed">${tr('更多玩家 Journey','More player journeys')}</button></div>${guessCardMarkup(r,c,name)}${answersMarkup(r)}</div></div>`; }
-  function result() { const r=s.result || current().result; if(!r)return empty(tr('目的地尚未揭晓','Destination not revealed yet'),tr('完成探索和三道题，再来查看结果。','Finish exploring and the three questions to see your result.')); if(s.mode==='ugc')return ugcResult(r); const c=city(), name=esc(cname(c)), benefit=benefitFor(r), status=benefitStatus(c.id), next=nextDestination(s.cityId,true), prev=previousDestination(s.cityId), medalReady=r.score>=MEDAL_SCORE||!!s.badges[c.id]; return `<div class="page result-page">${resultOpening(c,r)}<div class="result-details">${r.pk?PKMode.resultCard(r.pk,r):''}${feature('wallet')&&r.coins?Wallet.earnedCard(r.coins):''}<button class="content-card result-discuss" data-action="discuss">${icon('message')}<span><strong>${tr('去社区看看大家怎么说','See what others say in the community')}</strong><small>${tr(`${name}的留言板已为你解锁`,`The ${name} board is now open to you`)}</small></span>${icon('next')}</button>${r.guess?`<section class="content-card guess-summary"><div class="row"><h3>${tr('地图定位','Map guess')}</h3><span class="pill">${esc(guessVerdict(r.guess))}</span></div><div class="guess-mini">${GuessMap.snapshot(r.guess,c)}</div><div class="guess-legend"><span class="you">${tr('你的落点','Your pin')}</span><span class="target">${name}</span></div><div class="guess-stats"><div><b>${r.guess.km} km</b><small>${tr('直线距离','Straight-line distance')}</small></div><div><b>+${r.guess.points}</b><small>${tr(`定位得分 / ${GUESS.max}`,`Map points / ${GUESS.max}`)}</small></div><div><b>${esc(place(r.guess.city||r.guess.province)||'—')}</b><small>${tr('你的落点','Your pin')}</small></div></div></section>`:''}<section class="content-card"><h3>${tr('三题一起揭晓','Your three answers')}</h3>${r.answers.map((a,i)=>`<button class="answer-line" data-review="${i}" style="width:100%;text-align:left">${icon(a.correct?'check':'book')}<span>${tr(`第 ${i+1} 题 · ${a.correct?'答对':'查看解析'}`,`Question ${i+1} · ${a.correct?'Correct':'See explanation'}`)}</span><b>${tr(`${a.correct?'+'+a.points:'0'} 分`,`${a.correct?'+'+a.points:'0'} pts`)}</b>${icon('next')}</button>`).join('')}</section><section class="content-card benefit badge-benefit" aria-label="${tr('纪念徽章','Keepsake badge')}"><div class="row"><div><strong>${badgeTitle(c)}</strong><p>${medalReady?tr('珍藏这一站的发现','Keep a memento of this stop'):tr(`本次 ${r.score} 分，达到 ${MEDAL_SCORE} 分可领取`,`You scored ${r.score}. Reach ${MEDAL_SCORE} to claim it`)}</p></div><button data-action="claim"${medalReady?'':' disabled'}>${s.badges[c.id]?tr('查看徽章','View badge'):medalReady?tr('领取徽章','Claim badge'):tr(`${MEDAL_SCORE} 分解锁`,`Unlocks at ${MEDAL_SCORE}`)}</button></div></section><section class="content-card benefit coupon-benefit" aria-label="${tr('优惠权益','Travel perks')}"><div class="coupon-panel"><div class="coupon-head"><strong>${esc(benefit.name)}</strong><button data-action="claim-coupon">${status==='active'?tr('查看权益','View perks'):status==='expired'?tr('重新领取','Claim again'):tr('领取权益','Claim perks')}</button></div><div class="coupon-tickets" tabindex="0" aria-label="${tr('优惠券列表，左右滑动查看','Coupons. Swipe sideways to see them all')}">${RESULT_COUPONS.map(c=>`<div class="coupon-ticket"><b>${couponTitle(c)}</b><span>${f(c,'kind')} · ${f(c,'rule')}</span></div>`).join('')}</div><p class="coupon-terms">${rewardTerms()}</p></div></section>${feature('wallet')?Wallet.sponsorSlot(c.id,C.cities):''}<div class="result-actions"><button class="primary" data-go="route">${tr(`为我规划${name}之旅`,`Plan my ${name} trip`)} ${icon('next')}</button><div class="stop-nav"><button class="glass-light prev-city" data-action="prev-city"${prev?'':' disabled'}>${icon('back')} ${tr('上一个目的地','Previous destination')}</button>${next?`<button class="secondary next-city" data-action="next-city">${tr('下一个目的地','Next destination')} ${icon('next')}</button>`:`<button class="secondary next-city" data-go="hub">${tr('返回 TripWonder','Back to TripWonder')}</button>`}</div></div></div></div>`; }
+  function ugcResult(r) { const c=city(),name=esc(cname(c)); return `<div class="page result-page result-ugc">${resultOpening(c,r)}<div class="result-details"><section class="content-card ugc-result-note"><div class="ugc-result-maker"><span>${tr('制作人：','Creator:')}</span><span class="cm-channel is-ugc">${esc(f(c.author,'name'))}</span></div><p>${tr('社区Journey不获取奇境币和目的地徽章','Community Journeys earn no Wonder Coins or destination badges')}</p></section><div class="result-actions ugc-result-actions"><button class="primary" data-action="discuss">${tr('查看评论','Read comments')} ${icon('next')}</button><button class="secondary" data-go="feed">${tr('更多玩家 Journey','More player journeys')}</button></div>${guessCardMarkup(r,c,name)}${answersMarkup(r)}</div></div>`; }
+  function result() { const r=s.result || current().result; if(!r)return empty(tr('目的地尚未揭晓','Destination not revealed yet'),tr('完成探索和三道题，再来查看结果。','Finish exploring and the three questions to see your result.')); if(s.mode==='ugc')return ugcResult(r); const c=city(), name=esc(cname(c)), benefit=benefitFor(r), status=benefitStatus(c.id), next=nextDestination(s.cityId,true), prev=previousDestination(s.cityId), medalReady=r.score>=MEDAL_SCORE||!!s.badges[c.id]; return `<div class="page result-page">${resultOpening(c,r)}<div class="result-details">${r.pk?PKMode.resultCard(r.pk,r):''}${feature('wallet')&&r.coins?Wallet.earnedCard(r.coins):''}<button class="content-card result-discuss" data-action="discuss">${icon('message')}<span><strong>${tr('去社区看看大家怎么说','See what others say in the community')}</strong><small>${tr(`${name}的留言板已为你解锁`,`The ${name} board is now open to you`)}</small></span>${icon('next')}</button>${r.guess?`<section class="content-card guess-summary"><div class="row"><h3>${tr('地图定位','Map guess')}</h3><span class="pill">${esc(guessVerdict(r.guess))}</span></div><div class="guess-mini">${GuessMap.snapshot(r.guess,c)}</div><div class="guess-legend"><span class="you">${tr('你的落点','Your pin')}</span><span class="target">${name}</span></div><div class="guess-stats"><div><b>${r.guess.km} km</b><small>${tr('直线距离','Straight-line distance')}</small></div><div><b>+${r.guess.points}</b><small>${tr(`定位得分 / ${guessRule().max}`,`Map points / ${guessRule().max}`)}</small></div><div><b>${esc(place(r.guess.city||r.guess.province)||'—')}</b><small>${tr('你的落点','Your pin')}</small></div></div></section>`:''}<section class="content-card"><h3>${tr('三题一起揭晓','Your three answers')}</h3>${r.answers.map((a,i)=>`<button class="answer-line" data-review="${i}" style="width:100%;text-align:left">${icon(a.correct?'check':'book')}<span>${tr(`第 ${i+1} 题 · ${a.correct?'答对':'查看解析'}`,`Question ${i+1} · ${a.correct?'Correct':'See explanation'}`)}</span><b>${tr(`${a.correct?'+'+a.points:'0'} 分`,`${a.correct?'+'+a.points:'0'} pts`)}</b>${icon('next')}</button>`).join('')}</section><section class="content-card benefit badge-benefit" aria-label="${tr('纪念徽章','Keepsake badge')}"><div class="row"><div><strong>${badgeTitle(c)}</strong><p>${medalReady?tr('珍藏这一站的发现','Keep a memento of this stop'):tr(`本次 ${r.score} 分，达到 ${MEDAL_SCORE} 分可领取`,`You scored ${r.score}. Reach ${MEDAL_SCORE} to claim it`)}</p></div><button data-action="claim"${medalReady?'':' disabled'}>${s.badges[c.id]?tr('查看徽章','View badge'):medalReady?tr('领取徽章','Claim badge'):tr(`${MEDAL_SCORE} 分解锁`,`Unlocks at ${MEDAL_SCORE}`)}</button></div></section><section class="content-card benefit coupon-benefit" aria-label="${tr('优惠权益','Travel perks')}"><div class="coupon-panel"><div class="coupon-head"><strong>${esc(benefit.name)}</strong><button data-action="claim-coupon">${status==='active'?tr('查看权益','View perks'):status==='expired'?tr('重新领取','Claim again'):tr('领取权益','Claim perks')}</button></div><div class="coupon-tickets" tabindex="0" aria-label="${tr('优惠券列表，左右滑动查看','Coupons. Swipe sideways to see them all')}">${RESULT_COUPONS.map(c=>`<div class="coupon-ticket"><b>${couponTitle(c)}</b><span>${f(c,'kind')} · ${f(c,'rule')}</span></div>`).join('')}</div><p class="coupon-terms">${rewardTerms()}</p></div></section>${feature('wallet')?Wallet.sponsorSlot(c.id,C.cities):''}<div class="result-actions"><button class="primary" data-go="route">${tr(`为我规划${name}之旅`,`Plan my ${name} trip`)} ${icon('next')}</button><div class="stop-nav"><button class="glass-light prev-city" data-action="prev-city"${prev?'':' disabled'}>${icon('back')} ${tr('上一个目的地','Previous destination')}</button>${next?`<button class="secondary next-city" data-action="next-city">${tr('下一个目的地','Next destination')} ${icon('next')}</button>`:`<button class="secondary next-city" data-go="hub">${tr('返回 TripWonder','Back to TripWonder')}</button>`}</div></div></div></div>`; }
   const badgeTitle = c => tr(`奇境挑战徽章 · ${esc(c.name)}`,`TripWonder badge · ${esc(cname(c))}`);
   function distance(a,b) { const rad=Math.PI/180, dLat=(b.lat-a.lat)*rad, dLng=(b.lng-a.lng)*rad; const h=Math.sin(dLat/2)**2+Math.cos(a.lat*rad)*Math.cos(b.lat*rad)*Math.sin(dLng/2)**2; return 12742*Math.asin(Math.sqrt(h)); }
   function travelMinutes(a,b) { const km=distance(a,b); return Math.max(15,Math.ceil((km/32*60+12)/5)*5); }
@@ -376,18 +381,30 @@
     return {cities:C.cities,order,daily:s.daily,badges:s.badges,challenged:played,played:ugcPlayed,tab:s.feedTab,boardFilter:s.boardFilter,journey:journeyById(s.journeyId),img,head,esc};
   }
   function hub() { return Community.hub(communityContext()); }
-  function feed() { return Community.feed(communityContext()); }
+  function feed() {
+    const ctx=communityContext();
+    return Community.feed({...ctx,head:(title,back,right)=>head(title,back==='hub'&&feedResultReturn?'result':back,right)});
+  }
   function journey() { return Community.journey(communityContext()); }
   function publish() { return Community.publish(communityContext()); }
   function openJourney(id) {
     if(!journeyById(id))return;
-    // From a challenge result the detail page returns to that result; otherwise to the feed.
-    if(s.view==='result'&&s.mode==='challenge'){s.journeyBack='result';s.journeyReturn=s.cityId;}else if(!['explore','cover','result','journey'].includes(s.view))s.journeyBack='feed';
+    // Comments opened from either kind of result are a child of that result.
+    if(s.view==='result'){s.journeyBack='result';s.journeyReturn=resultReturnPoint();}
+    else if(!['explore','cover','journey'].includes(s.view)){s.journeyBack='feed';s.journeyReturn=null;}
     s.journeyId=id;s.boardFilter='all';return go('journey');
   }
   function leaveJourney() {
-    if(s.journeyBack==='result'&&s.journeyReturn){const id=s.journeyReturn;s.journeyReturn=null;s.journeyBack='feed';activateCity(id,'challenge');go('result',{back:true});return;}
-    go('feed',{back:true});
+    if(s.journeyBack==='result'&&s.journeyReturn){const point=s.journeyReturn;return restoreCommunityResult(point).then(shown=>{if(shown){s.journeyReturn=null;s.journeyBack='feed';}});}
+    return go('feed',{back:true});
+  }
+  function resultReturnPoint() { return {cityId:s.cityId,mode:s.mode,result:s.result||current().result,state:resultReveal?.snapshot()}; }
+  function restoreCommunityResult(point,{force=false}={}) {
+    const c=journeyById(point.cityId);if(!c)return Promise.resolve(go('feed',{back:true,force}));
+    return ChallengeMotion.slide(ready=>{
+      activateCity(point.cityId,point.mode);s.result=point.result||s.result;s.view='result';render(ready.cloneNode());resultReveal?.restore(point.state);
+    },{force,back:true,restoreScroll:false,prepare:()=>{cancelPending();return SceneMedia.prepare(ResultReveal.destination(c).scene.photo);}})
+      .catch(error=>{if(error.name!=='AbortError')toast(tr('页面暂未载入，请重试','This page didn’t load. Please try again.'));});
   }
   function startBrowse(index=0,{compose=false}={}) {
     const c=journeyById(s.journeyId);if(!c)return;
@@ -396,13 +413,14 @@
   }
   function startUgc() {
     const c=journeyById(s.journeyId);if(!Community.isUgc(c))return;
+    if(s.view==='feed'||s.view==='journey')ugcBack=s.view;
     activateCity(c.id,'ugc');
-    // Playing again starts a fresh round; the best score stays on the card.
-    if(current().result){delete s.ugcResults[c.id];Object.assign(s,freshProgress());s.result=null;}
+    // Every entry into a player journey is a fresh round with a full clock; the best score stays on the card.
+    delete s.ugcResults[c.id];Object.assign(s,freshProgress());s.result=null;
     start();
   }
-  const exitLabel = () => s.mode==='ugc'?tr('返回 Journey','Back to the journey'):tr('返回 TripWonder','Back to TripWonder');
-  function exitGame() { if(s.mode==='ugc'){s.journeyId=s.cityId;go('journey',{back:true});}else go('hub',{back:true}); }
+  const exitLabel = () => s.mode==='ugc'?(ugcBack==='journey'?tr('返回 Journey','Back to the journey'):tr('返回社区','Back to the community')):tr('返回 TripWonder','Back to TripWonder');
+  function exitGame() { if(s.mode==='ugc'){s.journeyId=s.cityId;pauseQuizTimer();Object.assign(s,freshProgress());return go(ugcBack,{back:true});}return go('hub',{back:true}); }
   // Names a scene note must not show before the map guess (scene-bubbles.js replaces them with "here").
   function hiddenNames() { const c=city(),parts=value=>String(value||'').split(/[·\s,，、]+/); return [c.name,c.nameEn,c.region,String(c.region||'').replace(/^中国|特别行政区$|省$|市$|自治区$/g,''),c.regionEn,String(c.regionEn||'').replace(/ SAR$/,''),...c.scenes.flatMap(sc=>[...parts(sc.name),...String(sc.nameEn||'').split('·').map(x=>x.trim())])]; }
   function composeNote(at) {
@@ -497,7 +515,7 @@
     document.querySelector('#phone').classList.toggle('quiz-mode',s.view==='quiz');
     document.querySelector('#phone').classList.toggle('home-mode',s.view==='home');
     document.querySelector('#phone').classList.toggle('result-mode',s.view==='result'&&!!(s.result||current().result));
-    const views={home,cover,explore,quiz,guess,result,route,atlas,ranking,itinerary,profile,mall,hub,feed,journey,publish};
+    const views={home,cover,explore,quiz,guess,result,route,atlas,ranking,itinerary,profile,mall,hub,feed,journey,publish,myjourneys:()=>UGCService.management(communityContext()),ugcreview:()=>UGCService.management(communityContext(),true)};
     const frame=document.createElement('div');
     if(prepared){prepared.page.classList.remove('scene-staging');prepared.page.inert=false;prepared.page.removeAttribute('aria-hidden');frame.append(prepared.page);}
     else if(warmed){warmed.page.removeAttribute('style');warmed.page.inert=false;warmed.page.removeAttribute('aria-hidden');delete warmed.page.dataset.hubPrewarm;frame.append(warmed.page);}
@@ -507,6 +525,10 @@
     app.replaceChildren(...frame.childNodes);app.scrollTop=0;showOpeningWarnings();showFriendComparison();
     if(s.view==='hub'){hubCards=warmed?.cards||window.HubCards3D?.mount(app.firstElementChild);hubCards?.present();}
     if(s.view==='journey')Community.mountJourney(app);
+    window.UGCService?.release();
+    if(s.view==='publish')UGCService.mountPublish(app.querySelector('.cm-form'));
+    if(['myjourneys','ugcreview'].includes(s.view))UGCService.mountManagement();
+    persistUgc();
     document.querySelectorAll('.flow button').forEach(b=>b.classList.toggle('active',b.dataset.go===s.view || (b.dataset.go==='today'&&s.mode==='challenge'&&['cover','explore','quiz','guess','atlas','ranking'].includes(s.view)) || (b.dataset.go==='feed'&&['journey','publish'].includes(s.view)) || (b.dataset.go==='feed'&&s.mode!=='challenge'&&['cover','explore','quiz','guess'].includes(s.view))));
     app.querySelectorAll('img').forEach(el=>el.addEventListener('error',()=>{el.insertAdjacentHTML('afterend','<span class="error-image">'+tr('照片未能载入','Photo failed to load')+'</span>');},{once:true}));
     if(s.view==='explore') { const root=app.querySelector('.photo-viewport'),config=immersiveConfig(activePhoto());viewer=prepared?.viewer||(config&&window.ImmersivePhotoViewer?new ImmersivePhotoViewer(root,activePhoto(),config):new PhotoViewer(root,activePhoto()));viewer.ready?.then(()=>{if(viewer?.root===root)viewer.present?.();},()=>{}); rememberExplored(); if(feature('bubbles')&&['browse','ugc'].includes(s.mode)&&Community.boardOpen(city())){bubbles=SceneBubbles.mount({root,viewer,scene:city().scenes[s.scene],hiddenNames:s.mode==='ugc'?hiddenNames():[],onCompose:composeNote});if(s.composeScene===s.scene){s.composeScene=null;bubbles.place?.();}} }
@@ -521,8 +543,34 @@
     if(s.view==='home')hubWarmTask=setTimeout(()=>warmHub(),200);
   }
   const freshProgress = () => ({scene:0,exploring:false,deadline:0,quizRemaining:QUIZ_DURATION,clues:new Set(),visited:new Set([0]),questions:[],answers:[],q:0,selected:null,guess:null,guessDone:false,pk:null});
+  const ugcRevision=c=>hash(JSON.stringify([c.revision||c.sampleRevision||c.publishedAt,c.scenes.map(sc=>[sc.id,sc.photo.sourceSha256||sc.photo.version]),c.questions,c.rules,c.guess]));
+  function persistUgc() {
+    if(!window.TWStore)return;
+    const active=s.mode==='ugc'&&['explore','quiz','guess','result'].includes(s.view);
+    TWStore.update(data=>{
+      if(s.mode==='ugc'&&Community.isUgc(city())){
+        const prior=data.ugcProgress?.[s.cityId];
+        const progress={scene:s.scene,exploring:s.exploring,deadline:s.deadline,quizRemaining:s.quizRemaining,clues:[...s.clues],visited:[...s.visited],q:s.q,selected:s.selected,answers:s.answers.map(a=>({selected:a.selected})),guess:s.guess,guessDone:s.guessDone};
+        (data.ugcProgress||={})[s.cityId]={revision:ugcRevision(city()),progress,view:active?s.view:prior?.view||'explore',result:current().result||null};
+      }
+      if(active)data.prefs.ugcActive={id:s.cityId,view:s.view};else delete data.prefs.ugcActive;
+    });
+  }
+  for(const c of C.ugc||[]){
+    const saved=window.TWStore?.get().ugcProgress?.[c.id];
+    if(!saved||saved.revision!==ugcRevision(c))continue;
+    try{
+      const p=saved.progress;
+      if(!Number.isInteger(p.scene)||p.scene<0||p.scene>=c.scenes.length||!Number.isInteger(p.q)||p.q<0||p.q>2||p.answers.length>3)continue;
+      const questions=c.questions.map((q,i)=>({...q,points:quizPoints(c)[i]}));
+      const progress={...freshProgress(),...p,clues:new Set(p.clues),visited:new Set(p.visited),questions:(p.answers.length||!p.exploring)?questions:[],answers:p.answers.map((a,i)=>({...questions[i],selected:a.selected,correct:a.selected!==null&&a.selected===questions[i].answer})),pk:null};
+      cityProgress.set(`ugc:${c.id}`,progress);
+      if(saved.result)s.ugcResults[c.id]={result:saved.result};
+    }catch{/* Discard only an invalid in-progress snapshot. */}
+  }
   // Progress is kept per mode and journey, so a community visit never touches today's challenge state.
   function activateCity(id,mode='challenge') {
+    persistUgc();
     if(s.cityId!==id||s.mode!==mode){
       pauseQuizTimer();
       cityProgress.set(`${s.mode}:${s.cityId}`,{scene:s.scene,exploring:s.exploring,deadline:s.deadline,quizRemaining:s.quizRemaining,clues:new Set(s.clues),visited:new Set(s.visited),questions:[...s.questions],answers:[...s.answers],q:s.q,selected:s.selected,guess:s.guess,guessDone:s.guessDone,pk:s.pk});
@@ -559,6 +607,8 @@
     });
   }
   function go(view,{force=false,back=false}={}) {
+    if(s.view==='publish')app.querySelector('.cm-form')?._flushUgcDraft?.();
+    persistUgc();
     if(view==='today'){openToday();return;}
     if(['notice','community','events','trending','deals'].includes(view)){sheet(tr('携程服务入口','Trip.com services'),`<p>${tr('当前原型聚焦 TripWonder 目的地探索。','This prototype focuses on TripWonder destination discovery.')}</p>`);return;}
     if(view==='quiz'&&!s.questions.length)view='cover';if(view==='guess'&&s.answers.length<3)view='cover';
@@ -566,6 +616,9 @@
     if(view==='itinerary'&&view!==s.view)s.itineraryBack=s.view==='profile'?'profile':'home';
     if(view!=='quiz')pauseQuizTimer();if(view==='result')s.result=current().result||s.result;
     const previous=s.view,commit=()=>{if(view==='cover'||view==='explore')return loadView(view,view==='cover'?0:s.scene);s.view=view;render();};
+    if(previous==='feed'&&view==='result'&&feedResultReturn){const point=feedResultReturn;return restoreCommunityResult(point,{force}).then(shown=>{if(shown)feedResultReturn=null;});}
+    if(previous==='result'&&view==='feed'&&!back)feedResultReturn=resultReturnPoint();
+    if(view==='feed'&&['home','hub'].includes(previous))feedResultReturn=null;
     if(previous==='home'&&view==='hub')return ChallengeMotion.slide(commit,{force,prepare:async()=>{
       const warmed=warmHub();if(!warmed)return;
       // A cold/failed image must not hold navigation; native cards remain usable meanwhile.
@@ -598,9 +651,9 @@
     if((previous==='home'&&['atlas','ranking','profile'].includes(view))||(view==='home'&&['atlas','ranking','cover','result','profile'].includes(previous)))return ChallengeMotion.slide(commit,{force,back:view==='home'});
     if(previous==='hub'&&['feed','result'].includes(view))return ChallengeMotion.expand(commit,{force,source:app.querySelector(view==='feed'?'.cm-entry-community':'.cm-entry-challenge')});
     // Other community routes keep their page-stack navigation and back gesture.
-    const depth={home:0,hub:1,feed:2,journey:3,publish:3};
+    const depth={home:0,hub:1,feed:2,journey:3,publish:3,myjourneys:3,ugcreview:3};
     if(view in depth&&previous in depth&&view!==previous)return ChallengeMotion.slide(commit,{force,back:depth[view]<depth[previous]});
-    if(['hub','journey','feed'].includes(view)&&['cover','result','atlas','ranking','profile','guess','explore'].includes(previous))return ChallengeMotion.slide(commit,{force,back:view!=='feed'});
+    if(['hub','journey','feed'].includes(view)&&['cover','result','atlas','ranking','profile','guess','explore'].includes(previous))return ChallengeMotion.slide(commit,{force,back:back||view==='hub'||previous==='explore'});
     if(['quiz','guess'].includes(previous)||['quiz','guess'].includes(view)||(view==='result'&&previous!==view))return ChallengeMotion.run(commit,{force,back:back||view==='cover'});
     ChallengeMotion.cancel();return commit();
   }
@@ -694,7 +747,7 @@
     const session={r,c,url,scene,align:representative?.[1]||'xMidYMid',art:SceneMedia.source(scene.photo,true).src,file:null};
     sheet(tr('分享挑战','Share the challenge'),`<div class="share-sheet">
       <figure class="share-preview" data-scene="${esc(scene.id)}">${sharePoster(session,session.art)}</figure>
-      <div class="share-actions">${ShareOptions.markup()}<input hidden class="invite-link" id="invite-link" readonly value="${esc(url)}" aria-label="${tr('好友挑战链接','Friend challenge link')}"></div>
+      <div class="share-actions">${c.local?`<p class="cm-hint">${tr('此 Journey 仅保存在本机。请导出旅程文件给好友，好友导入后即可挑战。','This journey is stored on this device. Export it for friends to import and play.')}</p><button class="secondary" data-ugc-export="${esc(c.id)}">${tr('导出 Journey 文件','Export journey file')}</button>`:''}${ShareOptions.markup()}<input hidden class="invite-link" id="invite-link" readonly value="${esc(url)}" aria-label="${tr('好友挑战链接','Friend challenge link')}"></div>
     </div>`,'share-dialog');
     activeShare=session;app.inert=true;
     // Prepare the same card for native image sharing before the user's next tap.
@@ -859,7 +912,7 @@
     else if(action==='prev-city'){const prev=previousDestination(s.cityId);if(prev)selectCity(prev,{back:true});}
     else if(action==='next-city'){const next=nextDestination(s.cityId,true);if(next)selectCity(next);else go('hub');}
     else if(action==='quiz-back'&&s.view==='quiz'){if(expired()){tick();return;}s.exploring=true;go('explore',{back:true});}
-    else if(action==='leave'){if(s.mode==='browse'){s.journeyId=s.cityId;go('journey',{back:true});}else if(s.mode==='ugc')go('feed',{back:true});else go('cover');}
+    else if(action==='leave'){if(s.mode==='browse'){s.journeyId=s.cityId;go('journey',{back:true});}else if(s.mode==='ugc')exitGame();else go('cover');}
     else if(action==='prev-scene'){if(s.scene>0){const prev=s.scene-1;loadView('explore',prev,()=>{s.scene=prev;});}}
     else if(action==='bgm'){const on=SceneBGM.isMuted();SceneBGM.setMuted(!on);b.setAttribute('aria-pressed',String(on));b.innerHTML=icon(on?'sound':'soundOff');const title=SceneBGM.title(s.cityId);toast(on?tr(`背景音乐 · ${title.zh}`,`Music · ${title.en}`):tr('已关闭背景音乐','Music off'));}
     else if(action==='fav'){const on=!s.bookmarks[s.cityId];s.bookmarks[s.cityId]=on;b.setAttribute('aria-pressed',String(on));b.setAttribute('aria-label',favLabel(on));if(on)playFavoriteSound();}
@@ -901,7 +954,7 @@
   });
   document.addEventListener('change',event=>{const el=event.target;if(el.matches('.cm-form input[type=file]')){Community.previews(el);return;}if(el.id==='route-pace'){s.pace=el.value;makeRoute();render();}else if(el.id==='route-theme'){s.theme=el.value;makeRoute();render();}else if(el.id==='route-date'){s.date=el.value;s.route=reorderDaysForOpenings(s.route);render();}});
   document.addEventListener('submit',event=>{
-    if(event.target.matches('.cm-form')){event.preventDefault();const message=Community.validate(event.target),error=event.target.querySelector('.cm-error');error.hidden=!message;error.textContent=message;if(message){error.scrollIntoView({block:'center',behavior:'smooth'});return;}sheet(tr('已提交审核','Submitted for review'),`<p>${tr('审核通过后，你的 Journey 会出现在社区的「玩家 Journey」里。','Once it passes review, your journey will appear under Player journeys in the community.')}</p><p class="cm-hint">${tr('演示：上传服务尚未接入，这次提交没有保存或上传任何内容。','Demo: uploads aren’t connected yet, so nothing from this submission was saved or sent.')}</p><button class="primary" data-go="feed">${tr('回到社区','Back to the community')}</button>`);return;}
+    if(event.target.matches('.cm-form')){event.preventDefault();const form=event.target,message=Community.validate(form),error=form.querySelector('.cm-error');error.hidden=!message;error.textContent=message;if(message){error.scrollIntoView({block:'center',behavior:'smooth'});return;}window.UGCService.submit(form).then(record=>{if(!record)return;sheet(tr('已提交审核','Submitted for review'),`<p>${tr(record.backend?'照片与原题已上传后台，审核结果可在「我的发布」查看。':'投稿已保存在本机，可在「本机审核工作台」检查并审核发布。',record.backend?'Your photos and original questions were uploaded. Check My journeys for the review result.':'Saved on this device. Inspect and approve it in Local review.')}</p><button class="primary" data-go="myjourneys">${tr('查看我的发布','My journeys')}</button>`);}).catch(reason=>{error.hidden=false;error.textContent=reason.message;error.scrollIntoView({block:'center'});});return;}
     if(!event.target.matches('.th-search'))return;event.preventDefault();const q=event.target.q.value.trim();q?toast(tr(`搜索「${q}」暂未接入，当前原型仅演示输入`,`Search for “${q}” isn’t connected yet. This prototype only demonstrates typing.`)):event.target.q.focus();});
   document.addEventListener('keydown',event=>{if(!modalRoot.innerHTML)return;if(event.key==='Escape')dismissModal();if(event.key==='Tab'){const f=[...modalRoot.querySelectorAll('button:not(:disabled),a[href],input:not([hidden]):not(:disabled),[tabindex="0"]')].filter(el=>el.getClientRects().length&&getComputedStyle(el).visibility!=='hidden');if(!f.length)return;if(event.shiftKey&&(document.activeElement===f[0]||document.activeElement===modalRoot.querySelector('[role="dialog"]'))){event.preventDefault();f.at(-1).focus();}else if(!event.shiftKey&&document.activeElement===f.at(-1)){event.preventDefault();f[0].focus();}}});
   modalRoot.addEventListener('click',event=>{if(event.target.classList.contains('modal-overlay')||event.target.classList.contains('rules-overlay'))dismissModal();});
@@ -920,7 +973,7 @@
     else if(s.view==='result')app.querySelector('[data-action="result-exit"]')?.click();
     else if(s.view==='journey')leaveJourney();
     else if(s.view==='feed')go('hub',{back:true});
-    else if(s.view==='publish')go('feed',{back:true});
+    else if(['publish','myjourneys','ugcreview'].includes(s.view))go('feed',{back:true});
     else if(s.view==='route')go('result',{back:true});
     else if(s.view==='mall')go(s.mallBack,{back:true});
     else go('home',{back:true});
@@ -937,5 +990,17 @@
     document.addEventListener('click',()=>arm(2),true);
     window.addEventListener('popstate',()=>{guard=0;if(handleBack())arm(1);else history.back();});
   }
-  if(invitation)loadView('cover',0);else render();
+  window.addEventListener('tw-ugc-navigate',event=>go(event.detail.view));
+  window.addEventListener('tw-ugc-updated',()=>{if(['feed','myjourneys','ugcreview'].includes(s.view))render();});
+  window.addEventListener('pagehide',()=>{app.querySelector('.cm-form')?._flushUgcDraft?.();persistUgc();});
+  if(ugcInvitation){s.journeyId=invitation.cityId;activateCity(invitation.cityId,'ugc');startUgc();}
+  else if(invitation)loadView('cover',0);
+  else{
+    const active=window.TWStore?.get().prefs.ugcActive,saved=active&&window.TWStore.get().ugcProgress?.[active.id];
+    if(active&&saved&&cityProgress.has('ugc:'+active.id)&&['explore','quiz','guess','result'].includes(active.view)){
+      activateCity(active.id,'ugc');s.view=active.view;
+      if(s.view==='explore')loadView('explore',s.scene);else render();
+    }else render();
+  }
+  if(unavailableInvitation)sheet(tr('Journey 暂不可用','Journey unavailable'),'<p>'+tr('此旅程可能尚未发布、已下架，或仅保存在分享者设备。请先导入分享者导出的 Journey 文件，或刷新后重试。','This journey may be unpublished, unavailable, or stored only on the sender’s device. Import their journey file, or refresh and try again.')+'</p><button class="primary" data-go="feed">'+tr('前往社区','Community')+'</button>');
 })();

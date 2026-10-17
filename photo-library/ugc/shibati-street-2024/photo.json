@@ -1,0 +1,38 @@
+{
+  "city": "ugc",
+  "dir": "shibati-street-2024",
+  "id": "ugc-shibati-street-2024",
+  "src": "photo-library/ugc/shibati-street-2024/original.jpg",
+  "width": 4080,
+  "height": 2292,
+  "sourceSha256": "3310457e8ce57e01a1ac8c122993e07686c8111738f03f02b48f15dcc491be49",
+  "original": {
+    "src": "photo-library/ugc/shibati-street-2024/original.jpg",
+    "width": 4080,
+    "height": 2292,
+    "bytes": 4308228,
+    "untouched": true
+  },
+  "credit": "メイド理世 / Wikimedia Commons",
+  "license": "CC BY-SA 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+  "source": "https://commons.wikimedia.org/wiki/File%3AChongqing%2C_January_22%2C_2024_(11).jpg",
+  "thumb": {
+    "src": "photo-library/ugc/shibati-street-2024/thumb.webp",
+    "width": 480,
+    "height": 270,
+    "bytes": 25670
+  },
+  "screen": {
+    "src": "photo-library/ugc/shibati-street-2024/screen.webp",
+    "width": 1080,
+    "height": 607,
+    "bytes": 148304
+  },
+  "detail": {
+    "src": "photo-library/ugc/shibati-street-2024/detail.webp",
+    "width": 1600,
+    "height": 899,
+    "bytes": 327342
+  }
+}
