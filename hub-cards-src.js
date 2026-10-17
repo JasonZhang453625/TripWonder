@@ -112,7 +112,8 @@ class HubCards {
     const rim=new THREE.DirectionalLight(0xc0d5ff,1.3);rim.position.set(350,-100,200);this.scene.add(rim);
     this.shadow=shadowTexture();
     this.resize();this.observer=new ResizeObserver(()=>this.resize());this.observer.observe(this.root);
-    await this.renderer.compileAsync(this.scene,this.camera);
+    this.compiling=this.renderer.compileAsync(this.scene,this.camera);
+    await this.compiling;this.compiling=null;
     if(this.destroyed)return false;
     this.models.forEach(model=>this.renderer.initTexture(model.texture));this.renderer.initTexture(this.shadow);
     this.bind();this.initializing=false;this.draw(performance.now(),true);return true;
@@ -261,7 +262,10 @@ class HubCards {
       const still=document.createElement('canvas');still.width=this.renderer.domElement.width;still.height=this.renderer.domElement.height;
       still.getContext('2d').drawImage(this.renderer.domElement,0,0);this.stage.replaceChildren(still);
     }else this.stage?.remove();
-    this.models.forEach(model=>this.disposeModel(model));this.shadow?.dispose();this.renderer?.dispose();this.renderer?.forceContextLoss();
+    const release=()=>{this.models.forEach(model=>this.disposeModel(model));this.shadow?.dispose();this.renderer?.dispose();this.renderer?.forceContextLoss();};
+    // Three.js still polls shader programs while compileAsync is pending.
+    // Keep those resources alive until it settles when leaving the home page quickly.
+    if(this.compiling)this.compiling.then(release,release);else release();
     if(current===this)current=null;
   }
 }

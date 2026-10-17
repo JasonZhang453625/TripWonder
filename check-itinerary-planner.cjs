@@ -9,6 +9,13 @@ const idle=page=>page.waitForFunction(()=>!window.ChallengeMotion?.busy&&!docume
   try{
     const page=await browser.newPage({viewport:{width:390,height:844},hasTouch:true});
     page.on('pageerror',e=>errors.push(e.message));
+    await page.setViewportSize({width:1440,height:1000});
+    await page.goto(base);await page.locator('.flow [data-go="itinerary"]').click();await page.locator('.ip-page').waitFor();
+    assert.equal(await page.locator('.route-hero').count(),0,'sidebar opens the assistant, not the old route editor');
+    await page.locator('.ip-back').click();
+    await page.evaluate(()=>{const b=document.createElement('button');b.dataset.go='route';b.id='legacy-route-entry';document.body.append(b);b.click();b.remove();});
+    await page.locator('.ip-page').waitFor();assert.equal(await page.locator('.route-hero').count(),0,'legacy route entries open the assistant');
+    await page.setViewportSize({width:390,height:844});
     await page.goto(base);await page.locator('.th-app[data-go="itinerary"]').click();
     await page.locator('.ip-page').waitFor();
     assert.equal(await page.locator('.ip-cities button').count(),5);
