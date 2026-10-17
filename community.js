@@ -143,7 +143,7 @@
   function feed(ctx) {
     const officials = ctx.cities.filter(c => ctx.challenged[c.id]);
     const tab = ['ugc', 'official', 'mine'].includes(ctx.tab) ? ctx.tab : 'all';
-    const tabs = [['all', t('广场', 'Square')], ['official', t('已挑战', 'Played')], ['ugc', t('玩家 Journey', 'Player journeys')], ['mine', t('我的', 'Mine')]]
+    const tabs = [['all', t('广场', 'Square')], ['official', t('已挑战', 'Played')], ['ugc', t('玩家共创', 'Player creations')], ['mine', t('我的', 'Mine')]]
       .map(([id, name]) => `<button role="tab" aria-selected="${tab === id}" class="${tab === id ? 'active' : ''}" data-feed-tab="${id}">${name}</button>`).join('');
     const mineTab = ctx.mineTab === 'liked' ? 'liked' : 'uploads';
     const liked = [...officials, ...ugc].filter(c => window.TWStore.get().likes[`feed:${c.id}`]);
