@@ -1,0 +1,58 @@
+/* One compact wooden sign; text is confined to an explicitly opened list. */
+.tw-bubble-bar{position:absolute;right:20px;bottom:34px;z-index:6;width:max-content;max-width:calc(100% - 40px)}
+.tw-bubble-bar::before{content:'';position:absolute;right:18px;bottom:-9px;width:8px;height:20px;background:#9b7350;border:1px solid #75543b;border-radius:2px;rotate:3deg;z-index:-1}
+.tw-bubble-bar::after{content:'';position:absolute;left:0;right:0;bottom:100%;height:14px}
+.tw-wood-sign{position:relative;display:flex;gap:6px;align-items:center;min-height:42px;padding:8px 13px!important;border:1.5px solid #896442;border-radius:9px 12px 10px 8px;background:repeating-linear-gradient(3deg,transparent 0 9px,#70492d10 10px 11px),linear-gradient(125deg,#e4c496,#c89c6a 70%,#dab684);box-shadow:inset 0 1px 0 #fff5,0 3px 8px #142a2926;color:#553e2d;font:600 11px system-ui;cursor:pointer;rotate:-1deg;white-space:nowrap}
+.tw-wood-sign::before{content:'';width:3px;height:3px;border-radius:50%;background:#85664c;box-shadow:0 1px 0 #fff6;position:absolute;left:5px;top:7px}
+.tw-wood-sign b{font-size:10px;font-weight:500;opacity:.7}.tw-wood-leaf{font-size:18px;color:#4e7752;line-height:1;rotate:15deg}
+.tw-wood-sign:focus-visible{outline:2px solid #fff;outline-offset:3px}
+.tw-notes-panel{position:absolute;right:0;bottom:calc(100% + 12px);width:265px;max-width:calc(100vw - 48px);max-height:min(360px,55dvh);background:#faf8efd9;backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border:1px solid #decdb3;border-radius:17px;box-shadow:0 12px 35px #142c3c38;padding:14px;color:#493f33;display:flex;flex-direction:column;overflow:hidden}
+.tw-notes-panel[hidden],.tw-note-detail[hidden]{display:none!important}
+.tw-notes-heading{display:flex;align-items:center;justify-content:space-between;gap:12px}.tw-notes-heading strong{font-size:12px;font-weight:600}.tw-notes-heading>button{background:none;border:0;font-size:21px;color:#91836d;padding:0 2px;cursor:pointer}
+.tw-notes-tools{display:flex;justify-content:space-between;gap:10px;margin:9px 0;border-bottom:1px solid #dfd7c8;padding-bottom:10px}.tw-notes-tools button{border:1px solid #ddd2bf;background:#f3ecdf;border-radius:16px;padding:5px 8px;color:#75664f;font-size:10px;cursor:pointer}
+.tw-notes-list{min-height:0;overflow-y:auto;overscroll-behavior:contain}.tw-note-row+.tw-note-row{border-top:1px solid #e4ddcf}.tw-note-summary{width:100%;display:flex;gap:8px;align-items:center;border:0;background:none;padding:10px 0;text-align:left;color:#5e5745;cursor:pointer}.tw-note-summary:hover{color:#355b44}.tw-note-author{flex:1;min-width:0;font-size:12px;overflow-wrap:anywhere}.tw-note-author small{display:block;font-size:9px;color:#9a917a;margin-top:4px}.tw-note-read{font-size:10px;color:#95876c;white-space:nowrap}
+.tw-bubble-avatar{flex:none;display:grid;place-items:center;width:26px;height:26px;border-radius:50%;font-size:11px;background:#dfe6cf;color:#607754}
+.tw-note-detail{padding:0 0 12px 34px}.tw-note-detail p{font-size:12px;line-height:1.8;margin:0 0 8px;color:#5c5947;overflow-wrap:anywhere}.tw-bubble-like{border:0;border-radius:14px;min-height:27px;padding:4px 10px;background:#ede9df;color:#92816c;font-size:11px;cursor:pointer}.tw-bubble-like[aria-pressed="true"]{background:#f7e3dc;color:#b47667}.tw-notes-empty{font-size:11px;line-height:1.8;color:#998d78;margin:12px 0}
+.phone .explore-page.tw-placing .explore-bottom,.explore-page.tw-placing .tw-bubble-bar{visibility:hidden}.scene-loading .tw-bubble-bar{visibility:hidden}
+/* Only the temporary placement pin is projected into the photo. */
+.tw-pin .tw-bubble-float{position:absolute;left:0;bottom:4px;translate:-50% 0}.tw-pin .tw-bubble-body{display:flex;align-items:center;gap:6px;padding:6px 10px;background:#fffdf0;border-radius:12px;color:#6c684f;font-size:11px;white-space:nowrap}
+/* Placing a note: tap the view to drop a pin, then confirm. */
+.tw-place{position:absolute;inset:0;z-index:4;pointer-events:none}
+.tw-place-hint{position:absolute;left:50%;top:104px;translate:-50% 0;margin:0;padding:7px 14px;border-radius:16px;background:#0b1a3ab3;color:#fff;font-size:12px;white-space:nowrap}
+@keyframes tw-cross{50%{scale:1.12}}
+.tw-place-actions{position:absolute;left:20px;right:20px;bottom:30px;display:flex;gap:10px;pointer-events:auto}
+.tw-place-actions button{flex:1;height:50px;border-radius:14px;font-size:14px;font-weight:650}
+.tw-place-cancel{background:#ffffff36;color:#fff;border:1px solid #ffffff8a;-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
+.tw-place-ok{background:var(--brand-blue,#2855f7);color:#fff}
+.tw-place-ok:disabled{opacity:.45}
+.photo-plane .tw-pin{position:absolute;width:0;height:0;z-index:2;transform:scale(var(--inverse-zoom,1));transform-origin:0 0}
+.photo-plane .tw-pin[hidden]{display:none}
+.tw-pin .tw-bubble-float{animation:none;opacity:1;scale:1}
+
+/* Compose sheet */
+.tw-compose{display:grid;gap:12px}
+.tw-compose-lead{margin:0;font-size:12px;color:#7b8495}
+.tw-compose-kinds{display:flex;gap:10px}
+.tw-compose-kinds button{flex:1;min-height:44px;border-radius:12px;border:1.5px solid #e1e5ee;background:#fff;color:#3b4456;font-size:14px;font-weight:600}
+.tw-compose-kinds [data-compose-kind="been"][aria-checked="true"]{border-color:#16a36a;background:#e9f8ef;color:#16834a}
+.tw-compose-kinds [data-compose-kind="want"][aria-checked="true"]{border-color:#f59e0b;background:#fff6e0;color:#b45309}
+.tw-compose textarea{width:100%;padding:12px;border-radius:12px;border:1.5px solid #e1e5ee;font:inherit;font-size:14px;resize:none;color:#1f2a3d}
+.tw-compose textarea:focus{outline:none;border-color:#2855f7}
+.tw-compose-foot{display:flex;align-items:center;gap:12px}
+.tw-compose-foot small{flex:1;font-size:11px;color:#8a92a0}
+.tw-compose-foot .primary{width:auto;min-height:44px;padding:0 20px}
+.tw-compose-foot .primary:disabled{opacity:.45}
+@media (prefers-reduced-motion: reduce){.tw-bubble-float{animation:none!important}}
+/* Each sign is anchored to the original photo point; nearby notes share that sign. */
+.photo-plane .tw-note-cluster{position:absolute;width:0;height:0;z-index:2;transform:scale(var(--inverse-zoom,1));transform-origin:0 0}
+.photo-plane .tw-note-cluster[hidden]{display:none}
+.tw-note-cluster .tw-wood-sign{position:absolute;left:0;top:-4px;transform:translate(-50%,-100%);min-height:27px;padding:4px 8px!important;border-radius:6px 8px 6px 5px;gap:5px;pointer-events:auto;font-size:10px;rotate:-2deg}
+.tw-note-cluster::before{content:'';position:absolute;left:-2px;top:-10px;width:5px;height:12px;border-radius:1px;background:#876541;box-shadow:inset 1px 0 #b79264}
+.tw-note-cluster .tw-wood-leaf{font-size:15px}.tw-note-cluster .tw-wood-sign b{font-size:10px}.tw-note-cluster.open{z-index:3}
+.photo-viewport.immersive-active .photo-plane .tw-note-cluster .tw-wood-sign{pointer-events:auto}
+.tw-bubble-bar{display:flex;gap:6px;bottom:30px;z-index:5}
+.tw-bubble-bar::before,.tw-bubble-bar::after{display:none}
+.tw-bubble-bar>button{border:1px solid #ffffff65;border-radius:20px;padding:9px 11px;background:#213b3a80;backdrop-filter:blur(12px);color:#fff;font:11px system-ui;cursor:pointer}
+.explore-page>.tw-notes-panel{z-index:9;bottom:auto;right:auto;width:260px;max-width:calc(100% - 24px);max-height:min(330px,50dvh)}
+.tw-notes-panel::before{content:'';position:absolute;left:0;right:0;top:-12px;height:12px}
+.explore-page.tw-placing .tw-note-cluster,.explore-page.tw-placing>.tw-notes-panel,.scene-loading .tw-note-cluster,.scene-loading .tw-notes-panel{visibility:hidden}

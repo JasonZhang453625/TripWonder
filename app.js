@@ -81,7 +81,7 @@
   };
   // Gameplay layer (tw-store.js): coins, simulated PK and scene notes, each switchable for the live demo.
   const feature = name => !!window.TW_FEATURES?.[name] && !!window.TWStore && !!{wallet:window.Wallet,pk:window.PKMode,bubbles:window.SceneBubbles}[name];
-  let bubbles=null, pkMatching=false, hubCards=null, hubWarm=null, hubWarmTask=null;
+  let bubbles=null, souvenirs=null, pkMatching=false, hubCards=null, hubWarm=null, hubWarmTask=null;
   let timer, viewer, mapView, resultReveal, coverCarousel, clueSheet, toastTimer, transition=0, pendingCleanup, rulesCleanup, previousFocus, activeShare, resultRouteReturn;
   let feedResultReturn=null,ugcBack='feed',plannerResultReturn=null;
   const cityProgress = new Map();
@@ -202,7 +202,7 @@
       const submit=app.querySelector('[data-action="submit"]');submit.disabled=true;submit.querySelector('span').textContent=submitLabel();
     },{kind:'question'});
   }
-  function guess() { return `<div class="page guess-page${s.guessDone?' done':''}"><div class="guess-map" id="guess-map" role="application" aria-label="${tr('中国地图：轻点放置落点，双指或滚轮缩放，拖动平移','Map of China: tap to drop a pin, pinch or scroll to zoom, drag to pan')}"></div><header class="guess-top"><button class="glass-light round" data-action="guess-back" aria-label="${s.guessDone?exitLabel():tr('返回第 3 题','Back to question 3')}"${!s.guessDone&&s.quizRemaining<=0?' disabled':''}>${icon('back')}</button><div><h2>${tr('这个目的地在哪里？','Where is this destination?')}</h2></div></header><div class="guess-zoom"><button class="glass-light" data-action="zoom-in" aria-label="${tr('放大地图','Zoom in')}">+</button><button class="glass-light" data-action="zoom-out" aria-label="${tr('缩小地图','Zoom out')}">−</button></div><section class="guess-card" aria-live="polite">${guessCard()}</section></div>`; }
+  function guess() { return `<div class="page guess-page${s.guessDone?' done':''}"><div class="guess-map" id="guess-map" role="application" aria-label="${tr('中国地图：轻点放置落点，双指或滚轮缩放，拖动平移','Map of China: tap to drop a pin, pinch or scroll to zoom, drag to pan')}"></div><header class="guess-top"><button class="glass-light round" data-action="guess-back" aria-label="${s.guessDone?exitLabel():tr('返回第 3 题','Back to question 3')}"${s.mode==='challenge'&&s.guessDone?' hidden disabled':!s.guessDone&&s.quizRemaining<=0?' disabled':''}>${icon('back')}</button><div><h2>${tr('这个目的地在哪里？','Where is this destination?')}</h2></div></header><div class="guess-zoom"><button class="glass-light" data-action="zoom-in" aria-label="${tr('放大地图','Zoom in')}">+</button><button class="glass-light" data-action="zoom-out" aria-label="${tr('缩小地图','Zoom out')}">−</button></div><section class="guess-card" aria-live="polite">${guessCard()}</section></div>`; }
   const revealTitle = () => tr(`答案揭晓：${city().name}`,`It’s ${cname(city())}!`);
   function guessStatus() { const g=s.guess; return g?`${icon('pin')}<div><strong>${esc([g.province,g.city].filter(Boolean).map(place).join(' · ')||tr('所选位置','Selected spot'))}</strong><small>${tr(`北纬 ${g.lat.toFixed(1)}° · 东经 ${g.lng.toFixed(1)}° · 再点一次可调整`,`${g.lat.toFixed(1)}° N · ${g.lng.toFixed(1)}° E · Tap again to adjust`)}</small></div>`:`<span class="guess-hint-dot" aria-hidden="true"></span><div><strong>${tr('轻点地图，放下你的落点','Tap the map to drop your pin')}</strong><small>${tr(`双指缩放更精准 · 越近得分越高，最高 ${guessRule().max} 分`,`Pinch to zoom for accuracy · The closer, the more points, up to ${guessRule().max}`)}</small></div>`; }
   function guessCard() {
@@ -532,6 +532,7 @@
     Community.releasePress();
     QuizScene.destroy();
     bubbles?.destroy();bubbles=null;
+    souvenirs?.destroy();souvenirs=null;
     coverCarousel?.destroy();coverCarousel=null;
     cancelPending(); closeModal(); pauseQuizTimer(); viewer?.destroy(); viewer=null; mapView?.destroy(); mapView=null;resultReveal?.destroy();resultReveal=null;
     if(s.view!=='explore'&&!immersiveJourney())window.ImmersiveSceneMedia?.clear();
@@ -565,6 +566,7 @@
     document.querySelectorAll('.flow button').forEach(b=>b.classList.toggle('active',b.dataset.go===s.view || (b.dataset.go==='itinerary'&&s.view==='route') || (b.dataset.go==='today'&&s.mode==='challenge'&&['cover','explore','quiz','guess','atlas','ranking'].includes(s.view)) || (b.dataset.go==='feed'&&['journey','publish'].includes(s.view)) || (b.dataset.go==='feed'&&s.mode!=='challenge'&&['cover','explore','quiz','guess'].includes(s.view))));
     app.querySelectorAll('img').forEach(el=>el.addEventListener('error',()=>{el.insertAdjacentHTML('afterend','<span class="error-image">'+tr('照片未能载入','Photo failed to load')+'</span>');},{once:true}));
     if(s.view==='explore'||immersiveJourney()) { const root=app.querySelector('.photo-viewport'),config=immersiveConfig(activePhoto());viewer=prepared?.viewer||(config&&window.ImmersivePhotoViewer?new ImmersivePhotoViewer(root,activePhoto(),config):new PhotoViewer(root,activePhoto()));viewer.ready?.then(()=>{if(viewer?.root===root)viewer.present?.();},()=>{}); rememberExplored(); if(feature('bubbles')&&['browse','ugc'].includes(s.mode)&&Community.boardOpen(city())){bubbles=SceneBubbles.mount({root,viewer,scene:city().scenes[s.scene],hiddenNames:s.mode==='ugc'||!journeyRevealed(city())?hiddenNames():[],onCompose:composeNote});if(s.composeScene===s.scene){s.composeScene=null;bubbles.place?.();}} }
+    if((s.view==='explore'||immersiveJourney())&&s.mode!=='ugc')souvenirs=window.SceneSouvenirs?.mount({root:app.querySelector('.photo-viewport'),viewer,scene:city().scenes[s.scene]});
     window.SceneBGM?.sync(s.view==='explore'||immersiveJourney()?s.cityId:null);
     resumeQuizTimer();
     if(s.view==='quiz'){QuizScene.set(app.querySelector('.quiz-page'),city(),s.questions[s.q]);}
@@ -1016,6 +1018,7 @@
   // One back behaviour for the Android back button and the browser back gesture.
   // Returns false only on the home page, where leaving the prototype is expected.
   const handleBack=()=>{
+    const souvenirDialog=app.querySelector('.tw-souvenir-dialog[open]');if(souvenirDialog){souvenirDialog.close();return true;}
     if(window.JourneyComments?.close())return true;
     if(document.querySelector('.hp-layer')){HomePromo.dismiss();return true;}
     if(modalRoot.firstElementChild){dismissModal();return true;}

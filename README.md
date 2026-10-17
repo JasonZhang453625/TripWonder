@@ -83,3 +83,7 @@ UGC 在探索、答题、地图和结果阶段刷新可恢复，倒计时按绝�
 - 游戏通过 `/db-journeys.js` 读取状态为“已上线”的数据库目的地：官方目的地由 `catalog.js` 并入今日挑战的目的地池；玩家 UGC 还须“已审核”，由 `community.js` 放进社区；`app.js` 读取每个目的地的 `rules`。静态部署与 Android 构建通过 `admin/export.mjs` 从本机数据库导出审核通过且未停用的 UGC 至 `published-journeys.js`，同时打包照片（Android 使用完整尺寸的 `immersive-blur/photo.jpg`）；每次审核、撤回或停用后需重新构建并发布，已有静态包不会实时收到本机数据库变化。构建机器没有数据库时导出空数组，预置内容与本机投稿仍可使用。`photos.html` 在纯静态部署下退回只读预览。
 - MiMo Key 从环境变量 `MIMO_API_KEY`、`admin/mimo.key` 或上级目录的 `mimo api key.txt` 读取，只在服务端使用；模型默认 `mimo-v2.6-flash`（不用 pro）（`MIMO_MODEL` 可改，`MIMO_THINKING=off` 关闭思考以提速）。
 - 数据库表 `destination_journeys(destination_id, journey)` 存 journey 文档（JSON），状态与任务另存于 `journey_meta`、`jobs`。
+
+## 合并的文创彩蛋与历史实验
+
+官方照片浏览和挑战已接入独立文创彩蛋模块 `scene-souvenirs.js`，桂林遇龙河配置一件可收藏的小旅伴；收藏独立保存在当前浏览器，不改变挑战计分、徽章和优惠规则。UGC 挑战不挂载此模块。原隐藏文创分支的独立演示及旧木牌留言代码保存在 `demos/hidden-souvenir/`，正式社区继续使用主线最新的点图留言与评论抽屉。验证：`node check-souvenirs.cjs`、`node check-clean-explore.cjs`、`node demos/hidden-souvenir/check-spatial-notes.cjs`、`node demos/hidden-souvenir/check.cjs`。
