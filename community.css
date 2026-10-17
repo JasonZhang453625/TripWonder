@@ -7,7 +7,7 @@
 .cm-foot{margin:18px 22px 0;text-align:center}
 
 /* Hub: native controls stay available while a single Three.js canvas draws the two photo cards. */
-#app>.page.cm-hub,#phone #app>.page.cm-hub{position:relative;display:grid;grid-template-rows:auto auto minmax(0,1fr) minmax(0,1fr);gap:18px;height:100%;min-height:0;padding:0 16px calc(22px + var(--safe-bottom,0px));overflow:hidden;color:#fff;background:linear-gradient(180deg,#3b71cf 0%,#4a7ed3 30%,#6f98e0 58%,#a9c3ee 82%,#e8effb 100%)}
+#app>.page.cm-hub,#phone #app>.page.cm-hub{position:relative;display:grid;grid-template-rows:auto auto minmax(0,1fr) minmax(0,1fr);gap:18px;height:100%;min-height:0;padding:0 16px calc(22px + var(--safe-bottom,0px));overflow:hidden;color:#fff;background:linear-gradient(180deg,#2d61ff 0%,#4573ff 34%,#7b9eff 62%,#b6c9ff 84%,#e9efff 100%)}
 .phone.hub-mode #app{padding-top:0}
 .phone.hub-mode .statusbar{background:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;color:#fff!important;filter:drop-shadow(0 1px 3px #0003)!important}
 .phone.hub-mode .home-indicator{background:#fff}

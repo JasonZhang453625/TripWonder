@@ -6,7 +6,7 @@ GitHub 仓库：[JasonZhang453625/TripWonder](https://github.com/JasonZhang45362
 
 协作发布使用所有者账号生成 merge commit，执行 `npm run release:merge -- <PR编号>`；避免协作者 squash 提交导致 Vercel Hobby 阻止部署。构建检查、发布和验收见 [发布流程](docs/releasing.md)。
 
-打开 `index.html`，或在本目录运行 `python -m http.server 8765 --bind 127.0.0.1` 后访问 `http://127.0.0.1:8765/`。这是可直接在浏览器打开的静态 HTML 原型；当前工作区修改没有自动代表线上部署。
+打开 `index.html`，或在本目录运行 `python -m http.server 8765 --bind 127.0.0.1` 后访问 `http://127.0.0.1:8765/`。这是可直接在浏览器打开的静态 HTML 原型；入口页的 3D 卡片需要 HTTP 预览（直接双击打开 file:// 时浏览器禁止 WebGL 读取本地图片，只能显示普通卡片）；当前工作区修改没有自动代表线上部署。
 
 ## 入口分流：今日挑战 / 社区
 
