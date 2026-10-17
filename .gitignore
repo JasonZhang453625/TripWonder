@@ -10,3 +10,17 @@ node_modules/
 /admin/data/
 /admin/mimo.key
 /immersive-*-s[0-9]*-assets.js
+
+# Generated previews, browser-check reports and local tool caches.
+/preview-*.png
+/preview-*.html
+/check-result.json
+/check-*-result.json
+/.playwright-mcp/
+/.claude/worktrees/
+/test-results/
+/playwright-report/
+__pycache__/
+*.pyc
+.DS_Store
+Thumbs.db
