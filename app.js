@@ -63,7 +63,7 @@
     daily[id]={result:record.result,skipped:false};
   }
   // One clock covers looking at the scenes and answering: it starts on entering the first scene and keeps running
-  // until the last answer (or time-out), also while the player is back on the cover. A journey may set rules.challengeSeconds.
+  // until the map is submitted (or time-out), also while the player is back on the cover. A journey may set rules.challengeSeconds.
   const QUIZ_DURATION = 60 * 1000;
   // Admin-generated journeys store the same clock as rules.quizSeconds.
   const quizMs = () => (city().rules?.challengeSeconds ?? city().rules?.quizSeconds ?? QUIZ_DURATION / 1000) * 1000;
@@ -223,7 +223,7 @@
       submit.disabled=true;submit.querySelector('span').textContent=submitLabel();
     },{kind:'question'});
   }
-  function guess() { return `<div class="page guess-page${s.guessDone?' done':''}"><div class="guess-map" id="guess-map" role="application" aria-label="${tr('中国地图：轻点放置落点，双指或滚轮缩放，拖动平移','Map of China: tap to drop a pin, pinch or scroll to zoom, drag to pan')}"></div><header class="guess-top"><button class="glass-light round" data-action="guess-back" aria-label="${s.guessDone?exitLabel():tr('返回第 3 题','Back to question 3')}"${s.mode==='challenge'?' hidden disabled':!s.guessDone&&s.quizRemaining<=0?' disabled':''}>${icon('back')}</button><div><h2>${tr('这个目的地在哪里？','Where is this destination?')}</h2></div></header><div class="guess-zoom"><button class="glass-light" data-action="zoom-in" aria-label="${tr('放大地图','Zoom in')}">+</button><button class="glass-light" data-action="zoom-out" aria-label="${tr('缩小地图','Zoom out')}">−</button></div><section class="guess-card" aria-live="polite">${guessCard()}</section></div>`; }
+  function guess() { return `<div class="page guess-page${s.guessDone?' done':''}"><div class="guess-map" id="guess-map" role="application" aria-label="${tr('中国地图：轻点放置落点，双指或滚轮缩放，拖动平移','Map of China: tap to drop a pin, pinch or scroll to zoom, drag to pan')}"></div><header class="guess-top"><button class="glass-light round" data-action="guess-back" aria-label="${s.guessDone?exitLabel():tr('返回第 3 题','Back to question 3')}"${s.mode==='challenge'?' hidden disabled':!s.guessDone&&s.quizRemaining<=0?' disabled':''}>${icon('back')}</button><div><h2>${tr('这个目的地在哪里？','Where is this destination?')}</h2></div><span class="glass-light timer map-timer" role="timer" aria-label="${tr('挑战剩余时间','Time left')}"><b id="timer">${mmss(remaining())}</b></span>${bgmButton()}</header><div class="guess-zoom"><button class="glass-light" data-action="zoom-in" aria-label="${tr('放大地图','Zoom in')}">+</button><button class="glass-light" data-action="zoom-out" aria-label="${tr('缩小地图','Zoom out')}">−</button></div><section class="guess-card" aria-live="polite">${guessCard()}</section></div>`; }
   const revealTitle = () => tr(`答案揭晓：${city().name}`,`It’s ${cname(city())}!`);
   function guessStatus() { const g=s.guess; return g?`${icon('pin')}<div><strong>${esc([g.province,g.city].filter(Boolean).map(place).join(' · ')||tr('所选位置','Selected spot'))}</strong><small>${tr(`北纬 ${g.lat.toFixed(1)}° · 东经 ${g.lng.toFixed(1)}° · 再点一次可调整`,`${g.lat.toFixed(1)}° N · ${g.lng.toFixed(1)}° E · Tap again to adjust`)}</small></div>`:`<span class="guess-hint-dot" aria-hidden="true"></span><div><strong>${tr('轻点地图，放下你的落点','Tap the map to drop your pin')}</strong><small>${tr(`双指缩放更精准 · 越近得分越高，最高 ${guessRule().max} 分`,`Pinch to zoom for accuracy · The closer, the more points, up to ${guessRule().max}`)}</small></div>`; }
   function guessCard() {
@@ -237,13 +237,17 @@
     if(s.guess)mapView.setPin(s.guess,s.guess.province,s.guess.city);
   }
   function pickGuess(point) {
+    if(s.guessDone||locating)return;
+    if(expired()){timeUp();return;}
     s.guess={lat:point.lat,lng:point.lng,x:point.x,y:point.y,province:point.province,city:point.city};persistUgc();
     const status=app.querySelector('.guess-status'),submit=app.querySelector('[data-action="guess-submit"]');
     if(status){status.innerHTML=guessStatus();ChallengeMotion.update(status);}if(submit){const wasDisabled=submit.disabled;submit.disabled=false;if(wasDisabled)ChallengeMotion.activate(submit);}
   }
   let locating=null;
-  async function submitGuess() {
+  async function submitGuess(timedOut=false) {
     if(!s.guess||s.guessDone||locating)return;
+    if(!timedOut&&expired()){timeUp();return;}
+    pauseQuizTimer();s.deadline=0;window.QuizUrgency?.clear();
     const c=city(),guessAt=s.guess;
     // Same city scores full marks, so the pin and the destination are both resolved to a city first.
     locating=Promise.all([GuessMap.locate(guessAt),GuessMap.locate(GuessMap.toXY(c.lat,c.lng))]);
@@ -614,10 +618,10 @@
     document.querySelectorAll('.flow button').forEach(b=>b.classList.toggle('active',b.dataset.go===s.view || (b.dataset.go==='itinerary'&&s.view==='route') || (b.dataset.go==='today'&&s.mode==='challenge'&&['cover','explore','quiz','guess','atlas','ranking'].includes(s.view)) || (b.dataset.go==='feed'&&['journey','publish'].includes(s.view)) || (b.dataset.go==='feed'&&s.mode!=='challenge'&&['cover','explore','quiz','guess'].includes(s.view))));
     app.querySelectorAll('img').forEach(el=>el.addEventListener('error',()=>{el.insertAdjacentHTML('afterend','<span class="error-image">'+tr('照片未能载入','Photo failed to load')+'</span>');},{once:true}));
     if(s.view==='explore'||immersiveJourney()) { const root=app.querySelector('.photo-viewport'),config=immersiveConfig(activePhoto());viewer=prepared?.viewer||(config&&window.ImmersivePhotoViewer?new ImmersivePhotoViewer(root,activePhoto(),config):new PhotoViewer(root,activePhoto()));viewer.ready?.then(()=>{if(viewer?.root===root)viewer.present?.();},()=>{}); rememberExplored(); if(feature('bubbles')&&['browse','ugc'].includes(s.mode)&&Community.boardOpen(city())){bubbles=SceneBubbles.mount({root,viewer,scene:city().scenes[s.scene],hiddenNames:s.mode==='ugc'||!journeyRevealed(city())?hiddenNames():[],onCompose:composeNote});if(s.composeScene===s.scene){s.composeScene=null;bubbles.place?.();}} }
-    window.SceneBGM?.sync(s.view==='explore'||immersiveJourney()?s.cityId:null);
+    window.SceneBGM?.sync(['explore','quiz','guess'].includes(s.view)||immersiveJourney()?s.cityId:null);
+    if(s.view==='guess'&&!mapView)mountGuess();
     if(s.view==='quiz'&&s.questions.length&&revealed()){freezeClock();showReveal();}else resumeQuizTimer();
     if(s.view==='quiz'){QuizScene.set(app.querySelector('.quiz-page'),city(),s.questions[s.q]);}
-    if(s.view==='guess'&&!mapView)mountGuess();
     if(s.view==='result'){resultReveal=ResultReveal.mount(app);if(feature('wallet'))Wallet.animateEarned(app);}
     if(s.view==='cover' && !s.rulesSeen&&!deferRules){s.rulesSeen=true;showRules();}
     if(s.view==='home'&&!s.promoSeen){s.promoSeen=true;HomePromo.show({phone:document.querySelector('#phone'),getTarget:()=>app.querySelector('.th-wonder .th-app-icon'),onAccept:()=>go('hub')});}else if(s.view!=='home')HomePromo.dismiss();
@@ -763,7 +767,7 @@
   function showRules() {
     closeModal(); const anchor=app.querySelector('[data-action="rules"]');if(!anchor)return;
     previousFocus=anchor;anchor.setAttribute('aria-expanded','true');
-    modalRoot.innerHTML=`<div class="rules-overlay"><section class="rules-popover" role="dialog" aria-modal="true" aria-labelledby="rules-title" tabindex="-1"><div class="rules-heading"><div><span class="rules-eyebrow">${tr('玩法说明','How to play')}</span><h2 id="rules-title">${tr('奇境挑战TripWonder','TripWonder Challenge')}</h2></div><button class="icon-btn" data-action="close" aria-label="${tr('关闭玩法','Close how to play')}">${icon('close')}</button></div><ol class="rules-steps">${[['看','Look',`进入第一处场景就开始计时！${mmss(quizMs())} 内转动、放大画面，从建筑、风景和街头细节里找答案。`,`The clock starts at the first scene. You have ${mmss(quizMs())} to look around and zoom in for answers in the buildings, scenery and street details.`],['答','Quiz','浏览到最后一处场景后点「开始答题」，在同一倒计时内答完三道题；时间到会自动提交。','Reach the last scene, then tap “Answer now” and finish three questions on the same clock. Answers are submitted when time runs out.'],['猜','Guess','推测目的地地点，并在地图上标记位置。距离实际地点越近，得分越高！','Work out the destination and drop a pin on the map. The closer you are, the more points you score.'],['奖','Win','查看最终得分，点亮成就勋章！不仅可以一键规划目的地旅行路线，还能凭挑战排名领取丰厚优惠权益！','See your final score and unlock a badge. Plan a trip to the destination in one tap, and claim travel perks based on your result.']].map(([zh,enStep,zhText,enText])=>`<li><span${en()?' class="rules-step-en"':''}>${tr(zh,enStep)}</span><p>${tr(zhText,enText)}</p></li>`).join('')}</ol><button class="primary rules-cta" data-action="rules-start">${tr('知道了','Got it')}</button></section></div>`;
+    modalRoot.innerHTML=`<div class="rules-overlay"><section class="rules-popover" role="dialog" aria-modal="true" aria-labelledby="rules-title" tabindex="-1"><div class="rules-heading"><div><span class="rules-eyebrow">${tr('玩法说明','How to play')}</span><h2 id="rules-title">${tr('奇境挑战TripWonder','TripWonder Challenge')}</h2></div><button class="icon-btn" data-action="close" aria-label="${tr('关闭玩法','Close how to play')}">${icon('close')}</button></div><ol class="rules-steps">${[['看','Look',`进入第一处场景就开始计时！${mmss(quizMs())} 内转动、放大画面，从建筑、风景和街头细节里找答案。`,`The clock starts at the first scene. You have ${mmss(quizMs())} to look around and zoom in for answers in the buildings, scenery and street details.`],['答','Quiz','浏览到最后一处场景后点「开始答题」，在同一倒计时内答完三道题；时间到会自动提交。','Reach the last scene, then tap “Answer now” and finish three questions on the same clock. Answers are submitted when time runs out.'],['猜','Guess','在同一倒计时内标记目的地，越近得分越高。时间到会提交已有落点，未选点计 0 分。','Drop a pin before the shared clock ends. Closer pins score more. At zero your pin is submitted automatically; no pin scores 0.'],['奖','Win','查看最终得分，点亮成就勋章！不仅可以一键规划目的地旅行路线，还能凭挑战排名领取丰厚优惠权益！','See your final score and unlock a badge. Plan a trip to the destination in one tap, and claim travel perks based on your result.']].map(([zh,enStep,zhText,enText])=>`<li><span${en()?' class="rules-step-en"':''}>${tr(zh,enStep)}</span><p>${tr(zhText,enText)}</p></li>`).join('')}</ol><button class="primary rules-cta" data-action="rules-start">${tr('知道了','Got it')}</button></section></div>`;
     const panel=modalRoot.querySelector('.rules-popover'),phone=document.querySelector('#phone');
     const position=()=>{const a=anchor.getBoundingClientRect(),p=phone.getBoundingClientRect(),top=a.bottom-p.top-phone.clientTop+12,right=Math.max(12,phone.clientWidth-(a.right-p.left-phone.clientLeft));panel.style.top=top+'px';panel.style.right=right+'px';panel.style.maxHeight=Math.max(80,phone.clientHeight-top-16)+'px';};
     position();const observer=new ResizeObserver(position);observer.observe(phone);rulesCleanup=()=>observer.disconnect();app.inert=true;panel.focus({preventScroll:true});
@@ -784,32 +788,36 @@
     const resume=s.exploring&&!!s.deadline;
     if(resume&&expired()){timeUp();return;}
     pauseQuizTimer();
-    // The clock starts once the first scene is on screen and then runs through exploring and answering.
+    // The clock starts once the first scene is on screen and then runs through exploring, answering and the map guess.
     loadView('explore',resume?s.scene:0,()=>{if(!resume){Object.assign(s,{scene:0,exploring:true,deadline:Date.now()+quizMs(),quizRemaining:quizMs(),visited:new Set([0]),answers:[],questions:[],q:0,selected:null});s.clues.clear();}});
   }
   const remaining = () => s.deadline?Math.max(0,s.deadline-Date.now()):s.quizRemaining;
   const expired = () => !!s.deadline&&s.deadline<=Date.now();
-  // Stops the on-screen ticking only; the deadline itself keeps running until the answers are in.
+  // Stops on-screen ticking only; the deadline keeps running until the map is submitted.
   function pauseQuizTimer() {
     clearInterval(timer);timer=null;
     if(s.deadline)s.quizRemaining=Math.max(0,s.deadline-Date.now());
   }
   function resumeQuizTimer() {
     clearInterval(timer);timer=null;
-    if(!s.deadline||!gameMode()||!['explore','quiz'].includes(s.view)){window.QuizUrgency?.clear();return;}
+    if(!s.deadline||s.guessDone||!gameMode()||!['explore','quiz','guess'].includes(s.view)){window.QuizUrgency?.clear();return;}
     tick();
-    if(s.deadline&&['explore','quiz'].includes(s.view))timer=setInterval(tick,250);
+    if(s.deadline&&['explore','quiz','guess'].includes(s.view))timer=setInterval(tick,250);
   }
   function tick() {
-    if(!s.deadline||!['explore','quiz'].includes(s.view))return;
+    if(!s.deadline||!['explore','quiz','guess'].includes(s.view))return;
     const left=Math.max(0,s.deadline-Date.now()),remain=Math.ceil(left/1000),el=app.querySelector('#timer');
     if(el){el.textContent=mmss(remain*1000);el.parentElement.classList.toggle('urgent',remain<=15);window.QuizUrgency?.update(remain,el.parentElement,{left,total:quizMs()});}
     if(s.pk&&s.view==='quiz')PKMode.update(app.querySelector('.quiz-page'),s.pk,{mine:s.answers.length,total:s.questions.length,elapsed:quizMs()-left});
     if(remain===0)timeUp();
   }
   function timeUp() {
-    prepareQuestions();finishQuiz(true);
-    toast(tr('挑战时间到，已提交当前答案，未作答题目计 0 分','Time’s up. Your answers have been submitted; unanswered questions score 0.'));
+    if(s.guessDone||locating)return;
+    if(s.view!=='guess'){prepareQuestions();finishQuiz(true);return;}
+    pauseQuizTimer();s.quizRemaining=0;s.deadline=0;closeModal();
+    if(s.guess)submitGuess(true);
+    else{s.guessDone=true;finish();go('result',{force:true});}
+    toast(tr('挑战时间到，已自动提交；未作答和未选落点计 0 分','Time’s up. Submitted automatically; unanswered questions and a missing pin score 0.'));
   }
   function prepareQuestions() {
     if(s.questions.length===3)return;
@@ -822,11 +830,13 @@
   }
   function finishQuiz(timedOut=false) {
     pauseQuizTimer();
-    s.quizRemaining=timedOut?0:remaining();s.deadline=0;s.exploring=false;
+    s.quizRemaining=timedOut?0:remaining();s.deadline=timedOut?0:Date.now()+s.quizRemaining;s.exploring=false;
     if(timedOut){
       while(s.answers.length<s.questions.length){const i=s.answers.length,q=s.questions[i],selected=i===s.q?s.selected:null;s.answers.push({...q,selected,correct:selected!==null&&q.answer===selected});}
     }
-    s.guess=null;s.guessDone=false;go('guess',{force:timedOut});
+    s.guess=null;s.guessDone=false;
+    if(timedOut){s.guessDone=true;finish();go('result',{force:true});toast(tr('挑战时间到，未作答和未选落点计 0 分','Time’s up. Unanswered questions and a missing pin score 0.'));return;}
+    go('guess');
   }
   // Only one unread explore point is shown large at a time; reading it hands the spotlight to the next.
   function spotlightNextClue() { const spots=[...app.querySelectorAll('.hotspot[data-clue]')];spots.forEach(el=>el.classList.remove('next'));spots.find(el=>!el.classList.contains('read'))?.classList.add('next'); }

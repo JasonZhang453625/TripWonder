@@ -172,3 +172,10 @@ html:not(.mobile-device) .guess-card{bottom:24px}
 .guess-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px;text-align:center}
 .guess-stats b{display:block;font-size:16px;color:#15223b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .guess-stats small{display:block;font-size:10.5px;color:#8a94a6;margin-top:3px}
+
+/* Keep the shared clock visible beside the map title. */
+.guess-top>div{flex:1;min-width:0}
+.guess-top h2{font-size:clamp(14px,4vw,19px)}
+.map-timer{flex:none;padding:8px 10px;font-variant-numeric:tabular-nums}
+.guess-page.done .map-timer{display:none}
+.guess-top .bgm{flex:none;width:36px;height:36px}
