@@ -30,12 +30,13 @@ async function submit(p){await p.locator('.cm-submit').click();await p.locator('
  assert.equal(await p.locator('[name="photos"]').evaluate(e=>e.files.length),3);
  assert.equal(await p.locator('[name="board"]').isChecked(),false);
  await submit(p);
- assert.equal(await p.evaluate(id=>UGCService.records.find(r=>r.id===id).state,id),'pending');
+ assert.ok(['pending','processing'].includes(await p.evaluate(id=>UGCService.records.find(r=>r.id===id).state,id)));
  assert.equal(await p.evaluate(id=>TRIPWONDER_CATALOG.ugc.some(j=>j.id===id),id),false);
  const backend=await p.evaluate(()=>UGCService.backend);
+ const backendReady=async()=>{for(let n=0;n<200;n++){const d=await fetch(base+'api/journeys').then(r=>r.json());if(d.journeys.some(j=>j.id===id)&&!d.jobs.some(j=>j.destinationId===id&&['running','queued'].includes(j.status)))return;await p.waitForTimeout(100);}throw Error('Backend generation not ready');};
  if(backend){
-   await p.waitForFunction(async id=>(await fetch('/api/journeys').then(r=>r.json())).journeys.some(j=>j.id===id),id,{timeout:20000});
-   const r=await p.request.post(base+'api/journeys/'+id+'/review',{data:{review:'rejected',note:'请补充观察依据'}});assert.equal(r.status(),200);
+   await backendReady();
+   let r;for(let n=0;n<100;n++){r=await p.request.post(base+'api/journeys/'+id+'/review',{data:{review:'rejected',note:'请补充观察依据'}});if(r.status()!==404)break;await p.waitForTimeout(100);}assert.equal(r.status(),200,JSON.stringify({id,base,body:await r.text()}));
    await p.waitForFunction(id=>UGCService.records.find(r=>r.id===id).state==='rejected',id);
  }else{
    await p.locator('#app [data-ugc-review]').click();await p.locator(`[data-ugc-inspect="${id}"]`).click();await p.locator('.cm-review-dialog').waitFor();assert.equal(await p.locator('.cm-review-dialog img').count(),3);await p.locator('[data-review-close]').click();
@@ -44,7 +45,7 @@ async function submit(p){await p.locator('.cm-submit').click();await p.locator('
  }
  await p.locator(`[data-ugc-edit="${id}"]`).click();await p.locator('.cm-form').waitFor();assert.ok((await p.locator('[name="q0"]').inputValue()).includes('主要景观'));await p.locator('[name="explain0"]').fill('修改后的观察依据：画面里可见船只与临水建筑。');await submit(p);
  if(backend){
-   await p.waitForFunction(async id=>{const d=await fetch('/api/journeys').then(r=>r.json());return d.journeys.some(j=>j.id===id)&&!d.jobs.some(j=>j.destinationId===id&&j.status==='running');},id,{timeout:20000});
+   await backendReady();
    const r=await p.request.post(base+'api/journeys/'+id+'/review',{data:{review:'approved'}});assert.equal(r.status(),200);
    await p.waitForFunction(id=>UGCService.records.find(r=>r.id===id).state==='approved',id);
  }else{await p.locator('#app [data-ugc-review]').click();await p.locator(`[data-ugc-approve="${id}"]`).click();await p.waitForFunction(id=>UGCService.records.find(r=>r.id===id).state==='approved',id);}
@@ -52,7 +53,7 @@ async function submit(p){await p.locator('.cm-submit').click();await p.locator('
  await p.locator(`[data-journey="${id}"] .cm-post-copy`).click();await p.locator('#app .explore-page').waitFor();await idle(p);
  assert.equal(await p.locator('#app .tw-bubble-bar').count(),0);
  await p.locator('#app [data-action="next-scene"]').click();await p.waitForFunction(()=>document.querySelector('#app .scene-counter')?.textContent.trim()==='2 / 3'&&!document.querySelector('#app.scene-loading'));
- await p.waitForTimeout(1100);const remaining=await p.locator('#app #timer').textContent();await p.reload();await p.locator('#app .explore-page').waitFor();await idle(p);
+ await p.waitForTimeout(1100);const remaining=await p.locator('#app #timer').textContent();await p.reload();try{await p.locator('#app .explore-page').waitFor({timeout:10000});}catch(error){console.error(await p.evaluate(id=>({id,text:document.querySelector('#app')?.textContent?.slice(0,300),stored:TWStore.get().ugcProgress?.[id],active:TWStore.get().prefs.ugcActive,journey:TRIPWONDER_CATALOG.ugc.find(j=>j.id===id)}),id));throw error;}await idle(p);
  assert.equal((await p.locator('#app .scene-counter').textContent()).trim(),'2 / 3');assert.ok(await p.locator('#app #timer').textContent()<=remaining);
  await p.locator('#app [data-action="next-scene"]').click();await p.waitForFunction(()=>document.querySelector('#app .scene-counter')?.textContent.trim()==='3 / 3'&&!document.querySelector('#app.scene-loading'));
  await p.locator('#app [data-action="next-scene"]').click();await p.locator('.quiz-page').waitFor();await idle(p);
@@ -64,7 +65,7 @@ async function submit(p){await p.locator('.cm-submit').click();await p.locator('
  await p.locator('.result-topbar [data-action="share"]').click();const link=await p.locator('#invite-link').inputValue();
  let exported;
  if(!backend){const download=p.waitForEvent('download');await p.locator('[data-ugc-export]').click();const file=await download;exported=path.join(output,'shared-journey.tripwonder.json');await file.saveAs(exported);}
- await p.locator('[role="dialog"] [data-action="close"]').click();await p.locator('.result-topbar [data-action="result-exit"]').click();await p.locator('.cm-comment-dock').waitFor();
+ await p.locator('[role="dialog"] [data-action="close"]').click();await p.locator('.result-ugc [data-action="discuss"]').click();await p.locator('.cm-comment-dock').waitFor();
  assert.equal(await p.locator('.cm-board.is-locked,.cm-scene-write').count(),0);await p.locator('[data-comment-compose]').click();await p.locator('.cm-comment-form textarea').fill('完整挑战后的独立评论');await p.locator('.cm-comment-send').click();assert.ok((await p.locator('.cm-comments').innerText()).includes('完整挑战后的独立评论'));
  await p.reload();await feed(p);await p.locator(`[data-journey="${id}"] [data-feed-discuss]`).last().click();await p.locator('.cm-comment-dock').waitFor();assert.ok((await p.locator('.cm-comments').innerText()).includes('完整挑战后的独立评论'));
  const friendContext=await browser.newContext({viewport:{width:390,height:844},reducedMotion:'reduce'}),friend=await friendContext.newPage();

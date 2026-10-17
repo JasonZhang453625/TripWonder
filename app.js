@@ -535,6 +535,7 @@
     window.UGCService?.release();
     if(s.view==='publish')UGCService.mountPublish(app.querySelector('.cm-form'));
     if(['myjourneys','ugcreview'].includes(s.view))UGCService.mountManagement();
+    if(s.view==='feed')UGCService.mountFeed();
     persistUgc();
     document.querySelectorAll('.flow button').forEach(b=>b.classList.toggle('active',b.dataset.go===s.view || (b.dataset.go==='today'&&s.mode==='challenge'&&['cover','explore','quiz','guess','atlas','ranking'].includes(s.view)) || (b.dataset.go==='feed'&&['journey','publish'].includes(s.view)) || (b.dataset.go==='feed'&&s.mode!=='challenge'&&['cover','explore','quiz','guess'].includes(s.view))));
     app.querySelectorAll('img').forEach(el=>el.addEventListener('error',()=>{el.insertAdjacentHTML('afterend','<span class="error-image">'+tr('照片未能载入','Photo failed to load')+'</span>');},{once:true}));
@@ -773,6 +774,7 @@
       <div class="share-actions">${c.local?`<p class="cm-hint">${tr('此 Journey 仅保存在本机。请导出旅程文件给好友，好友导入后即可挑战。','This journey is stored on this device. Export it for friends to import and play.')}</p><button class="secondary" data-ugc-export="${esc(c.id)}">${tr('导出 Journey 文件','Export journey file')}</button>`:''}${ShareOptions.markup()}<input hidden class="invite-link" id="invite-link" readonly value="${esc(url)}" aria-label="${tr('好友挑战链接','Friend challenge link')}"></div>
     </div>`,'share-dialog');
     activeShare=session;app.inert=true;
+    if(c.local)modalRoot.querySelectorAll('[data-share-channel]').forEach(button=>{if(button.dataset.shareChannel!=='save')button.remove();});
     // Prepare the same card for native image sharing before the user's next tap.
     session.preparing=shareImage(session).then(file=>{session.file=file;return file;}).catch(()=>null);
   }

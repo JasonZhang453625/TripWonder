@@ -1,5 +1,5 @@
 /* TripWonder entry split: the hub (今日挑战 / 社区), the community feed, a journey's detail page with its board,
-   and the UGC publish form (prototype only: nothing is uploaded).
+   and the UGC publish form (ugc-service.js persists submissions and connects the optional local admin).
    Official journeys stay in TRIPWONDER_CATALOG.cities and only appear here once this player has challenged them,
    so the community never spoils today's draw. Sample UGC journeys (content/ugc.js) join as TRIPWONDER_CATALOG.ugc:
    playable, but never part of the daily draw, atlas, rankings, coins, badges or perks. */

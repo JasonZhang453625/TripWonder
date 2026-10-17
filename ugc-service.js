@@ -3,8 +3,8 @@
   'use strict';
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const t = (zh, en) => I18N.t(zh, en), rows = new Map(), catalog = new Map();
-  const states = {draft:'草稿', pending:'待审核', approved:'已发布', rejected:'已退回', disabled:'已下架', failed:'生成失败'};
-  let db, backend = false, storageError = '', editingId = null, timer, saveTimer, writeQueue = Promise.resolve(), submitting = false, photoTask = Promise.resolve();
+  const states = {draft:'草稿', processing:'正在处理照片', pending:'待审核', approved:'已发布', rejected:'已退回', disabled:'已下架', failed:'生成失败'};
+  let db, backend = false, storageError = '', editingId = null, timer, saveTimer, writeQueue = Promise.resolve(), submitting = false, photoTask = Promise.resolve(), photoGeneration = 0;
   const emit = () => window.dispatchEvent(new CustomEvent('tw-ugc-updated'));
   const navigate = view => window.dispatchEvent(new CustomEvent('tw-ugc-navigate', {detail:{view}}));
   const request = async (url, options) => {
@@ -113,11 +113,12 @@
       rememberFields();
       if (event.target !== form.elements.photos) { draft(); return; }
       syncScenes(form);
-      const files = [...event.target.files];
+      const files = [...event.target.files], generation=++photoGeneration;
       photoTask = (async () => {
         if (files.length > 9) throw Error('最多选择 9 张照片');
         status.textContent = t('正在保存照片…','Saving photos…');
         const photos = []; for (const file of files) photos.push(await processPhoto(file));
+        if(generation!==photoGeneration)return;
         record = {...record,photos}; await draft();
       })();
       photoTask.catch(error => formError(form,error));
@@ -146,7 +147,7 @@
         const job = await post('/api/journeys',{id:record.id,name:fields.name,title:fields.title,region:fields.region,intro:fields.intro,lat:fields.lat,lng:fields.lng,author:fields.author,boardEnabled:fields.board === 'on',channel:'ugc',scenes,questions,resubmit:true});
         record.remoteJobId = job.jobId;
       }
-      record.state = 'pending'; await save(record); editingId = null; form.dataset.submitted = 'true';try{localStorage.removeItem('tripwonder-ugc-editor');}catch{}
+      record.state = backend ? 'processing' : 'pending'; await save(record); editingId = null; form.dataset.submitted = 'true';try{localStorage.removeItem('tripwonder-ugc-editor');}catch{}
       return {id:record.id,backend};
     } finally { submitting = false; button.disabled = false; button.textContent = t('提交审核','Submit for review'); }
   }
@@ -154,11 +155,13 @@
     if (!backend) return;
     const data = await request('/api/journeys');
     for (const remote of data.journeys.filter(j => j.channel === 'ugc')) {
+      remote.revision ||= remote.generated?.at || remote.createdAt;
       const row = rows.get(remote.id);
+      const processing=data.jobs.some(job=>job.destinationId===remote.id&&['queued','running'].includes(job.status));
       if (remote.status === 'ready' && remote.review === 'approved') Community.register(remote);
       else Community.unregister(remote.id);
       if (!row?.remoteJobId || row.state === 'draft') continue;
-      const state = remote.status === 'disabled' ? 'disabled' : remote.review;
+      const state = processing ? 'processing' : remote.status === 'disabled' ? 'disabled' : remote.review;
       if (row.state !== state || row.feedback !== (remote.reviewNote || '')) await save({...row,state,feedback:remote.reviewNote || '',remoteJourney:remote},false);
     }
     for (const job of data.jobs) {
@@ -172,6 +175,7 @@
   }
   function release() { clearInterval(timer); }
   function mountManagement() { release(); if (backend) timer = setInterval(async () => { try { const before = JSON.stringify([...rows.values()].map(r => [r.id,r.state,r.feedback])); await refresh(); if (before !== JSON.stringify([...rows.values()].map(r => [r.id,r.state,r.feedback]))) emit(); } catch(error) { const box = document.querySelector('[data-ugc-error]'); if(box){box.hidden=false;box.textContent=error.message;} } },2000); }
+  function mountFeed() { release();if(backend){const old=window.TRIPWONDER_CATALOG.ugc.map(j=>[j.id,j.revision,j.publishedAt]);refresh().then(()=>{if(JSON.stringify(old)!==JSON.stringify(window.TRIPWONDER_CATALOG.ugc.map(j=>[j.id,j.revision,j.publishedAt])))emit();}).catch(()=>{});} }
   async function reviewRecord(id, state, feedback = '') {
     const row = rows.get(id); if (!row || row.remoteJobId) throw Error('请在后台审核该投稿');
     if (state === 'approved') validate(row.fields,row.photos);
@@ -227,5 +231,5 @@
     } catch(error) { storageError=error.message; }
     try { const response=await fetch('/api/status',{signal:AbortSignal.timeout(1500)});backend=response.ok&&(await response.json()).ok===true;if(backend)await refresh(); } catch { backend=false; }
   })();
-  window.UGCService = {ready,submit,mountPublish,management,mountManagement,release,refresh,validate,questionsOf,get backend(){return backend;},get records(){return [...rows.values()];}};
+  window.UGCService = {ready,submit,mountPublish,management,mountManagement,mountFeed,release,refresh,validate,questionsOf,get backend(){return backend;},get records(){return [...rows.values()];}};
 })();

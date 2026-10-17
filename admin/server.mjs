@@ -114,6 +114,7 @@ async function api(req, res, url) {
       setStatus(id, status); return send(res, 200, {ok: true});
     }
     if (method === 'POST' && m[2] === 'review') {
+      if (listJobs().some(job => job.destinationId === id && ['queued','running'].includes(job.status))) return send(res, 409, {error: '图片与题目仍在处理，请待生成完成后审核'});
       const {review, note = ''} = await readJson(req);
       if (!['pending', 'approved', 'rejected'].includes(review)) return send(res, 400, {error: 'review 无效'});
       if (review === 'rejected' && !String(note).trim()) return send(res, 400, {error: '请填写退回原因'});
