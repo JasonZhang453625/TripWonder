@@ -29,7 +29,7 @@ function lines(ctx,text,x,y,width,lineHeight,max=2){
   }
   if(line)ctx.fillText(line,x,y);
 }
-function faceTexture(button,w,h,index){
+function faceTexture(button,w,h,index,font=getComputedStyle(button).fontFamily){
   const canvas=document.createElement('canvas'),ratio=2;
   canvas.width=Math.ceil(w*ratio);canvas.height=Math.ceil(h*ratio);
   const ctx=canvas.getContext('2d');ctx.scale(ratio,ratio);
@@ -51,7 +51,7 @@ function faceTexture(button,w,h,index){
     crop(ctx,images[2],artX+artW*.52+1,artY+artH*.5+1,artW*.48-1,artH*.5-1);
   }
   ctx.restore();ctx.strokeStyle=blue?'#ffffff35':'#ffffffb0';rounded(ctx,artX,artY,artW,artH,18);ctx.stroke();
-  const textX=artX+artW+(w<320?16:20),textW=w-textX-pad-10,font=getComputedStyle(button).fontFamily;
+  const textX=artX+artW+(w<320?16:20),textW=w-textX-pad-10;
   const title=button.querySelector('strong').textContent,subtitle=button.querySelector('small').textContent,perks=button.querySelector('.cm-entry-perks').textContent,tag=button.querySelector('.cm-entry-tag').textContent;
   const titleSize=title.length>12?21:w<320?24:28,smallSize=w<320?11:12;
   const top=h/2-(textW<145?67:59);
@@ -115,11 +115,11 @@ class HubCards {
     await this.renderer.compileAsync(this.scene,this.camera);
     if(this.destroyed)return false;
     this.models.forEach(model=>this.renderer.initTexture(model.texture));this.renderer.initTexture(this.shadow);
-    this.bind();this.initializing=false;this.draw(performance.now());return true;
+    this.bind();this.initializing=false;this.draw(performance.now(),true);return true;
   }
   createModel(button,index,w,h){
     const uniforms={cardTilt:{value:new THREE.Vector2()}};
-    const texture=faceTexture(button,w,h,index);
+    const font=getComputedStyle(button).fontFamily,texture=faceTexture(button,w,h,index,font);
     const side=new THREE.MeshPhysicalMaterial({color:index?0xebd0be:0x3257cf,roughness:.4,metalness:.02,clearcoat:.35,clearcoatRoughness:.4});
     // Printed artwork keeps its intended colours; the rolled physical edges catch the light.
     const face=sheen(new THREE.MeshBasicMaterial({map:texture,toneMapped:false}),uniforms);
@@ -137,12 +137,14 @@ class HubCards {
     faceGeometry.computeBoundingBox();
     const mesh=new THREE.Group();mesh.add(new THREE.Mesh(geometry,side),new THREE.Mesh(faceGeometry,face));this.scene.add(mesh);
     const shadow=new THREE.Sprite(new THREE.SpriteMaterial({map:this.shadow,transparent:true,opacity:.8,depthWrite:false}));shadow.scale.set(w*1.3,h*1.28,1);shadow.position.z=-28;this.scene.add(shadow);
-    return {button,index,w,h,uniforms,texture,side,face,geometry,faceGeometry,mesh,shadow,x:spring(),y:spring(),press:spring(),lift:spring(),touch:new THREE.Vector2(),held:false};
+    return {button,index,w,h,font,uniforms,texture,side,face,geometry,faceGeometry,mesh,shadow,x:spring(),y:spring(),press:spring(),lift:spring(),touch:new THREE.Vector2(),held:false};
   }
   resize(){
-    if(this.destroyed||!this.renderer)return;
+    if(this.destroyed||!this.renderer||!this.root.isConnected||(this.suspended&&!this.initializing))return;
     const r=this.root.getBoundingClientRect(),w=this.root.clientWidth,h=this.root.clientHeight;if(!w||!h)return;
-    this.renderer.setSize(w,h);this.camera.aspect=w/h;this.camera.fov=2*Math.atan(h/2/1100)*180/Math.PI;this.camera.updateProjectionMatrix();
+    if(w!==this.width||h!==this.height){
+      this.width=w;this.height=h;this.renderer.setSize(w,h);this.camera.aspect=w/h;this.camera.fov=2*Math.atan(h/2/1100)*180/Math.PI;this.camera.updateProjectionMatrix();
+    }
     this.buttons.forEach((button,index)=>{
       const b=button.getBoundingClientRect(),width=b.width-10,height=b.height-12;let model=this.models[index];
       if(!model)model=this.models[index]=this.createModel(button,index,width,height);
@@ -205,12 +207,30 @@ class HubCards {
     // Let even a short tap show its elastic release before the radial navigation.
     this.activation=setTimeout(()=>{if(!this.destroyed)commit();},this.reduced.matches?0:180);
   }
-  present(){this.suspended=false;this.last=0;this.resize();this.request();}
-  request(){if(!this.frame&&!this.destroyed&&!this.initializing&&!document.hidden&&this.renderer)this.frame=requestAnimationFrame(time=>this.draw(time));}
-  draw(time){
-    this.frame=0;if(this.destroyed||document.hidden||!this.renderer)return;
+  suspend(){
+    clearTimeout(this.activation);this.activating=false;this.release();this.suspended=true;
+    cancelAnimationFrame(this.frame);this.frame=0;this.last=0;
+    for(const model of this.models)for(const state of [model.x,model.y,model.press,model.lift])state.value=state.velocity=state.target=0;
+  }
+  async refresh(source){
+    const incoming=[...source.querySelectorAll('.cm-entry')];
+    const updates=this.buttons.map((button,index)=>({button,next:incoming[index],model:this.models[index]})).filter(({button,next})=>next&&button.innerHTML!==next.innerHTML);
+    if(!updates.length)return;
+    await Promise.all(updates.flatMap(({next})=>[...next.querySelectorAll('img')].map(image=>image.decode().catch(()=>{}))));
+    if(this.destroyed)return;
+    for(const {button,next,model} of updates){
+      button.innerHTML=next.innerHTML;
+      if(model){const old=model.texture;model.texture=faceTexture(button,model.w,model.h,model.index,model.font);model.face.map=model.texture;this.renderer.initTexture(model.texture);old.dispose();}
+    }
+    if(this.renderer&&!this.initializing)this.draw(performance.now(),true);
+  }
+  present(){this.suspended=false;this.last=0;this.resize();if(!this.initializing)this.draw(performance.now(),true);}
+  request(){if(!this.frame&&!this.suspended&&!this.destroyed&&!this.initializing&&!document.hidden&&this.renderer)this.frame=requestAnimationFrame(time=>this.draw(time));}
+  draw(time,force=false){
+    if(force)cancelAnimationFrame(this.frame);
+    this.frame=0;if(this.destroyed||document.hidden||!this.renderer||(this.suspended&&!force))return;
     const active=this.models.some(m=>m.held||[m.x,m.y,m.press,m.lift].some(s=>Math.abs(s.value-s.target)>.001||Math.abs(s.velocity)>.008));
-    if(!active&&!this.reduced.matches&&this.lastDraw&&time-this.lastDraw<31){this.request();return;}
+    if(!force&&!active&&!this.reduced.matches&&this.lastDraw&&time-this.lastDraw<31){this.request();return;}
     const dt=Math.min(.024,this.last?(time-this.last)/1000:1/60);this.last=time;let unsettled=false;
     for(const model of this.models){
       for(const state of [model.x,model.y,model.press,model.lift]){
@@ -230,7 +250,7 @@ class HubCards {
   disposeModel(model){
     this.scene.remove(model.mesh,model.shadow);model.geometry.dispose();model.faceGeometry.dispose();model.side.dispose();model.face.dispose();model.texture.dispose();model.shadow.material.dispose();
   }
-  inspect(){return {renderer:'three',cards:this.models.map(m=>({rotation:[m.mesh.rotation.x,m.mesh.rotation.y],press:m.press.value,velocity:m.press.velocity,target:m.press.target,touch:[m.touch.x,m.touch.y],lift:m.lift.value,depth:m.mesh.position.z,scale:m.mesh.scale.toArray(),surfaceDepth:[m.faceGeometry.boundingBox.min.z,m.faceGeometry.boundingBox.max.z]})),frames:this.frames||0,calls:this.renderer?.info.render.calls,triangles:this.renderer?.info.render.triangles,dpr:this.renderer?.getPixelRatio(),reduced:this.reduced.matches};}
+  inspect(){return {renderer:'three',suspended:this.suspended,cards:this.models.map(m=>({texture:m.texture.uuid,geometry:m.geometry.uuid,rotation:[m.mesh.rotation.x,m.mesh.rotation.y],press:m.press.value,velocity:m.press.velocity,target:m.press.target,touch:[m.touch.x,m.touch.y],lift:m.lift.value,depth:m.mesh.position.z,scale:m.mesh.scale.toArray(),surfaceDepth:[m.faceGeometry.boundingBox.min.z,m.faceGeometry.boundingBox.max.z]})),frames:this.frames||0,calls:this.renderer?.info.render.calls,triangles:this.renderer?.info.render.triangles,dpr:this.renderer?.getPixelRatio(),reduced:this.reduced.matches};}
   fail(error){
     if(error)console.warn('3D entry cards unavailable; keeping the accessible cards.',error.message);
     this.root.classList.remove('is-three-ready');this.root.dataset.hubRenderer='fallback';this.destroy(false);

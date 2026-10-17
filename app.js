@@ -495,7 +495,8 @@
   }
   function warmHub() {
     clearTimeout(hubWarmTask);hubWarmTask=null;
-    if(s.view!=='home'||hubWarm||!window.HubCards3D||document.hidden)return hubWarm;
+    if(hubWarm?.cards.destroyed)cancelHubWarm();
+    if(hubWarm||!window.HubCards3D||document.hidden)return hubWarm;
     const frame=document.createElement('div');frame.innerHTML=hub();const page=frame.firstElementChild,style=getComputedStyle(app);
     const width=app.clientWidth-parseFloat(style.paddingLeft)-parseFloat(style.paddingRight),height=app.clientHeight-parseFloat(style.paddingTop)-parseFloat(style.paddingBottom);
     page.style.cssText=`position:absolute;left:0;top:0;width:${width}px;height:${height}px;visibility:hidden;pointer-events:none`;
@@ -504,8 +505,16 @@
   }
   function render(ready,prepared,{deferRules=false}={}) {
     window.JourneyComments?.destroy();
-    const warmed=s.view==='hub'?hubWarm:null;cancelHubWarm(!!warmed);if(warmed)hubWarm=null;
-    hubCards?.destroy();hubCards=null;
+    // Keep one idle hub for the challenge/community stack. Its detached canvas
+    // retains uploaded textures and shaders, but schedules no background frames.
+    const retainHub=['hub','feed','journey','publish','myjourneys','ugcreview','cover','explore','quiz','guess','result','route','atlas','ranking'].includes(s.view);
+    if(hubCards){
+      if(retainHub&&!hubCards.destroyed&&!hubCards.initializing){hubCards.suspend();hubWarm={page:hubCards.root,cards:hubCards};}
+      else hubCards.destroy();
+      hubCards=null;
+    }
+    if(hubWarm?.cards.destroyed)cancelHubWarm();
+    const warmed=s.view==='hub'?hubWarm:null;cancelHubWarm(retainHub&&!!hubWarm);if(warmed)hubWarm=null;
     Community.releasePress();
     QuizScene.destroy();
     bubbles?.destroy();bubbles=null;
@@ -643,10 +652,11 @@
       }}).catch(error=>{if(error.name!=='AbortError')toast(tr('场景暂未载入，请重试','This scene didn’t load. Please try again.'));})
         .finally(()=>{if(staged?.page.classList.contains('scene-staging')){staged.viewer.destroy();staged.page.remove();}});
     }
-    if(previous==='home'&&view==='hub')return ChallengeMotion.slide(commit,{force,prepare:async()=>{
+    if(view==='hub'&&previous!=='hub')return ChallengeMotion.slide(commit,{force,back:previous!=='home',prepare:async()=>{
       const warmed=warmHub();if(!warmed)return;
+      const frame=document.createElement('div');frame.innerHTML=hub();
       // A cold/failed image must not hold navigation; native cards remain usable meanwhile.
-      await new Promise(resolve=>{const timeout=setTimeout(resolve,120);warmed.cards.ready.then(()=>{clearTimeout(timeout);resolve();});});
+      await new Promise(resolve=>{const timeout=setTimeout(resolve,120);Promise.all([warmed.cards.ready,warmed.cards.refresh(frame.firstElementChild)]).then(()=>{clearTimeout(timeout);resolve();});});
     }});
     if((previous==='result'&&view==='route')||(previous==='route'&&view==='result')){
       if(previous==='result')resultRouteReturn={cityId:s.cityId,state:resultReveal?.snapshot()};
