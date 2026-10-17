@@ -2,7 +2,7 @@
 (() => {
   'use strict';
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  const t = (zh, en) => I18N.t(zh, en), rows = new Map(), catalog = new Map();
+  const t = (zh, en) => I18N.t(zh, en), rows = new Map(), catalog = new Map(), thumbnails = new Map();
   const states = {draft:'草稿', processing:'正在处理照片', pending:'待审核', approved:'已发布', rejected:'已退回', disabled:'已下架', failed:'生成失败'};
   let db, backend = false, storageError = '', editingId = null, timer, saveTimer, writeQueue = Promise.resolve(), submitting = false, photoTask = Promise.resolve(), photoGeneration = 0;
   const emit = () => window.dispatchEvent(new CustomEvent('tw-ugc-updated'));
@@ -53,6 +53,53 @@
   function register(record) {
     if (record.state === 'approved') Community.register(record.remoteJourney || journey(record));
     else Community.unregister(record.id);
+  }
+  async function initializeUpload() {
+    const id = 'ugc-6fc1b6bc-e1b5-4fe4-93d2-871f5bde8a90';
+    if (rows.has(id) || [...rows.values()].some(row => !row.imported && row.photos.length >= 3 && row.fields.title?.trim())) return;
+    const source = window.UGC_JOURNEYS?.find(journey => journey.id === 'ugc-shapowei');
+    if (!source) return;
+    const sample = structuredClone(source), now = Date.now();
+    sample.id = id; sample.author = {name:'我',nameEn:'Me'};
+    sample.title = '把周末交给海风'; sample.titleEn = 'A weekend by the sea';
+    sample.intro = '沿着水边慢慢走，看看停泊的小船、临水的老房子，还有藏在街角的生活。';
+    sample.introEn = 'A slow walk past little boats, waterside houses and everyday life along the shore.';
+    sample.publishedAt = new Date(now).toISOString(); sample.revision = now; sample.local = true;
+    delete sample.sampleRevision;
+    const sceneIds = new Map(sample.scenes.map((scene,index) => [scene.id,`${id}-s${index+1}`]));
+    sample.scenes.forEach(scene => { scene.id = sceneIds.get(scene.id); scene.photo.id = scene.id; });
+    sample.questions.forEach(question => { question.sceneId = sceneIds.get(question.sceneId); });
+    const fields = {title:sample.title,name:sample.name,region:sample.region,intro:sample.intro,author:'我',lat:String(sample.lat),lng:String(sample.lng),board:'on'};
+    sample.questions.forEach((question,index) => {
+      fields[`q${index}`] = question.q; fields[`a${index}`] = String(question.answer);
+      fields[`scene${index}`] = String(index); fields[`explain${index}`] = question.explain;
+      question.options.forEach((option,n) => { fields[`o${index}-${n}`] = option; });
+    });
+    const record = {id,state:'approved',fields,photos:sample.scenes.map(scene => ({name:scene.name,width:scene.photo.width,height:scene.photo.height})),remoteJourney:sample,initialized:true,revision:now,publishedAt:sample.publishedAt,updatedAt:now};
+    rows.set(id,record); register(record);
+    if(db)await save(record,false);
+  }
+  function uploadCard(record) {
+    const photo = record.remoteJourney?.scenes[0]?.photo;
+    let cover = photo?.thumb?.src || photo?.src || '';
+    const blob = record.photos[0]?.thumb?.blob;
+    if(!cover && blob){
+      let cached=thumbnails.get(record.id);
+      if(cached?.blob!==blob){if(cached)URL.revokeObjectURL(cached.url);cached={blob,url:photoUrl(blob)};thumbnails.set(record.id,cached);}
+      cover=cached.url;
+    }
+    return `<article class="cm-upload-card" data-upload-id="${esc(record.id)}"><button class="cm-upload-open" ${record.state==='approved'?`data-journey="${esc(record.id)}"`:`data-ugc-edit="${esc(record.id)}"`}${record.state==='processing'?' disabled':''}>${cover?`<img class="cm-upload-cover" src="${esc(cover)}" alt="" decoding="async">`:'<span class="cm-upload-cover cm-upload-cover-empty" aria-hidden="true"></span>'}<span class="cm-upload-copy"><strong>${esc(record.fields.title || t('未命名旅程','Untitled journey'))}</strong><span>${record.photos.length}${t('张照片',' photos')}<i>·</i>${esc(states[record.state] || record.state)}</span></span><svg class="cm-upload-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg></button></article>`;
+  }
+  async function originalPhotos(record) {
+    if(!record.initialized)return record.photos;
+    const photos=[];
+    for(const scene of record.remoteJourney.scenes){
+      const response=await fetch(scene.photo.original?.src || scene.photo.src);
+      if(!response.ok)throw Error('照片暂未载入，请通过本地预览地址打开后重试');
+      const blob=await response.blob();
+      photos.push(await processPhoto(new File([blob],`${scene.id}.jpg`,{type:blob.type})));
+    }
+    return photos;
   }
   async function processPhoto(file) {
     if (!/^image\/(jpeg|png|webp|avif)$/.test(file.type) || file.size > 60 * 1024 * 1024) throw Error('请使用 JPG、PNG、WebP 或 AVIF 照片，单张不超过 60 MB');
@@ -170,7 +217,8 @@
     }
   }
   function management(ctx, review = false, embedded = false) {
-    const list = [...rows.values()].filter(r => !r.imported && (!review || (!r.remoteJobId && r.state !== 'draft'))).sort((a,b) => b.updatedAt-a.updatedAt);
+    const list = [...rows.values()].filter(r => !r.imported && (!review || (!r.initialized && !r.remoteJobId && r.state !== 'draft'))).sort((a,b) => b.updatedAt-a.updatedAt);
+    if(embedded&&!review)return `<section class="cm-mine-management cm-upload-list"><p class="cm-error" data-ugc-error hidden role="alert"></p>${list.map(uploadCard).join('')}</section>`;
     return `<${embedded ? 'section' : 'div'} class="${embedded ? 'cm-mine-management' : 'page cm-page cm-submissions'}">${embedded ? '' : ctx.head(t(review ? '本机审核工作台' : '我的发布',review ? 'Local review' : 'My journeys'),'feed')}<p class="cm-management-note">${t(backend ? '已连接后台。后台审核后，社区目录会同步更新。' : '本机原型：投稿和审核结果只影响此设备。',backend ? 'Connected to the admin. The community updates after review.' : 'Prototype: submissions and reviews affect this device only.')}</p><div class="cm-management-tools"><button class="secondary" data-ugc-new>${t('发布 Journey','New journey')}</button><button class="secondary" data-ugc-import>${t('导入旅程','Import journey')}</button>${!backend ? `<button class="secondary" data-ugc-review>${t(review ? '我的发布' : '本机审核工作台',review ? 'My journeys' : 'Local review')}</button>` : '<a href="photos.html#tab=ugc" target="_blank" rel="noopener">打开后台审核 ↗</a>'}</div><p class="cm-error" data-ugc-error hidden role="alert"></p>${list.length ? list.map(row => `<article class="cm-submission"><div class="row"><strong>${esc(row.fields.title || t('未命名草稿','Untitled draft'))}</strong><span class="pill">${esc(states[row.state] || row.state)}</span></div><p>${row.photos.length} ${t('张照片','photos')} · ${esc(row.fields.author || t('我','Me'))}</p>${row.feedback ? `<p class="cm-review-feedback">${esc(row.feedback)}</p>` : ''}<div class="cm-management-tools">${review ? `<button class="primary" data-ugc-inspect="${esc(row.id)}">${t('检查投稿','Inspect submission')}</button><button class="secondary" data-ugc-approve="${esc(row.id)}">${t('审核通过','Approve')}</button><button class="secondary" data-ugc-reject="${esc(row.id)}">${t('退回修改','Return for changes')}</button>${row.state === 'approved' ? `<button class="secondary" data-ugc-disable="${esc(row.id)}">${t('下架','Unpublish')}</button>` : ''}` : `<button class="secondary" data-ugc-edit="${esc(row.id)}"${row.state === 'processing' ? ' disabled' : ''}>${t('修改 / 继续填写','Edit / continue')}</button>${row.state === 'approved' ? `<button class="primary" data-journey="${esc(row.id)}">${t('开始挑战','Start challenge')}</button><button class="secondary" data-ugc-withdraw="${esc(row.id)}">${t('下架','Unpublish')}</button>` : ''}`}</div></article>`).join('') : `<p class="cm-empty">${t('还没有上传的 Journey，发布你的第一段旅程吧。','No uploads yet. Share your first journey.')}</p>`}</${embedded ? 'section' : 'div'}>`;
   }
   function release() { clearInterval(timer); }
@@ -184,9 +232,10 @@
   }
   async function exportJourney(id) {
     const row=rows.get(id);if(!row||row.state!=='approved')throw Error('只能导出已经发布的 Journey');
-    if(row.photos.reduce((sum,p)=>sum+p.original.size,0)>70*1024*1024)throw Error('原始照片总大小超过 70 MB，请通过后台发布后分享链接');
+    const originals=await originalPhotos(row);
+    if(originals.reduce((sum,p)=>sum+p.original.size,0)>70*1024*1024)throw Error('原始照片总大小超过 70 MB，请通过后台发布后分享链接');
     const photos=[];
-    for(const p of row.photos){const data=await new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(r.result);r.onerror=reject;r.readAsDataURL(p.original);});photos.push({name:p.name,type:p.type,data});}
+    for(const p of originals){const data=await new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(r.result);r.onerror=reject;r.readAsDataURL(p.original);});photos.push({name:p.name,type:p.type,data});}
     const blob=new Blob([JSON.stringify({type:'tripwonder-journey',schema:1,id:row.id,fields:row.fields,photos,publishedAt:row.publishedAt,revision:row.revision})],{type:'application/json'});
     const url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download=`${row.id}.tripwonder.json`;link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
   }
@@ -219,7 +268,7 @@
           await save({...row,state:'disabled',updatedAt:Date.now()},false);Community.unregister(row.id);emit();
         } finally { button.disabled = false; }
       }
-      else if (button.dataset.ugcEdit) { const row = rows.get(button.dataset.ugcEdit); if (!row || row.imported || row.state === 'processing') return; editingId=row.id; await save({...row,state:'draft',updatedAt:Date.now()},false); if(!row.remoteJobId)Community.unregister(row.id); navigate('publish'); }
+      else if (button.dataset.ugcEdit) { const row = rows.get(button.dataset.ugcEdit); if (!row || row.imported || row.state === 'processing') return; const photos=await originalPhotos(row),next={...row,photos,state:'draft',updatedAt:Date.now()};if(row.initialized){delete next.initialized;delete next.remoteJourney;}editingId=row.id; await save(next,false); if(!row.remoteJobId)Community.unregister(row.id); navigate('publish'); }
       else if (button.dataset.ugcApprove) await reviewRecord(button.dataset.ugcApprove,'approved');
       else if (button.dataset.ugcDisable) await reviewRecord(button.dataset.ugcDisable,'disabled');
       else if (button.dataset.ugcReject) { const feedback = prompt('请填写退回原因，发布者可以据此修改后重新提交'); if (feedback?.trim()) await reviewRecord(button.dataset.ugcReject,'rejected',feedback.trim()); }
@@ -238,6 +287,7 @@
       try{const editor=JSON.parse(localStorage.getItem('tripwonder-ugc-editor')||'null');if(editor?.id&&(!rows.has(editor.id)||rows.get(editor.id).state==='draft')){editingId=editor.id;const prior=rows.get(editor.id)||{id:editor.id,state:'draft',photos:[],revision:Date.now(),updatedAt:Date.now()};rows.set(editor.id,{...prior,fields:editor.fields});}}catch{}
       for(const row of rows.values()) { try { if(!row.remoteJobId)register(row); } catch { /* An invalid imported record never blocks the game. */ } }
     } catch(error) { storageError=error.message; }
+    try { await initializeUpload(); } catch { /* Existing uploads and the game remain available if saving the initial sample fails. */ }
     try { const response=await fetch('/api/status',{signal:AbortSignal.timeout(1500)});backend=response.ok&&(await response.json()).ok===true;if(backend)await refresh(); } catch { backend=false; }
   })();
   window.UGCService = {ready,submit,mountPublish,management,mountManagement,mountFeed,release,refresh,validate,questionsOf,get backend(){return backend;},get records(){return [...rows.values()];}};

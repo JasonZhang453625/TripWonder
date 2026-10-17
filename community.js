@@ -86,10 +86,15 @@
 
   function hub(ctx) {
     const done = ctx.order.filter(id => ctx.daily[id]?.result).length, first = ctx.cities.find(c => c.id === ctx.order.find(id => !ctx.daily[id]?.result) || ctx.order[0]);
-    const collage = ugc.slice(0, 3).map(c => `<i>${thumb(ctx, c)}</i>`).join('');
-    return `<div class="page cm-page cm-hub">${ctx.head('TripWonder', 'home')}
-      <button class="cm-entry cm-entry-challenge" data-go="today"><span class="cm-entry-art">${first ? thumb(ctx, first) : ''}</span><span class="cm-entry-copy"><b class="cm-entry-tag">${t('官方', 'Official')}</b><strong>${t('今日挑战', 'Today’s challenge')}</strong><small>${t(`今日 ${ctx.order.length} 城 · 已完成 ${done}`, `${ctx.order.length} cities today · ${done} done`)}</small><span class="cm-entry-perks">${icon('ticket')}${t('赢目的地优惠 · 点亮徽章', 'Win destination perks · Earn badges')}</span></span>${icon('next')}</button>
-      <button class="cm-entry cm-entry-community" data-go="feed"><span class="cm-entry-art cm-collage">${collage}</span><span class="cm-entry-copy"><b class="cm-entry-tag">${t('社区', 'Community')}</b><strong>${t('社区', 'Community')}</strong><small>${t(`去过的目的地 · ${ugc.length} 个玩家 Journey`, `Places you’ve been · ${ugc.length} player journeys`)}</small><span class="cm-entry-perks">${icon('message')}${t('留言讨论 · 玩家出题', 'Notes and player-made challenges')}</span></span>${icon('next')}</button>
+    // Fixed cover scenes (Zhangjiajie peaks / Suzhou canal); fall back to today's first city if the catalogue lacks one.
+    const scenes = ctx.cities.flatMap(c => c.scenes), cover = (id, fallback) => { const s = scenes.find(x => x.id === id); return s ? ctx.img(s.id, '') : fallback ? thumb(ctx, fallback) : ''; };
+    const today = new Date().toLocaleDateString(isEn() ? 'en-US' : 'zh-CN', {year: 'numeric', month: 'long', day: 'numeric', weekday: 'long'});
+    const entry = (kind, go, kicker, title, sub, label, art, extra = '') => `<button class="cm-entry cm-entry-${kind}" data-go="${go}" aria-label="${label}"${extra}><span class="cm-entry-art">${art}</span><span class="cm-entry-copy"><em class="cm-entry-kicker">${kicker}</em><strong>${title}</strong><small>${sub}</small></span></button>`;
+    const challengeSub = t('每日五城•在线PK•赢取权益', 'Five cities daily • Live PK • Win perks'), communitySub = t('旅人共创•分享足迹', 'Co-created by travellers • Share your trails');
+    return `<div class="page cm-page cm-hub"><header class="cm-hub-head"><button class="icon-btn" data-go="home" aria-label="${t('返回', 'Back')}">${icon('back')}</button></header>
+      <div class="cm-hub-title"><h1>TripWonder</h1><p>${today}</p></div>
+      ${entry('challenge', 'today', 'DAILY EXPEDITION', t('今日挑战', 'Today’s challenge'), challengeSub, `${t('今日挑战', 'Today’s challenge')}, ${t(`已完成 ${done}/${ctx.order.length}`, `${done}/${ctx.order.length} done`)}. ${challengeSub}`, cover('zjj-misty-peaks', first), ` data-done="${done}"`)}
+      ${entry('community', 'feed', 'TRAVELLER STORIES', t('旅人社区', 'Community'), communitySub, `${t('旅人社区', 'Community')}. ${communitySub}`, cover('suzhou-shantang', ugc[0]))}
     </div>`;
   }
 
@@ -130,15 +135,15 @@
   function feed(ctx) {
     const officials = ctx.cities.filter(c => ctx.challenged[c.id]);
     const tab = ['ugc', 'official', 'mine'].includes(ctx.tab) ? ctx.tab : 'all';
-    const tabs = [['all', t('广场', 'Square'), officials.length + ugc.length], ['official', t('已挑战', 'Played'), officials.length], ['ugc', t('玩家 Journey', 'Player journeys'), ugc.length], ['mine', t('我的', 'Mine')]]
-      .map(([id, name, count]) => `<button role="tab" aria-selected="${tab === id}" class="${tab === id ? 'active' : ''}" data-feed-tab="${id}">${name}${count === undefined ? '' : `<small>${count}</small>`}</button>`).join('');
+    const tabs = [['all', t('广场', 'Square')], ['official', t('已挑战', 'Played')], ['ugc', t('玩家 Journey', 'Player journeys')], ['mine', t('我的', 'Mine')]]
+      .map(([id, name]) => `<button role="tab" aria-selected="${tab === id}" class="${tab === id ? 'active' : ''}" data-feed-tab="${id}">${name}</button>`).join('');
     const mineTab = ctx.mineTab === 'liked' ? 'liked' : 'uploads';
     const liked = [...officials, ...ugc].filter(c => window.TWStore.get().likes[`feed:${c.id}`]);
     const mine = tab === 'mine' ? `<div class="cm-mine-tabs" role="tablist" aria-label="${t('我的 Journey', 'My journeys')}">${[['uploads',t('我上传的','My uploads')],['liked',t('我点赞的','Liked journeys')]].map(([id,name]) => `<button role="tab" aria-selected="${mineTab === id}" data-feed-mine-tab="${id}">${name}</button>`).join('')}</div>${mineTab === 'uploads' ? window.UGCService.management(ctx, false, true) : `<div class="cm-list">${liked.map(c => postCard(ctx,c)).join('') || `<div class="cm-empty">${t('还没有点赞的 Journey。点亮喜欢的旅程下方的爱心，就能在这里找到。','No liked journeys yet. Tap the heart on a journey to find it here.')}</div>`}</div>`}` : '';
     const list = tab === 'official'
       ? (officials.length ? officials.map(c => postCard(ctx, c)).join('') : `<div class="cm-empty"><p>${t('完成今日挑战后，你去过的目的地会出现在这里，可以看看大家的留言。', 'Finish today’s challenge and the destinations you’ve been to will appear here, with everyone’s notes.')}</p><button class="primary" data-go="today">${t('去今日挑战', 'Go to today’s challenge')}</button></div>`)
       : [...(tab === 'all' ? officials : []), ...ugc].map(c => postCard(ctx, c)).join('');
-    return `<div class="page cm-page cm-feed">${ctx.head(t('社区', 'Community'), 'hub')}<div class="cm-tabs" role="tablist" aria-label="${t('社区分类', 'Community categories')}">${tabs}</div><div class="cm-feed-scroll">${tab === 'mine' ? mine : `<div class="cm-list">${list || `<div class="cm-empty">${t('还没有新的分享，来发布第一篇吧。', 'No stories yet. Share the first one.')}</div>`}</div>`}</div><button class="cm-publish-fab" data-go="publish" aria-label="${t('发布 Journey', 'Post a journey')}"><span aria-hidden="true">+</span></button></div>`;
+    return `<div class="page cm-page cm-feed">${ctx.head(t('社区', 'Community'), 'hub')}<div class="cm-tabs" role="tablist" aria-label="${t('社区分类', 'Community categories')}">${tabs}</div><div class="cm-feed-scroll">${tab === 'mine' ? mine : `<div class="cm-list">${list || `<div class="cm-empty">${t('还没有新的分享，来发布第一篇吧。', 'No stories yet. Share the first one.')}</div>`}</div>`}</div><button class="cm-publish-fab" data-go="publish" aria-label="${t('发布 Journey', 'Post a journey')}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true" focusable="false"><path d="M12 3v18M3 12h18"/></svg></button></div>`;
   }
 
   function board(ctx, c, played) {

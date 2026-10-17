@@ -33,40 +33,24 @@ function faceTexture(button,w,h,index,font=getComputedStyle(button).fontFamily){
   const canvas=document.createElement('canvas'),ratio=2;
   canvas.width=Math.ceil(w*ratio);canvas.height=Math.ceil(h*ratio);
   const ctx=canvas.getContext('2d');ctx.scale(ratio,ratio);
-  const blue=index===0,gradient=ctx.createLinearGradient(0,0,w,h);
-  gradient.addColorStop(0,blue?'#416dff':'#fff5ec');gradient.addColorStop(1,blue?'#3057f3':'#ffe8d9');
-  ctx.fillStyle=gradient;ctx.fillRect(0,0,w,h);
-  const glow=ctx.createRadialGradient(w*.25,0,0,w*.25,0,w*.95);
-  glow.addColorStop(0,blue?'#b8d2ff38':'#ffffffa0');glow.addColorStop(1,'#ffffff00');ctx.fillStyle=glow;ctx.fillRect(0,0,w,h);
-  // A quiet, translucent arc catches the edge light without competing with the photo.
-  ctx.strokeStyle=blue?'#ffffff0b':'#dcad8c13';ctx.lineWidth=1;
-  for(const radius of [w*.6,w*.73]){ctx.beginPath();ctx.arc(w*1.04,h*.04,radius,0,Math.PI*2);ctx.stroke();}
-  const pad=w<320?20:24,artW=Math.min(112,w*.29),artH=Math.min(h*.75,270),artX=pad,artY=(h-artH)/2;
-  ctx.save();rounded(ctx,artX,artY,artW,artH,18);ctx.clip();
-  const images=[...button.querySelectorAll('.cm-entry-art img')];
-  if(blue)crop(ctx,images[0],artX,artY,artW,artH);
-  else{
-    crop(ctx,images[0],artX,artY,artW*.52-1,artH);
-    crop(ctx,images[1],artX+artW*.52+1,artY,artW*.48-1,artH*.5-1);
-    crop(ctx,images[2],artX+artW*.52+1,artY+artH*.5+1,artW*.48-1,artH*.5-1);
-  }
-  ctx.restore();ctx.strokeStyle=blue?'#ffffff35':'#ffffffb0';rounded(ctx,artX,artY,artW,artH,18);ctx.stroke();
-  const textX=artX+artW+(w<320?16:20),textW=w-textX-pad-10;
-  const title=button.querySelector('strong').textContent,subtitle=button.querySelector('small').textContent,perks=button.querySelector('.cm-entry-perks').textContent,tag=button.querySelector('.cm-entry-tag').textContent;
-  const titleSize=title.length>12?21:w<320?24:28,smallSize=w<320?11:12;
-  const top=h/2-(textW<145?67:59);
-  ctx.font=`650 10px ${font}`;const tagW=ctx.measureText(tag).width+16;
-  ctx.fillStyle=blue?'#ffffff29':'#ff9451';rounded(ctx,textX,top,tagW,21,10.5);ctx.fill();ctx.fillStyle='#fff';ctx.fillText(tag,textX+8,top+14);
-  ctx.fillStyle=blue?'#ffffff':'#24344b';ctx.font=`750 ${titleSize}px ${font}`;
-  lines(ctx,title,textX,top+53,textW,titleSize+4,2);
-  const titleRows=ctx.measureText(title).width>textW?2:1,subY=top+53+(titleRows-1)*(titleSize+4)+24;
-  ctx.fillStyle=blue?'#e6eeff':'#766c6a';ctx.font=`450 ${smallSize}px ${font}`;
-  lines(ctx,subtitle,textX,subY,textW,17,2);
-  const subRows=ctx.measureText(subtitle).width>textW?2:1;
-  ctx.fillStyle=blue?'#f0f5ff':'#bb6c38';ctx.font=`600 ${w<320?10:11}px ${font}`;
-  lines(ctx,perks,textX,subY+subRows*17+10,textW,16,2);
-  ctx.strokeStyle=blue?'#e6efffb0':'#b38c767e';ctx.lineWidth=1.7;ctx.lineCap='round';ctx.lineJoin='round';
-  ctx.beginPath();ctx.moveTo(w-pad-1,h/2-5);ctx.lineTo(w-pad+4,h/2);ctx.lineTo(w-pad-1,h/2+5);ctx.stroke();
+  const radius=28,compact=w<320;
+  // Full-bleed photograph cropped to the card, with the same shading as the DOM fallback.
+  ctx.save();rounded(ctx,0,0,w,h,radius);ctx.clip();
+  ctx.fillStyle='#26404a';ctx.fillRect(0,0,w,h);
+  crop(ctx,button.querySelector('.cm-entry-art img'),0,0,w,h);
+  const shade=ctx.createLinearGradient(0,h,0,0);
+  shade.addColorStop(0,'#0a1e1ccc');shade.addColorStop(.34,'#0a1e1c66');shade.addColorStop(.66,'#0a1e1c00');ctx.fillStyle=shade;ctx.fillRect(0,0,w,h);
+  const side=ctx.createLinearGradient(0,0,w*.6,0);side.addColorStop(0,'#0a1e1c4d');side.addColorStop(1,'#0a1e1c00');ctx.fillStyle=side;ctx.fillRect(0,0,w,h);
+  ctx.restore();
+  const kicker=button.querySelector('.cm-entry-kicker').textContent,title=button.querySelector('strong').textContent,subtitle=button.querySelector('small').textContent;
+  const x=compact?20:24,titleSize=compact?26:30,subY=h-(compact?18:22)-3,titleY=subY-24,kickerY=titleY-titleSize+2,textW=w-x*2;
+  ctx.textBaseline='alphabetic';
+  ctx.fillStyle='#ffffffb3';ctx.font=`400 8px ${font}`;ctx.letterSpacing='.8px';ctx.fillText(kicker,x,kickerY);
+  ctx.fillStyle='#fff';ctx.font=`400 ${titleSize}px ${font}`;ctx.letterSpacing='1px';ctx.fillText(title,x,titleY);
+  ctx.fillStyle='#ffffffa6';ctx.font=`400 11px ${font}`;ctx.letterSpacing='.3px';lines(ctx,subtitle,x,subY,textW,15,1);
+  ctx.letterSpacing='0px';
+  // Soft glass rim hugging the edge.
+  ctx.strokeStyle='#8fb9b2a6';ctx.lineWidth=1.5;rounded(ctx,.75,.75,w-1.5,h-1.5,radius-.75);ctx.stroke();
   const texture=new THREE.CanvasTexture(canvas);texture.colorSpace=THREE.SRGBColorSpace;texture.anisotropy=4;
   return texture;
 }
@@ -121,11 +105,11 @@ class HubCards {
   createModel(button,index,w,h){
     const uniforms={cardTilt:{value:new THREE.Vector2()}};
     const font=getComputedStyle(button).fontFamily,texture=faceTexture(button,w,h,index,font);
-    const side=new THREE.MeshPhysicalMaterial({color:index?0xebd0be:0x3257cf,roughness:.4,metalness:.02,clearcoat:.35,clearcoatRoughness:.4});
+    const side=new THREE.MeshPhysicalMaterial({color:0x5d8e88,roughness:.4,metalness:.02,clearcoat:.35,clearcoatRoughness:.4});
     // Printed artwork keeps its intended colours; the rolled physical edges catch the light.
     const face=sheen(new THREE.MeshBasicMaterial({map:texture,toneMapped:false}),uniforms);
     // The rim and flat printed face move together under one rigid transform.
-    const shape=cardShape(w,h,26);
+    const shape=cardShape(w,h,28);
     const body=new THREE.ExtrudeGeometry(shape,{depth:8,steps:1,bevelEnabled:true,bevelThickness:3,bevelSize:2.5,bevelSegments:6,curveSegments:20});body.translate(0,0,-4);
     // The separate printed face replaces the body's front cap.
     const shell=new THREE.BufferGeometry(),rim=body.groups.find(group=>group.materialIndex===1);

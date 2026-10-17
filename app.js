@@ -548,6 +548,7 @@
     document.querySelector('#phone').classList.toggle('flat-mode',!(['cover','explore'].includes(s.view)||immersiveJourney()));
     document.querySelector('#phone').classList.toggle('quiz-mode',s.view==='quiz');
     document.querySelector('#phone').classList.toggle('home-mode',s.view==='home');
+    document.querySelector('#phone').classList.toggle('hub-mode',s.view==='hub');
     document.querySelector('#phone').classList.toggle('planner-mode',s.view==='itinerary');
     document.querySelector('#phone').classList.toggle('result-mode',s.view==='result'&&!!(s.result||current().result));
     const views={home,cover,explore,quiz,guess,result,route,atlas,ranking,itinerary,profile,mall,hub,feed,journey,publish,myjourneys:()=>UGCService.management(communityContext()),ugcreview:()=>UGCService.management(communityContext(),true)};

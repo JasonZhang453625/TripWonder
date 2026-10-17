@@ -52,7 +52,7 @@ async function paused(p){
       await p.clock.setFixedTime(new Date((await p.evaluate(()=>Date.now()))+61000));await p.locator('.guess-map').waitFor();await idle(p);
       await p.locator('.guess-map').click({position:{x:200,y:300}});await p.locator('[data-action="guess-submit"]').click();await p.locator('.guess-card [data-action="show-result"]').click();await p.locator('.result-page').waitFor();await idle(p);
       results.push(await auditReturn(p,'.result-topbar [data-action="result-exit"]'));
-      assert.match(await p.locator('.cm-entry-challenge small').textContent(),/已完成 1/);
+      assert.equal(await p.locator('.cm-entry-challenge').getAttribute('data-done'),'1');
       const updated=await state(p);assert.notEqual(updated.cards[0].texture,initial.cards[0].texture,'completed challenge refreshes its printed card');assert.equal(updated.cards[1].texture,initial.cards[1].texture,'unchanged community card retains texture');assert.deepEqual(updated.cards.map(m=>m.geometry),initial.cards.map(m=>m.geometry),'progress refresh does not rebuild meshes');
       await p.locator('.cm-entry-community').click();await p.locator('.cm-feed').waitFor();await idle(p);
       await p.setViewportSize({width:844,height:390});await paused(p);
