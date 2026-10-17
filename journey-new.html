@@ -52,7 +52,18 @@
 <section class="panel" id="progress" hidden><h2 id="p-title">正在生成…</h2><p class="sub" id="p-sub">可以离开本页，任务会在后台继续；在旅程库里随时查看进度。</p><ul class="steps" id="p-steps"></ul><div class="submit-bar" id="p-actions" style="margin-top:14px"></div></section>
 </main>
 <script>
-document.addEventListener('change',e=>{if(e.target.id==='f-channel')document.querySelectorAll('.ugc-only').forEach(el=>el.hidden=e.target.value!=='ugc');});
+const requestedChannel=new URLSearchParams(location.search).get('channel');
+if(requestedChannel==='ugc'||requestedChannel==='official')document.getElementById('f-channel').value=requestedChannel;
+function syncChannel(){
+  const channel=document.getElementById('f-channel').value;
+  document.querySelectorAll('.ugc-only').forEach(el=>el.hidden=channel!=='ugc');
+  const label=channel==='ugc'?'录入 UGC Journey':'上传官方 Journey';
+  document.querySelector('h1').textContent=label;document.title=label+' · TripWonder';
+  const back=document.querySelector('.library-head a[href^="photos.html"]');
+  back.href='photos.html#tab='+channel;back.textContent=channel==='ugc'?'返回 UGC 审核管理 ↗':'返回官方旅程库 ↗';
+}
+document.addEventListener('change',e=>{if(e.target.id==='f-channel')syncChannel();});
+syncChannel();
 const $=s=>document.querySelector(s),esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const MIN=3,MAX=9,scenes=[];let uploading=0,jobId=null,pollTimer=0;
 const call=async(url,opts)=>{const r=await fetch(url,opts);const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||r.statusText);return d;};
@@ -136,8 +147,9 @@ async function poll(){
   let job;try{job=await call('/api/jobs/'+jobId);}catch(error){$('#p-sub').textContent='无法读取进度：'+error.message;pollTimer=setTimeout(poll,3000);return;}
   $('#p-steps').innerHTML=job.steps.map(s=>`<li class="${s.status}"><span class="mark">${{done:'✓',running:'…',failed:'✕',skipped:'–',pending:'·'}[s.status]}</span><span>${esc(s.label)} <small>${esc(s.detail)}</small></span></li>`).join('');
   const actions=$('#p-actions');
-  if(job.status==='done'){$('#p-title').textContent='生成完成';$('#p-sub').textContent='新目的地已存入数据库并加入游戏。AI 生成的内容默认为“待审核”，请在旅程库里核对讲解点、题目和坐标。';actions.innerHTML=`<a class="btn solid" href="photos.html#dest=${encodeURIComponent(job.destinationId)}">查看目的地</a><a class="btn" href="index.html" target="_blank">在游戏中试玩 ↗</a><a class="btn" href="journey-new.html">再添加一个</a>`;return;}
-  if(job.status==='failed'){$('#p-title').textContent='生成失败';$('#p-sub').textContent=job.error||'';actions.innerHTML='<button class="btn solid" id="retry">重试（从失败的步骤继续）</button><a class="btn" href="photos.html">返回旅程库</a>';$('#retry').onclick=async()=>{try{await call(`/api/jobs/${jobId}/retry`,{method:'POST'});$('#p-title').textContent='正在生成…';$('#p-sub').textContent='';actions.innerHTML='';poll();}catch(error){$('#p-sub').textContent=error.message;}};return;}
+  const channel=job.channel==='ugc'?'ugc':'official';
+  if(job.status==='done'){$('#p-title').textContent='生成完成';$('#p-sub').textContent=channel==='ugc'?'UGC 已存入数据库，审核通过后才会进入社区。请核对图片、讲解点、题目和坐标。':'官方目的地已存入数据库并加入挑战。请在官方旅程库里核对讲解点、题目和坐标。';actions.innerHTML=`<a class="btn solid" href="photos.html#tab=${channel}&dest=${encodeURIComponent(job.destinationId)}">${channel==='ugc'?'前往审核':'查看目的地'}</a>${channel==='ugc'?'':'<a class="btn" href="index.html" target="_blank">在游戏中试玩 ↗</a>'}<a class="btn" href="journey-new.html?channel=${channel}">再添加一个</a>`;return;}
+  if(job.status==='failed'){$('#p-title').textContent='生成失败';$('#p-sub').textContent=job.error||'';actions.innerHTML=`<button class="btn solid" id="retry">重试（从失败的步骤继续）</button><a class="btn" href="photos.html#tab=${channel}">返回${channel==='ugc'?'UGC 审核管理':'官方旅程库'}</a>`;$('#retry').onclick=async()=>{try{await call(`/api/jobs/${jobId}/retry`,{method:'POST'});$('#p-title').textContent='正在生成…';$('#p-sub').textContent='';actions.innerHTML='';poll();}catch(error){$('#p-sub').textContent=error.message;}};return;}
   $('#p-title').textContent='正在生成…';pollTimer=setTimeout(poll,1500);
 }
 renderScenes();updateTotal();

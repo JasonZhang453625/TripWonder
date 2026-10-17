@@ -19,90 +19,10 @@
 .qa{border-top:1px solid #edf0f5;padding:10px 0}.qa:first-of-type{border-top:0}.qa b{font-size:13px}.qa .opt{display:block;font-size:12px;color:#5d6c82}.qa .opt.right{color:#1c8a4c;font-weight:600}
 details summary{cursor:pointer;font-size:12px;color:#3264ff}.hs{font-size:11px;line-height:1.7;color:#74849a;margin:6px 0}
 .notice{font-size:12px;color:#a86a00;background:#fff8e8;border:1px solid #f5e2b8;border-radius:12px;padding:10px 14px;margin:14px 0}
-</style></head>
-<body class="photo-body"><main class="library"><header class="library-head"><a class="brand" href="index.html">Trip<span>.</span>com</a><a href="index.html">返回原型 ↗</a></header><span class="pill">TRIPWONDER · 后台</span><h1 style="margin-top:18px" id="title">目的地旅程库</h1><p class="library-intro" id="intro">按目的地维护旅程（Journey）：每个目的地由若干张场景照片、讲解点、三道题、地图位置和游戏规则组成。点击目的地查看场景与素材署名，也可以添加新的旅程，系统会自动完成图片转换、题目与讲解点生成，并存入数据库供挑战。</p><div id="view"></div><footer class="library-footer">照片目录：photo-library / 目的地 / 景点。原图保留本地来源的完整像素尺寸与画面比例；素材版本差异见各城市清单。大同照片由用户提供，拍摄权属未独立验证。后台添加的旅程默认标记为“待审核”，其讲解点、题目和坐标由 AI 生成，上线前请人工核对。<br>素材署名：<a href="photo-library/shenzhen/ATTRIBUTION.md">深圳</a> · <a href="photo-library/suzhou/SOURCES.md">苏州</a> · <a href="photo-library/guilin/ATTRIBUTION.md">桂林</a> · <a href="photo-library/hongkong/ATTRIBUTION.md">香港</a> · <a href="photo-library/beijing/ATTRIBUTION.md">北京</a> · <a href="photo-library/shanghai/ATTRIBUTION.md">上海</a> · <a href="photo-library/zhangjiajie/ATTRIBUTION.md">张家界</a></footer></main>
+</style><link rel="stylesheet" href="photos-admin.css?v=20261017-tabs1"></head>
+<body class="photo-body"><main class="library"><header class="library-head"><a class="brand" href="index.html">Trip<span>.</span>com</a><a href="index.html">返回原型 ↗</a></header><span class="pill">TRIPWONDER · 后台</span><h1 style="margin-top:18px" id="title">目的地旅程库</h1><p class="library-intro" id="intro">按目的地维护旅程（Journey）：每个目的地由若干张场景照片、讲解点、三道题、地图位置和游戏规则组成。官方库用于维护与上传官方目的地，UGC 库用于审核和管理玩家内容。点击 Journey 查看场景、素材署名、讲解点、题目与规则。</p><div class="library-tabs" role="tablist" aria-label="旅程库类型"><button class="library-tab" id="tab-official" type="button" role="tab" data-library-tab="official" aria-selected="true" aria-controls="view">官方旅程 <span class="tab-count">0</span></button><button class="library-tab" id="tab-ugc" type="button" role="tab" data-library-tab="ugc" aria-selected="false" aria-controls="view" tabindex="-1">UGC 审核管理 <span class="tab-count">0</span></button></div><div id="view" role="tabpanel" aria-labelledby="tab-official"></div><footer class="library-footer">照片目录：photo-library / 目的地 / 景点。原图保留本地来源的完整像素尺寸与画面比例；素材版本差异见各城市清单。大同照片由用户提供，拍摄权属未独立验证。后台添加的旅程默认标记为“待审核”，其讲解点、题目和坐标由 AI 生成，上线前请人工核对。<br>素材署名：<a href="photo-library/shenzhen/ATTRIBUTION.md">深圳</a> · <a href="photo-library/suzhou/SOURCES.md">苏州</a> · <a href="photo-library/guilin/ATTRIBUTION.md">桂林</a> · <a href="photo-library/hongkong/ATTRIBUTION.md">香港</a> · <a href="photo-library/beijing/ATTRIBUTION.md">北京</a> · <a href="photo-library/shanghai/ATTRIBUTION.md">上海</a> · <a href="photo-library/zhangjiajie/ATTRIBUTION.md">张家界</a></footer></main>
 <script src="data.js?v=20261017-quiz1"></script><script src="media-manifest.js?v=bef434a8dee5"></script><script src="content/shenzhen.js?v=20261017-quiz1"></script><script src="content/suzhou.js?v=20261017-quiz1"></script><script src="content/guilin.js?v=20261017-quiz1"></script><script src="content/hongkong.js?v=20261017-quiz1"></script><script src="content/beijing.js?v=20261017-quiz1"></script><script src="content/shanghai.js?v=20261017-quiz1"></script><script src="content/zhangjiajie.js?v=20261017-quiz1"></script>
   <script src="catalog.js?v=6c83ee60f929"></script>
-<script>
-const catalog=window.TRIPWONDER_CATALOG,escapeText=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
-const licenseUrl=photo=>photo.licenseUrl||(photo.license==='CC0 1.0'?'https://creativecommons.org/publicdomain/zero/1.0/':photo.license==='CC BY-SA 4.0'?'https://creativecommons.org/licenses/by-sa/4.0/':photo.license==='CC BY-SA 3.0'?'https://creativecommons.org/licenses/by-sa/3.0/':photo.license==='CC BY 4.0'?'https://creativecommons.org/licenses/by/4.0/':photo.license==='CC BY 2.0'?'https://creativecommons.org/licenses/by/2.0/':'');
-const DEFAULT_RULES={quizSeconds:60,points:[20,20,20],guess:{max:40,fullKm:25,decayKm:450}};
-const view=document.getElementById('view');
-let backend={online:false,journeys:[],jobs:[]},pollTimer=0;
-
-/* ---- data: built-in destinations (static catalog) + database journeys / generation jobs (API) ---- */
-async function loadBackend(){
-  try{const r=await fetch('/api/journeys',{cache:'no-store'});if(!r.ok)throw 0;const data=await r.json();backend={online:true,journeys:data.journeys,jobs:data.jobs};}
-  catch{backend={online:false,journeys:[],jobs:[]};}
-}
-const sceneThumb=scene=>{const p=scene.photo;return p.thumb?.src||window.MEDIA_ASSETS?.[p.id]?.thumb?.src||p.src;};
-function destinations(){
-  const builtin=catalog.cities.map(c=>({id:c.id,name:c.name,region:c.region,scenes:c.scenes,rules:{...DEFAULT_RULES,...c.rules,guess:{...DEFAULT_RULES.guess,...c.guess}},questions:c.questions,kind:'builtin',status:'ready',review:'approved'}));
-  const stored=backend.journeys.map(j=>({...j,rules:{...DEFAULT_RULES,...j.rules},kind:'db'}));
-  const known=new Set(stored.map(j=>j.id));
-  const jobs=backend.jobs.filter(job=>!known.has(job.destinationId)).map(job=>({id:job.destinationId,name:job.name,kind:'job',job,scenes:[],status:job.status}));
-  return [...builtin,...stored,...jobs];
-}
-const statusPill=d=>{
-  if(d.kind==='job')return d.job.status==='failed'?'<span class="pill err">生成失败</span>':'<span class="pill warn">生成中…</span>';
-  if(d.kind==='db')return d.status==='disabled'?'<span class="pill mute">已停用</span>':d.review==='approved'?'<span class="pill ok">已上线</span>':'<span class="pill warn">已上线 · 待审核</span>';
-  return '<span class="pill ok">内置</span>';
-};
-
-/* ---- list view: one card per destination ---- */
-function stepList(job){return `<ul class="steps">${job.steps.map(s=>`<li class="${s.status}"><span class="mark">${{done:'✓',running:'…',failed:'✕',skipped:'–',pending:'·'}[s.status]}</span><span>${escapeText(s.label)}${s.detail?` · ${escapeText(s.detail)}`:''}</span></li>`).join('')}</ul>`;}
-function renderList(){
-  document.title='目的地旅程库 · TripWonder';
-  const list=destinations();
-  const add=backend.online?'<a class="btn solid" href="journey-new.html">＋ 添加 Journey</a>':'';
-  const note=backend.online?'':'<div class="notice">后台服务未连接：当前为静态预览，只能查看内置目的地。运行 <code>node admin/server.mjs</code> 并访问 http://127.0.0.1:8787/photos.html 即可添加和管理旅程。</div>';
-  view.innerHTML=`${note}<div class="library-bar"><span class="library-count">共 ${list.length} 个目的地</span>${add}</div><div class="photo-grid">${list.map(d=>{
-    const first=d.scenes[0],thumb=first?`<img src="${escapeText(sceneThumb(first))}" width="${first.photo.thumb?.width||first.photo.width}" height="${first.photo.thumb?.height||first.photo.height}" alt="${escapeText(d.name)}" loading="lazy" decoding="async">`:`<div class="dest-ph">${escapeText(d.name.slice(0,2))}</div>`;
-    const meta=d.kind==='job'?stepList(d.job):`<p>${d.scenes.length} 个场景 · ${d.questions.length} 道题 · 倒计时 ${d.rules.quizSeconds} 秒</p>`;
-    const err=d.kind==='job'&&d.job.error?`<p style="color:#c53030">${escapeText(d.job.error)}</p>`:'';
-    const actions=d.kind==='job'&&d.job.status==='failed'?`<div class="card-actions"><button class="btn solid" data-retry="${d.job.id}">重试</button><button class="btn danger" data-discard="${d.job.id}">放弃</button></div>`:'';
-    return `<article class="photo-card dest-card" tabindex="0" role="link" data-dest="${escapeText(d.id)}" aria-label="${escapeText(d.name)}"><div class="photo-preview">${thumb}</div><div class="details"><div class="pill-row"><span class="pill">${escapeText(d.region||'')}</span>${d.channel==='ugc'?'<span class="pill warn">玩家 UGC · 审核后进社区</span>':''}${statusPill(d)}</div><h2>${escapeText(d.name)}</h2>${meta}${err}${actions}</div></article>`;}).join('')}</div>`;
-  schedulePoll();
-}
-
-/* ---- detail view: the scene cards of one destination ---- */
-function sceneCard(c,scene){
-  const p=scene.photo,thumb=sceneThumb(scene),source=p.source?.startsWith('http')?`<a href="${escapeText(p.source)}" target="_blank" rel="noopener noreferrer">素材来源 ↗</a>`:'',license=licenseUrl(p);
-  return `<article class="photo-card"><div class="photo-preview"><img src="${escapeText(thumb)}" width="${p.thumb?.width||p.width}" height="${p.thumb?.height||p.height}" alt="${escapeText(scene.name)}" loading="lazy" decoding="async"></div><div class="details"><span class="pill">${escapeText(c.name)}</span><h2>${escapeText(scene.name)}</h2><p>展示版 ${p.width} × ${p.height} px · ${p.credit?escapeText(p.credit):'用户提供'}${p.license?` · <a href="${escapeText(license)}" target="_blank" rel="noopener noreferrer">${escapeText(p.license)}</a>`:''}</p><div class="library-source"><a href="${escapeText(p.sourceOriginal||p.src)}" target="_blank" rel="noopener noreferrer">查看原始素材或来源预览 ↗</a>${source}</div>${scene.hotspots?.length&&c.kind==='db'?`<details><summary>${scene.hotspots.length} 个讲解点</summary>${scene.hotspots.map(h=>`<p class="hs"><b>${escapeText(h.title)}</b>（${escapeText(h.tag)} · ${h.x}%, ${h.y}%）<br>${escapeText(h.text)}</p>`).join('')}</details>`:''}</div></article>`;
-}
-function renderDetail(id){
-  const d=destinations().find(x=>x.id===id);
-  if(!d){location.hash='';return;}
-  document.title=`${d.name} · 目的地旅程库`;
-  const r=d.rules,G=r.guess;
-  const actions=d.kind==='db'?`<div class="detail-actions">${d.review!=='approved'?'<button class="btn" data-review="approved">标记为已审核</button>':''}<button class="btn" data-toggle="${d.status==='disabled'?'ready':'disabled'}">${d.status==='disabled'?'重新启用':'停用（游戏中隐藏）'}</button><button class="btn danger" data-delete="1">删除</button></div>`:'';
-  const flags=d.generated?.flags?.length?`<div class="notice"><b>待人工核对：</b><ul>${d.generated.flags.map(f=>`<li>${escapeText(f)}</li>`).join('')}</ul></div>`:'';
-  const rules=`<div class="panel"><h3>游戏规则</h3><div class="rule-grid"><div><small>答题倒计时</small><b>${r.quizSeconds} 秒</b></div><div><small>三题分值</small><b>${r.points.join(' / ')}</b></div><div><small>定位满分</small><b>${G.max} 分</b></div><div><small>满分半径</small><b>${G.fullKm} km</b></div><div><small>距离衰减尺度</small><b>${G.decayKm} km</b></div>${d.lat?`<div><small>地图坐标</small><b>${d.lat}, ${d.lng}</b></div>`:''}</div></div>`;
-  const qs=d.kind==='db'?`<div class="panel"><h3>题目</h3>${d.questions.map((q,i)=>`<div class="qa"><b>${i+1}. ${q.level?`〔${['','热身','推理','挑战'][q.level]||''}〕`:''}${escapeText(q.q)}</b>${q.options.map((o,k)=>`<span class="opt${k===q.answer?' right':''}">${'ABCD'[k]}. ${escapeText(o)}${k===q.answer?' ✓':''}</span>`).join('')}<span class="hs">${escapeText(q.explain)}</span></div>`).join('')}</div>`:'';
-  const intro=d.intro?`<p class="library-intro" style="margin-top:0">${escapeText(d.intro)}</p>`:'';
-  view.innerHTML=`<div class="library-bar"><a class="btn" href="#">← 全部目的地</a></div><div class="detail-head"><div><div class="pill-row" style="display:flex;gap:6px"><span class="pill">${escapeText(d.region||'')}</span>${statusPill(d)}</div><h1>${escapeText(d.name)}</h1>${intro}</div>${actions}</div>${flags}<div class="photo-grid">${d.scenes.map(s=>sceneCard(d,s)).join('')}</div>${rules}${qs}`;
-  view.dataset.dest=d.id;
-}
-
-/* ---- routing, actions, polling ---- */
-const currentId=()=>decodeURIComponent(location.hash.replace(/^#dest=/,'')||'');
-function render(){const id=location.hash.startsWith('#dest=')?currentId():'';id?renderDetail(id):renderList();}
-async function refresh(){await loadBackend();render();}
-const call=async(url,method,body)=>{const r=await fetch(url,{method,headers:{'Content-Type':'application/json'},body:body?JSON.stringify(body):undefined});const data=await r.json().catch(()=>({}));if(!r.ok)throw new Error(data.error||r.statusText);return data;};
-function schedulePoll(){clearTimeout(pollTimer);if(backend.jobs.some(j=>j.status==='running'||j.status==='queued'))pollTimer=setTimeout(refresh,2000);}
-document.addEventListener('click',async event=>{
-  const t=event.target;
-  try{
-    const retry=t.closest('[data-retry]');if(retry){event.stopPropagation();retry.disabled=true;await call(`/api/jobs/${retry.dataset.retry}/retry`,'POST');return refresh();}
-    const discard=t.closest('[data-discard]');if(discard){event.stopPropagation();if(confirm('放弃这次生成？已上传的图片会被清理。')){await call(`/api/jobs/${discard.dataset.discard}`,'DELETE');}return refresh();}
-    const id=view.dataset.dest;
-    const toggle=t.closest('[data-toggle]');if(toggle){await call(`/api/journeys/${id}/status`,'POST',{status:toggle.dataset.toggle});return refresh();}
-    const review=t.closest('[data-review]');if(review){await call(`/api/journeys/${id}/review`,'POST',{review:review.dataset.review});return refresh();}
-    if(t.closest('[data-delete]')){if(confirm('删除该目的地？数据库记录和已生成的图片会被永久删除。')){await call(`/api/journeys/${id}`,'DELETE');location.hash='';await refresh();}return;}
-    const card=t.closest('[data-dest]');if(card&&!t.closest('a,button')){location.hash='#dest='+encodeURIComponent(card.dataset.dest);}
-  }catch(error){alert(error.message);refresh();}
-});
-document.addEventListener('keydown',event=>{if((event.key==='Enter'||event.key===' ')&&event.target.matches?.('.dest-card')){event.preventDefault();location.hash='#dest='+encodeURIComponent(event.target.dataset.dest);}});
-window.addEventListener('hashchange',()=>{delete view.dataset.dest;render();window.scrollTo(0,0);});
-refresh();
-</script></body></html>
+<script src="content/ugc-media.js?v=9796e35abbfb"></script>
+<script src="content/ugc.js?v=bf62dc4719dd"></script>
+<script src="photos-admin.js?v=20261017-tabs1"></script></body></html>

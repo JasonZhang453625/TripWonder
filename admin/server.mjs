@@ -47,7 +47,7 @@ const playable = () => listJourneys().filter(j => j.status === 'ready' && (j.cha
 
 function publicJob(job) {
   const {input, state, ...rest} = job;
-  return {...rest, running: isRunning(job.id), sceneCount: input.scenes.length};
+  return {...rest, channel: input.channel === 'ugc' ? 'ugc' : 'official', running: isRunning(job.id), sceneCount: input.scenes.length};
 }
 
 async function api(req, res, url) {
