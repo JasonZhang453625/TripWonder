@@ -56,6 +56,13 @@
   }
   async function initializeUpload() {
     const id = 'ugc-6fc1b6bc-e1b5-4fe4-93d2-871f5bde8a90';
+    const existing=rows.get(id),latest=window.UGC_JOURNEYS?.find(j=>j.id==='ugc-shapowei');
+    if(existing?.initialized&&latest&&existing.quizRevision!==window.UGC_SAMPLE_REVISION){
+      const next=structuredClone(existing),scenes=next.remoteJourney.scenes;
+      next.remoteJourney.questions=latest.questions.map(question=>({...question,sceneId:scenes[latest.scenes.findIndex(scene=>scene.id===question.sceneId)].id}));
+      next.remoteJourney.questions.forEach((question,index)=>{next.fields[`q${index}`]=question.q;next.fields[`a${index}`]=String(question.answer);next.fields[`explain${index}`]=question.explain;question.options.forEach((option,n)=>{next.fields[`o${index}-${n}`]=option;});});
+      next.quizRevision=window.UGC_SAMPLE_REVISION;await save(next,false);register(next);
+    }
     if (rows.has(id) || [...rows.values()].some(row => !row.imported && row.photos.length >= 3 && row.fields.title?.trim())) return;
     const source = window.UGC_JOURNEYS?.find(journey => journey.id === 'ugc-shapowei');
     if (!source) return;
@@ -75,7 +82,7 @@
       fields[`scene${index}`] = String(index); fields[`explain${index}`] = question.explain;
       question.options.forEach((option,n) => { fields[`o${index}-${n}`] = option; });
     });
-    const record = {id,state:'approved',fields,photos:sample.scenes.map(scene => ({name:scene.name,width:scene.photo.width,height:scene.photo.height})),remoteJourney:sample,initialized:true,revision:now,publishedAt:sample.publishedAt,updatedAt:now};
+    const record = {id,state:'approved',fields,photos:sample.scenes.map(scene => ({name:scene.name,width:scene.photo.width,height:scene.photo.height})),remoteJourney:sample,initialized:true,quizRevision:window.UGC_SAMPLE_REVISION,revision:now,publishedAt:sample.publishedAt,updatedAt:now};
     rows.set(id,record); register(record);
     if(db)await save(record,false);
   }

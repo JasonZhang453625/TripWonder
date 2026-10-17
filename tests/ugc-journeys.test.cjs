@@ -23,12 +23,12 @@ function community(context, data = {prefs: {}, ugcPlayed: {}}) {
   return context.window.Community;
 }
 
-test('three initialized UGC journeys contain distinct photos and matching quiz scenes', () => {
+test('seven initialized UGC journeys contain distinct photos and matching quiz scenes', () => {
   const {window} = load();
-  assert.equal(window.UGC_JOURNEYS.length, 3);
+  assert.equal(window.UGC_JOURNEYS.length, 7);
   for (const journey of window.UGC_JOURNEYS) {
     assert.equal(journey.scenes.length, 3, journey.id);
-    assert.equal(new Set(journey.scenes.map(s => s.photo.sourceSha256)).size, 3, `${journey.id}: distinct sources`);
+    assert.equal(new Set(journey.scenes.map(s => s.photo.sourceSha256 || s.photo.original?.src || s.photo.src)).size, 3, `${journey.id}: distinct sources`);
     assert.equal(new Set(journey.questions.map(q => q.sceneId)).size, 3);
     assert.ok(journey.questions.every(q => journey.scenes.some(s => s.id === q.sceneId)));
     assert.equal(journey.sampleRevision, window.UGC_SAMPLE_REVISION);
@@ -59,7 +59,7 @@ test('community hides reviewed journeys outside the 3–9 photo range', () => {
   assert.ok(ids.includes('player-3') && ids.includes('player-9'));
 });
 
-test('sample reinitialization resets only the three sample play records once', () => {
+test('sample reinitialization resets only the seeded sample play records once', () => {
   const context = load();
   const data = {prefs: {ugcSampleRevision: 'old', theme: 'light'}, ugcPlayed: {'player-custom': {score: 99}}, challenged: {suzhou: {score: 88}}, wallet: {balance: 80}, boardComments: {'ugc-shapowei': [{text: '保留评论'}]}, bubbles: {scene: [{text: '保留气泡'}]}};
   for (const j of context.window.UGC_JOURNEYS) data.ugcPlayed[j.id] = {score: 70};
@@ -84,5 +84,5 @@ test('backend input and saved journey validation enforce the same photo range', 
     assert.throws(() => validateJourney({...base, scenes: Array.from({length: count}, (_, i) => photos[i % photos.length])}), /3–9/);
   }
   validateJourney(base);
-  validateJourney({...base, scenes: photos});
+  validateJourney({...base, scenes: photos.slice(0,9)});
 });

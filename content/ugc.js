@@ -7,7 +7,7 @@
 (() => {
   'use strict';
   const M = window.UGC_MEDIA || {};
-  window.UGC_SAMPLE_REVISION = '20261017-photos3-v1';
+  window.UGC_SAMPLE_REVISION = '20261017-reasoning7-v2';
   const scene = (id, name, nameEn, type, typeEn, hotspots) => ({id, name, nameEn, type, typeEn, photo: M[id], hotspots: hotspots.map(([x, y, tag, title, titleEn, text, en]) => ({x, y, tag, title, titleEn, text, en}))});
   const question = (sceneId, q, qEn, options, optionsEn, answer, explain, explainEn) => ({sceneId, q, qEn, options, optionsEn, answer, explain, explainEn});
 
@@ -110,7 +110,9 @@
     }
   ];
 
+  window.UGC_JOURNEYS.push(...(window.TravelQuiz?.samples([window.CITY_SUZHOU,window.CITY_GUILIN,window.CITY_HONGKONG,window.CITY_SHANGHAI].filter(Boolean))||[]));
   for (const journey of window.UGC_JOURNEYS) {
+    window.TravelQuiz?.apply(journey);
     journey.sampleRevision = window.UGC_SAMPLE_REVISION;
     journey.publishedAt = '2026-10-17';
   }

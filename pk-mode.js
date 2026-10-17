@@ -107,7 +107,7 @@
     return {opponent: pk.opponent, outcome, score: pk.score, quiz: pk.quiz, guess: pk.guess, correct: pk.answers.filter(a => a.correct).length, time: Math.round(pk.answers.at(-1).at / 1000), myTime: Math.round(quizElapsed / 1000)};
   }
 
-  function resultCard(summary, result) {
+  function resultCard(summary, result, {rewards=true} = {}) {
     if (!summary) return '';
     const o = summary.opponent, label = {win: t('胜利', 'Victory'), lose: t('惜败', 'Defeat'), tie: t('平局', 'Draw')}[summary.outcome];
     const row = (name, mine, theirs, better) => `<div class="pk-row"><b class="${better === 1 ? 'lead' : ''}">${mine}</b><span>${name}</span><b class="${better === -1 ? 'lead' : ''}">${theirs}</b></div>`;
@@ -116,9 +116,14 @@
       <div class="pk-result-top"><span class="pk-stamp">${label}</span><span class="tw-sample">${o.friend ? t('好友挑战 · 本地比对', 'Friend challenge · compared on this device') : t('模拟对手', 'Simulated opponent')}</span></div>
       <div class="pk-versus"><div class="pk-player">${avatar(null, true)}<b>${result.score}</b><small>${t('我', 'Me')}</small></div><b class="pk-vs big">VS</b><div class="pk-player">${avatar(o)}<b>${summary.score}</b><small>${esc(f(o, 'name'))} · ${levelName(o)}</small></div></div>
       <div class="pk-rows">${row(t('线索答题', 'Clue quiz'), result.quiz, summary.quiz, cmp(result.quiz, summary.quiz))}${row(t('地图定位', 'Map guess'), result.guess?.points ?? 0, summary.guess.points, cmp(result.guess?.points ?? 0, summary.guess.points))}${row(t('落点距离', 'Pin distance'), `${result.guess?.km ?? '—'} km`, `${summary.guess.km} km`, cmp(summary.guess.km, result.guess?.km ?? Infinity))}${row(t('答题用时', 'Quiz time'), `${summary.myTime}s`, `${summary.time}s`, cmp(summary.time, summary.myTime))}</div>
-      ${summary.outcome === 'lose' ? '' : `<p class="pk-bonus">${t(`PK ${summary.outcome === 'win' ? '获胜' : '打平'}奖励：每个目的地每天首次 +${summary.outcome === 'win' ? 10 : 3} 奇境币`, `PK ${summary.outcome === 'win' ? 'win' : 'draw'} bonus: +${summary.outcome === 'win' ? 10 : 3} coins, first time per destination each day`)}</p>`}
+      ${!rewards || summary.outcome === 'lose' ? '' : `<p class="pk-bonus">${t(`PK ${summary.outcome === 'win' ? '获胜' : '打平'}奖励：每个目的地每天首次 +${summary.outcome === 'win' ? 10 : 3} 奇境币`, `PK ${summary.outcome === 'win' ? 'win' : 'draw'} bonus: +${summary.outcome === 'win' ? 10 : 3} coins, first time per destination each day`)}</p>`}
     </section>`;
   }
 
-  window.PKMode = Object.freeze({create, hud, update, match, settle, resultCard, avatar});
+  function pickJourney(journeys,lastId=null) {
+    const approved=journeys.filter(j=>j.channel==='ugc'&&j.review==='approved'&&j.scenes?.length>=3&&j.scenes.length<=9&&j.scenes.every(s=>s.photo)&&j.questions?.length===3);
+    const fresh=approved.filter(j=>j.id!==lastId),pool=fresh.length?fresh:approved;
+    return pool.length?pool[Math.floor(Math.random()*pool.length)]:null;
+  }
+  window.PKMode = Object.freeze({pickJourney,create, hud, update, match, settle, resultCard, avatar});
 })();

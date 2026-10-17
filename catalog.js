@@ -47,6 +47,7 @@
       if (s) Object.assign(stop, {nameEn:s.name, noteEn:s.note, ...(s.hours ? {openingHoursEn:s.hours} : {})});
     }
   }
+  for(const city of cities)window.TravelQuiz?.apply(city);
   const photoById = new Map();
   // The mountain challenge has four scenes but three questions; its first
   // question covers both peak views, followed by the cave and winding road.
