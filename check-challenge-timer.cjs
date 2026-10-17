@@ -1,6 +1,6 @@
-// Today's challenge runs on one clock: it starts at the first scene, keeps running through the cover, the scenes and
+// Today's challenge runs on one clock: it starts at the first scene, keeps running through the scenes and
 // the quiz, turns red at 15 s and beats in the last 10 s, and on time-out submits the current answers and opens the map.
-// Returning from the map with time left restarts the same clock. TRIPWONDER_BASE / TRIPWONDER_BROWSER override defaults.
+// Back prompts before abandoning the round. TRIPWONDER_BASE / TRIPWONDER_BROWSER override defaults.
 const {chromium,devices}=require(process.env.PLAYWRIGHT_PATH||'C:/Users/Administrator/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
 const assert=require('node:assert/strict');
 const fs=require('node:fs');
@@ -45,8 +45,8 @@ async function reveal(page){await idle(page);await page.locator('.guess-map').cl
     const midway=await edge();assert.ok(midway.length<1&&midway.length>0);assert.ok(Math.abs(midway.offset+1-midway.length)<1e-6);
     await shot(page,'edge-descending');
     await page.locator('[data-action="next-scene"]').click();await page.locator('.scene-counter',{hasText:'2 / 3'}).waitFor();await idle(page);
-    assert.equal(await page.locator('[data-action="leave"]').count(),0,'daily exploration has no exit');
-    await page.evaluate(()=>dispatchEvent(new PopStateEvent('popstate')));await idle(page);
+    assert.equal(await page.locator('[data-action="leave"]').isVisible(),true);
+    await page.evaluate(()=>dispatchEvent(new PopStateEvent('popstate')));await page.locator('.abandon-actions [data-action="close"]').click();await page.getByRole('dialog').waitFor({state:'detached'});await idle(page);
     assert.equal(await page.locator('.explore-page').count(),1,'system back stays in the round');
     await advance(page,10);await timerIs(page,'00:35');
     const resumed=await edge();assert.ok(resumed.length<midway.length,'edge resumes from elapsed time');
@@ -64,26 +64,20 @@ async function reveal(page){await idle(page);await page.locator('.guess-map').cl
     const finalEdge=await edge();assert.ok((late.length-finalEdge.length)/3<(midway.length-resumed.length)/10,'edge movement slows near the end');
     await page.waitForFunction(()=>document.querySelector('.quiz-timer')?.classList.contains('final'));
     await shot(page,'quiz-urgent');
-    // Answer two questions, then go back to a scene: the clock keeps running there.
+    // Answer two questions, then cancel an exit without losing the current question.
     const answers=await page.evaluate(()=>TRIPWONDER_CATALOG.cities.find(c=>c.id==='datong').questions.map(q=>q.answer));
     for(const i of [0,1]){await idle(page);await page.locator(`[data-option="${answers[i]}"]`).click();await page.locator('[data-action="submit"]').click();}
-    await idle(page);await page.locator('[data-action="quiz-back"]').click();await page.locator('.explore-page').waitFor();await idle(page);
-    await timerIs(page,'00:09');assert.ok(await page.locator('.explore-timer.urgent').count(),'urgency also shows in the scene');
-    await page.locator('[data-action="next-scene"]').click();
-    await page.locator('.quiz-page').waitFor();await idle(page);
-    // Answering the last question opens the map; going back restarts the remaining time.
-    await page.locator(`[data-option="${(answers[2]+1)%4}"]`).click();await page.locator('[data-action="submit"]').click();
-    await page.locator('.guess-map').waitFor();await idle(page);
-    assert.equal(await page.locator('#timer').count(),0,'the map has no countdown');
-    assert.equal(await page.locator('.countdown-edge').count(),0,'manual submission removes the edge');
-    await advance(page,300);await page.locator('[data-action="guess-back"]').click();await page.locator('.quiz-page').waitFor();await timerIs(page,'00:09');
-    // Time-out submits the selected answer and opens the map without a way back.
+    await idle(page);await page.locator('[data-action="quiz-back"]').click();
+    await page.getByRole('dialog',{name:'放弃此次挑战？'}).waitFor();await page.locator('.abandon-actions [data-action="close"]').click();await page.getByRole('dialog').waitFor({state:'detached'});
+    await timerIs(page,'00:09');assert.equal(await page.locator('.quiz-page').count(),1,'cancel keeps current question');
+    // Timeout submits the selected third answer while preserving the two completed answers.
+    await page.locator(`[data-option="${(answers[2]+1)%4}"]`).click();
     await advance(page,9);await page.locator('.countdown-edge.is-ended').waitFor();
-    assert.equal((await edge()).length,0,'both paths meet at the bottom centre at zero');
-    await shot(page,'edge-end');
+    assert.equal((await edge()).length,0);await shot(page,'edge-end');
     await page.locator('.guess-map').waitFor();await idle(page);
     await page.locator('.countdown-edge').waitFor({state:'detached'});
-    assert.equal(await page.locator('[data-action="guess-back"]').isDisabled(),true);
+    await page.locator('[data-action="guess-back"]').click();await page.getByRole('dialog',{name:'放弃此次挑战？'}).waitFor();
+    await page.locator('.abandon-actions [data-action="close"]').click();await page.getByRole('dialog').waitFor({state:'detached'});
     await reveal(page);
     assert.match(await page.locator('.result-score-breakdown').textContent(),/限时答题\s*40\s*\/ 60/,'two right answers, the third selected answer was wrong');
 
@@ -96,6 +90,6 @@ async function reveal(page){await idle(page);await page.locator('.guess-map').cl
     assert.match(await page.locator('.result-score-breakdown').textContent(),/限时答题\s*0\s*\/ 60/);
     await page.locator('[data-review="0"]').click();assert.match(await page.locator('.sheet').textContent(),/你的答案：未作答/);
     assert.deepEqual(errors,[]);
-    console.log('PASS: no cover limit chip; timer/pagination do not overlap; one edge clock shrinks symmetrically, slows and turns red, resumes across scenes/quiz, and ends at zero; cover/map hide it; time-out submits current answers and locks the map; expiry while away scores unanswered questions 0.');
+    console.log('PASS: no cover limit chip; timer/pagination do not overlap; one edge clock shrinks symmetrically, slows and turns red, resumes across scenes/quiz, and ends at zero; cover/map hide it; time-out submits current answers; after cancelling an exit, timeout scores unanswered questions 0.');
   }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});
