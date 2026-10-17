@@ -248,11 +248,10 @@
 .result-page .ugc-result-actions{display:grid;grid-template-columns:minmax(0,1fr);gap:10px;padding:0;margin:12px 0 18px}
 .result-page .ugc-result-actions>button{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;min-width:0;min-height:46px;padding:10px 8px;font-size:13px;line-height:1.35}
 .result-page .ugc-result-actions .icon{width:18px;height:18px}
-.ugc-result-maker{display:flex;align-items:center;flex-wrap:wrap;gap:6px;font-size:12px;color:#6d7890}
-.ugc-result-author{display:inline-flex;align-items:center;gap:7px;min-width:0;color:#24344b}
+.ugc-result-maker{display:flex;align-items:center;flex-wrap:wrap;gap:6px;font-size:12px;color:#171e2b}
+.ugc-result-author{display:inline-flex;align-items:center;gap:7px;min-width:0;color:#171e2b}
 .ugc-result-author .cm-post-avatar{width:24px;height:24px;border:0}
 .ugc-result-author>span:last-child{overflow-wrap:anywhere}
-.ugc-result-note p{margin:8px 0 0;font-size:12px;line-height:1.6;color:#6d7890}
 
 /* Shared challenge clock in the explore view, and the "answer now" capsule */
 .explore-game>.immersive-top{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr)}

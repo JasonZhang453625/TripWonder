@@ -65,20 +65,6 @@
 .result-page .benefit p{margin:4px 0 0;color:#555e6b;font-size:13px}
 .result-page .benefit .row{align-items:center}
 .result-page .benefit .tiny{font-size:10px;line-height:1.8;color:#858b95}
-/* Coupon card: pink panel, compact claim button, white notched tickets. */
-.result-page .coupon-panel{padding:14px 14px 16px;border-radius:12px;background:linear-gradient(180deg,#fdeef3,#fbe7ee)}
-.result-page .coupon-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
-.result-page .coupon-benefit .coupon-head strong{color:#e0245e;font-size:18px;font-weight:600}
-.result-page .coupon-tickets{display:flex;gap:8px;margin:12px -14px 0;padding:0 14px;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x mandatory;scroll-padding:0 14px;scrollbar-width:none;cursor:grab;user-select:none}
-.result-page .coupon-tickets::-webkit-scrollbar{display:none}
-.result-page .coupon-tickets.dragging{scroll-snap-type:none;cursor:grabbing}
-.result-page .coupon-tickets:focus-visible{outline:2px solid #2659f5;outline-offset:2px}
-.result-page .coupon-ticket{flex:0 0 auto;scroll-snap-align:start;display:flex;flex-direction:column;align-items:center;min-width:46%;padding:7px 16px;white-space:nowrap;border-radius:4px;background:#fff;color:#e0245e;text-align:center;
-  -webkit-mask:radial-gradient(circle 4px at 0 50%,#0000 98%,#000) left/51% 100% no-repeat,radial-gradient(circle 4px at 100% 50%,#0000 98%,#000) right/51% 100% no-repeat;
-  mask:radial-gradient(circle 4px at 0 50%,#0000 98%,#000) left/51% 100% no-repeat,radial-gradient(circle 4px at 100% 50%,#0000 98%,#000) right/51% 100% no-repeat}
-.result-page .coupon-ticket b{font-size:15px;font-weight:500;line-height:1.4}
-.result-page .coupon-ticket span{font-size:12px;line-height:1.4}
-.result-page .coupon-panel p.coupon-terms{margin:10px 0 0;color:#b8617f;font-size:10px;line-height:1.6}
 .result-page .friend-compare p{color:#555e6b}
 .result-page .friend-compare>b{color:#2855f7;font-size:18px;font-weight:650}
 .result-page .friend-compare small{color:#858b95}

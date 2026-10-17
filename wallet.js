@@ -124,14 +124,10 @@
     }, {threshold: .35});
     observer.observe(card);
   }
-  function sponsorSlot(cityId, cities) {
-    const list = offers().sponsors, pick = list.find(s => s.cityIds.includes(cityId)) || list.find(s => !s.cityIds.length);
-    return pick ? `<section class="tw-slot" aria-label="${t('商家专区', 'Merchant offer')}">${sponsorCard(pick, cities, 'compact')}</section>` : '';
-  }
   function profileCard() {
     const data = window.TWStore.get();
     return `<section class="pf-wallet" aria-label="${t('奇境币', 'Wonder Coins')}"><button class="pf-wallet-main" data-go="mall">${coin('big')}<span><small>${t('奇境币', 'Wonder Coins')}</small><b>${data.wallet.balance}</b></span><span class="pf-wallet-meta">${t(`已兑换 ${data.redemptions.length} 张`, `${data.redemptions.length} redeemed`)}</span></button><button class="pf-wallet-reset" data-action="reset-demo">${t('重置演示数据', 'Reset demo data')}</button></section>`;
   }
 
-  window.Wallet = Object.freeze({EARN, award, redeem, balance, mall, confirmMarkup, successMarkup, historyMarkup, earnedCard, animateEarned, sponsorSlot, profileCard, coin});
+  window.Wallet = Object.freeze({EARN, award, redeem, balance, mall, confirmMarkup, successMarkup, historyMarkup, earnedCard, animateEarned, profileCard, coin});
 })();

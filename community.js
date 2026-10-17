@@ -61,6 +61,14 @@
     {id: 'wanfeng', name: '晚风', nameEn: 'Evening Breeze'},
     {id: 'nanfeng', name: '南风', nameEn: 'South Wind'}
   ].map((user, index) => ({...user, avatar: `assets/community/user-${index + 1}.jpg`}));
+  // Reuse local user portraits for journey creators, with a stable picture for each name.
+  function authorAvatar(author) {
+    const name=author?.name||'', mine=name==='我'||author?.nameEn==='Me';
+    const known=commentUsers.find(user=>user.id===author?.id||user.name===name||user.nameEn===author?.nameEn);
+    const seed=[...name].reduce((n,c)=>(n*31+c.codePointAt(0))>>>0,0);
+    const user=mine?commentUsers[0]:known||commentUsers[seed%4+1];
+    return `<img src="${user.avatar}" alt="" width="24" height="24" decoding="async" draggable="false">`;
+  }
   // Journey comments are independent of the position-anchored scene bubbles.
   // Keep distinct IDs so likes and replies never change a scene note.
   function boardNotes(c) {
@@ -415,5 +423,5 @@
   }
   function releasePress(){galleryCleanup();window.HubCards3D?.release();}
   function comments(ctx){const c=ctx.journey;if(!c)return '';const played=isUgc(c)?ctx.played[c.id]:ctx.challenged[c.id];return `<div class="cm-sheet-content cm-journey">${board(ctx,c,played)}${commentDock(c,played)}</div>`;}
-  window.Community = Object.freeze({isUgc, label, boardOpen, hub, feed, journey, comments, publish, validate, previews, releasePress, mountJourney, initializeSamples, register, unregister});
+  window.Community = Object.freeze({isUgc, label, boardOpen, hub, feed, journey, comments, publish, validate, previews, releasePress, mountJourney, initializeSamples, authorAvatar, register, unregister});
 })();

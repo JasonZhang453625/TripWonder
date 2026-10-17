@@ -3,7 +3,7 @@
    can replace the samples later (same fields, different source). */
 (() => {
   'use strict';
-  // Same shape as RESULT_COUPONS in app.js (kind / amount / rule / icon), plus a coin price.
+  // All travel coupons are redeemed in the Points Mall using Wonder Coins.
   const coupons = [
     {id: 'c-hotel', kind: '酒店', kindEn: 'Hotels', icon: 'bed', amount: 80, rule: '满 600 元可用', ruleEn: 'On orders of ¥600+', price: 6000},
     {id: 'c-flight', kind: '机票', kindEn: 'Flights', icon: 'plane', amount: 50, rule: '满 800 元可用', ruleEn: 'On orders of ¥800+', price: 5000},

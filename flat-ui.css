@@ -1,7 +1,7 @@
 /* Flat surfaces outside the photographic cover and exploration scenes. */
 .phone.flat-mode:not(.immersive):not(.result-on-photo):not(.quiz-mode) .statusbar{background:#fff;color:#171e2b;backdrop-filter:none;-webkit-backdrop-filter:none;filter:none}
 .phone.flat-mode #app{background:#fff}
-#app>.page:not(.explore-page):not(.cover-page):not(.result-page):not(.quiz-page){background:#fff;color:#171e2b}
+#app>.page:not(.explore-page):not(.cover-page):not(.result-page):not(.quiz-page):not(.pk-match-page){background:#fff;color:#171e2b}
 #app>.page:not(.explore-page,.cover-page,.quiz-page) .page-head{background:#fff;border-bottom:1px solid #e7e9ee}
 #app>.page:not(.explore-page,.cover-page,.quiz-page) :is(.primary,.secondary,.glass-light,.head-action,.icon-btn),#app>.page:not(.explore-page,.cover-page,.quiz-page) :is(.route-tabs,.stop-actions,.travel-products) button{box-shadow:none;text-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none;border:1px solid #d6dae1;border-radius:6px;background:#fff;color:#171e2b;font-weight:600}
 #app>.page:not(.explore-page,.cover-page,.quiz-page) .primary{border-color:#3264ff;background:#3264ff;color:#fff;min-height:50px}

@@ -18,7 +18,7 @@
     {id: 'sunny', name: '晴天打卡', nameEn: 'Sunny Snaps', hue: 45},
     {id: 'breeze', name: '路过的风', nameEn: 'Passing Breeze', hue: 265},
     {id: 'hillsea', name: '山海旅人', nameEn: 'Hill & Sea', hue: 340}
-  ];
+  ].map((player, index) => ({...player, avatar: `assets/community/user-${index % 4 + 2}.jpg`}));
   const hash = str => [...str].reduce((n, char) => Math.imul(n ^ char.charCodeAt(0), 16777619) >>> 0, 2166136261);
   function random(seed) { let n = hash(seed) || 1; return () => { n ^= n << 13; n ^= n >>> 17; n ^= n << 5; return (n >>> 0) / 4294967296; }; }
   const gauss = rnd => Math.sqrt(-2 * Math.log(rnd() || 1e-9)) * Math.cos(2 * Math.PI * rnd());
@@ -57,19 +57,25 @@
     return {opponent, answers, quiz, guess: {km, points: guessPoints, ...offsetPoint(city, km, rnd)}, score: quiz + guessPoints, seen: 0, duration};
   }
 
-  const avatar = (who, me = false) => `<span class="pk-avatar${me ? ' me' : ''}" style="--hue:${me ? 222 : who.hue}" aria-hidden="true">${esc(me ? t('我', 'Me') : [...f(who, 'name')][0])}</span>`;
+  // Reuse the five local community portraits. My comments and PK share user-1.
+  const avatar = (who, me = false) => {
+    const player=PLAYERS.find(p=>p.id===who?.id);
+    const src=me?'assets/community/user-1.jpg':player?.avatar||`assets/community/user-${hash(who?.id||who?.name||'friend')%4+2}.jpg`;
+    return `<span class="pk-avatar${me?' me':''}" aria-hidden="true"><img src="${src}" alt="" width="64" height="64" decoding="async" draggable="false"></span>`;
+  };
   const dots = (done, total, current = -1) => `<span class="pk-dots">${Array.from({length: total}, (_, i) => `<i class="${i < done ? 'done' : i === current ? 'current' : ''}"></i>`).join('')}</span>`;
   const levelName = o => o.friend ? t('好友', 'Friend') : t(LEVELS[o.level].zh, LEVELS[o.level].en);
 
   // Quiz header: the player's progress against the opponent's. Correctness is never shown before the result.
   function hud(pk, {mine, total, elapsed}) {
     const theirs = pk.answers.filter(a => a.at <= elapsed).length;
-    return `<div class="pk-hud" role="group" aria-label="${t('PK 进度', 'PK progress')}">${avatar(null, true)}${dots(mine, total, mine)}<b class="pk-vs">VS</b><span class="pk-rival">${dots(theirs, total)}${avatar(pk.opponent)}</span></div>`;
+    return `<div class="pk-hud" role="group" aria-label="${esc(t(`我的答题进度 ${mine}/${total}，${f(pk.opponent, 'name')} ${theirs}/${total}`,`My progress ${mine}/${total}, ${f(pk.opponent, 'name')} ${theirs}/${total}`))}">${avatar(null, true)}${dots(mine, total, mine)}<b class="pk-vs">VS</b><span class="pk-rival">${dots(theirs, total)}${avatar(pk.opponent)}</span></div>`;
   }
   function update(page, pk, {mine, total, elapsed}) {
     const root = page?.querySelector('.pk-hud');
     if (!root) return;
     const theirs = pk.answers.filter(a => a.at <= elapsed).length;
+    root.setAttribute('aria-label',t(`我的答题进度 ${mine}/${total}，${f(pk.opponent, 'name')} ${theirs}/${total}`,`My progress ${mine}/${total}, ${f(pk.opponent, 'name')} ${theirs}/${total}`));
     root.querySelectorAll(':scope > .pk-dots i').forEach((dot, i) => { dot.classList.toggle('done', i < mine); dot.classList.toggle('current', i === mine); });
     root.querySelectorAll('.pk-rival .pk-dots i').forEach((dot, i) => dot.classList.toggle('done', i < theirs));
     if (theirs > pk.seen) {
@@ -90,11 +96,13 @@
       const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches, o = pk.opponent;
       const layer = document.createElement('div');
       layer.className = 'pk-match'; layer.setAttribute('role', 'status');
+      const previousInert=phone.querySelector('#app')?.inert;
+      if(phone.querySelector('#app'))phone.querySelector('#app').inert=true;
       const reel = PLAYERS.map(p => avatar(p)).join('');
       layer.innerHTML = `<div class="pk-match-card"><span class="pk-match-title">${o.friend ? t('好友挑战', 'Friend challenge') : t('正在匹配对手…', 'Finding an opponent…')}</span><div class="pk-match-row"><div class="pk-match-side">${avatar(null, true)}<b>${t('我', 'Me')}</b></div><b class="pk-vs big">VS</b><div class="pk-match-side rival"><span class="pk-reel">${o.friend ? '' : reel}</span>${avatar(o)}<b>${esc(f(o, 'name'))}</b><small>${levelName(o)}</small></div></div><p>${o.friend ? t('好友的成绩已就位，同一目的地，看谁更高分。', 'Your friend’s score is in. Same destination: who scores higher?') : t('同一目的地 · 同样计分 · 模拟对手', 'Same destination · same scoring · simulated opponent')}</p></div>`;
       phone.append(layer);
       let done = false;
-      const finish = () => { if (done) return; done = true; layer.classList.add('leaving'); setTimeout(() => { layer.remove(); resolve(); }, reduced ? 0 : 260); };
+      const finish = () => { if (done) return; done = true; layer.classList.add('leaving'); setTimeout(() => { layer.remove(); if(phone.querySelector('#app'))phone.querySelector('#app').inert=!!previousInert; resolve(); }, reduced ? 0 : 260); };
       layer.addEventListener('click', finish);
       requestAnimationFrame(() => layer.classList.add('shown'));
       setTimeout(() => layer.classList.add('locked'), reduced || o.friend ? 0 : 1100);
@@ -104,7 +112,7 @@
 
   function settle(pk, result, quizElapsed) {
     const outcome = result.score > pk.score ? 'win' : result.score < pk.score ? 'lose' : 'tie';
-    return {opponent: pk.opponent, outcome, score: pk.score, quiz: pk.quiz, guess: pk.guess, correct: pk.answers.filter(a => a.correct).length, time: Math.round(pk.answers.at(-1).at / 1000), myTime: Math.round(quizElapsed / 1000)};
+    return {opponent: pk.opponent, returnCityId: pk.returnCityId, outcome, score: pk.score, quiz: pk.quiz, guess: pk.guess, correct: pk.answers.filter(a => a.correct).length, time: Math.round(pk.answers.at(-1).at / 1000), myTime: Math.round(quizElapsed / 1000)};
   }
 
   function resultCard(summary, result, {rewards=true} = {}) {
@@ -113,7 +121,7 @@
     const row = (name, mine, theirs, better) => `<div class="pk-row"><b class="${better === 1 ? 'lead' : ''}">${mine}</b><span>${name}</span><b class="${better === -1 ? 'lead' : ''}">${theirs}</b></div>`;
     const cmp = (a, b) => Math.sign(a - b);
     return `<section class="content-card pk-result ${summary.outcome}" aria-label="${t('PK 结果', 'PK result')}">
-      <div class="pk-result-top"><span class="pk-stamp">${label}</span><span class="tw-sample">${o.friend ? t('好友挑战 · 本地比对', 'Friend challenge · compared on this device') : t('模拟对手', 'Simulated opponent')}</span></div>
+      <div class="pk-result-top"><span class="pk-stamp">${label}</span>${o.friend?`<span class="tw-sample">${t('好友挑战 · 本地比对', 'Friend challenge · compared on this device')}</span>`:''}</div>
       <div class="pk-versus"><div class="pk-player">${avatar(null, true)}<b>${result.score}</b><small>${t('我', 'Me')}</small></div><b class="pk-vs big">VS</b><div class="pk-player">${avatar(o)}<b>${summary.score}</b><small>${esc(f(o, 'name'))} · ${levelName(o)}</small></div></div>
       <div class="pk-rows">${row(t('线索答题', 'Clue quiz'), result.quiz, summary.quiz, cmp(result.quiz, summary.quiz))}${row(t('地图定位', 'Map guess'), result.guess?.points ?? 0, summary.guess.points, cmp(result.guess?.points ?? 0, summary.guess.points))}${row(t('落点距离', 'Pin distance'), `${result.guess?.km ?? '—'} km`, `${summary.guess.km} km`, cmp(summary.guess.km, result.guess?.km ?? Infinity))}${row(t('答题用时', 'Quiz time'), `${summary.myTime}s`, `${summary.time}s`, cmp(summary.time, summary.myTime))}</div>
       ${!rewards || summary.outcome === 'lose' ? '' : `<p class="pk-bonus">${t(`PK ${summary.outcome === 'win' ? '获胜' : '打平'}奖励：每个目的地每天首次 +${summary.outcome === 'win' ? 10 : 3} 奇境币`, `PK ${summary.outcome === 'win' ? 'win' : 'draw'} bonus: +${summary.outcome === 'win' ? 10 : 3} coins, first time per destination each day`)}</p>`}
