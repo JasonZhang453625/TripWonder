@@ -39,8 +39,8 @@
 /* Feed */
 #app>.page.cm-feed{position:relative;display:flex;flex-direction:column;height:100%;min-height:0;padding:0;overflow:hidden}
 .cm-feed>.page-head,.cm-feed>.cm-tabs{flex:none}
-.cm-tabs{display:flex;gap:8px;padding:2px 18px 10px}
-.cm-tabs button{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;height:38px;border-radius:12px;background:#f2f5fb;color:#55627a;font-weight:600;font-size:13px}
+.cm-tabs{display:grid;grid-template-columns:1fr 1fr 1.7fr .8fr;gap:6px;padding:2px 18px 10px}
+.cm-tabs button{display:flex;min-width:0;align-items:center;justify-content:center;gap:4px;height:38px;padding:0 4px;border-radius:12px;background:#f2f5fb;color:#55627a;font-weight:600;font-size:12px;white-space:nowrap}
 .cm-tabs button small{font-size:11px;font-weight:600;color:#97a3b8}
 .cm-tabs button.active{background:#15223b;color:#fff}.cm-tabs button.active small{color:#ffffffa6}
 .cm-feed-scroll{flex:1;min-height:0;overflow-y:auto;overscroll-behavior-y:contain;background:#f6f7f9;scrollbar-width:none}
@@ -84,8 +84,8 @@
 .cm-feed-icon{display:block;flex:none;width:26px;height:26px}
 .cm-post-reaction>span{font-size:11px;line-height:14px;min-width:0}
 .cm-post-reaction[data-feed-like]{margin-left:auto}
-.cm-post-reaction[aria-pressed=true]{color:var(--blue)}
-.cm-post-reaction[aria-pressed=true] .cm-feed-icon{fill:#3264ff12}
+.cm-post-reaction[data-feed-like][aria-pressed=true]{color:#ff2442}
+.cm-post-reaction[data-feed-like][aria-pressed=true] .cm-feed-icon{fill:#ff2442;stroke:#ff2442}
 .cm-post-reaction:disabled{opacity:.35}
 .cm-publish-fab{position:absolute;z-index:3;right:18px;bottom:calc(27px + var(--safe-bottom,0px));display:grid;place-items:center;width:58px;height:58px;padding:0;border-radius:50%;background:linear-gradient(135deg,#24cfbb 5%,#00a7e7 64%,#0786ef);color:#fff;box-shadow:0 2px 5px #0086c81a}
 .cm-publish-fab span{font-size:48px;font-weight:300;line-height:1;transform:translateY(-2px)}
@@ -93,6 +93,11 @@
 @media(max-width:360px){.cm-card{padding-left:14px;padding-right:14px}.cm-post-footer{gap:9px}.cm-post-byline>div{gap:5px}.cm-post-age{gap:5px;font-size:11px}.cm-follow{min-width:51px;padding:0 9px}.cm-post-copy{font-size:14px}}
 .cm-empty{padding:26px 6px;text-align:center;color:#6d7890;font-size:13px;line-height:1.7}
 .cm-empty .primary{margin-top:14px}
+.cm-mine-tabs{display:flex;gap:26px;padding:16px 20px 0;background:#fff}
+.cm-mine-tabs button{padding:0 0 12px;border-bottom:2px solid transparent;background:none;color:#8992a2;font-size:14px}
+.cm-mine-tabs [aria-selected=true]{color:#15223b;border-color:#15223b;font-weight:600}
+.cm-mine-management{padding:0 16px calc(100px + var(--safe-bottom,0px))}
+@media(max-width:380px){.cm-tabs{gap:5px;padding-left:14px;padding-right:14px}.cm-tabs button{font-size:11px}.cm-tabs button small{display:none}}
 
 /* Marks: the city badge for a challenged official destination, a stamp for a played UGC journey */
 .cm-mark{position:absolute;right:10px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10px;font-weight:700}
@@ -231,7 +236,7 @@
 .result-discuss>.icon:last-child{color:#a5b0c4;width:18px;height:18px;margin-left:auto}
 .result-discuss span{display:flex;flex-direction:column;gap:3px}
 .result-discuss strong{font-size:14px}.result-discuss small{font-size:11.5px;color:#7f8aa0}
-.result-page .ugc-result-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;padding:0;margin:12px 0 18px}
+.result-page .ugc-result-actions{display:grid;grid-template-columns:minmax(0,1fr);gap:10px;padding:0;margin:12px 0 18px}
 .result-page .ugc-result-actions>button{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;min-width:0;min-height:46px;padding:10px 8px;font-size:13px;line-height:1.35}
 .result-page .ugc-result-actions .icon{width:18px;height:18px}
 .ugc-result-maker{display:flex;align-items:center;flex-wrap:wrap;gap:6px;font-size:12px;color:#6d7890}
@@ -260,6 +265,7 @@
 .cm-management-note{font-size:12px;line-height:1.7;color:#7b8494}
 .cm-management-tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:12px 0}
 .cm-management-tools button,.cm-management-tools a{font-size:12px;padding:9px 12px;min-height:38px;min-width:0;border-radius:12px}
+.cm-management-tools .primary{width:auto}
 .cm-submission{padding:16px;margin:14px 0;border:1px solid #edf0f3;border-radius:16px;background:#fff}
 .cm-submission .row{gap:10px;align-items:flex-start}
 .cm-submission strong{overflow-wrap:anywhere;font-size:15px;flex:1}

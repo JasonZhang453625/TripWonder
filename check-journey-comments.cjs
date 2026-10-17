@@ -14,12 +14,37 @@ async function drag(p,dy){const box=await p.locator('.journey-comments-head').bo
 (async()=>{const browser=await chromium.launch({channel:'chrome',headless:true});try{
  for(const width of [390,1280]){
   const p=await browser.newPage({viewport:{width,height:width===390?844:1080},hasTouch:true});const errors=[];p.on('pageerror',e=>errors.push(e.message));
-  await p.addInitScript(()=>{localStorage.setItem('tripwonder-v2',JSON.stringify({version:2,challenged:{shenzhen:{at:1,result:{score:80}}}}));});
+  await p.addInitScript(()=>{localStorage.setItem('tripwonder-bubble-filter','off');localStorage.setItem('tripwonder-v2',JSON.stringify({version:2,challenged:{shenzhen:{at:1,result:{score:80}}}}));});
   await openOfficial(p);
   assert.equal(await p.locator('#phone.immersive').count(),1);assert.equal(await p.locator('#app .cm-gallery').count(),0);
   assert.equal(await p.locator('.photo-viewport[data-rendered="true"]').count(),1);
   assert.equal(await p.locator('.journey-comments-layer').isVisible(),false);
+  assert.equal(await p.locator('.tw-bubble-bar,[data-bubble-filter],[data-bubble-new]').count(),0,'old scene toolbar removed');
+  assert.equal(await p.locator('[data-journey-comments]').count(),1,'one comments control');
+  const style=await p.locator('[data-journey-comments]').evaluate(e=>{const s=getComputedStyle(e);return {color:s.backgroundColor,blur:s.backdropFilter,bottom:s.bottom};});
+  assert.notEqual(style.color,'rgb(255, 255, 255)');assert.ok(style.blur.includes('blur'));assert.equal(style.bottom,'30px');
+  // Panning and pinching must stay photo gestures; a plain background tap writes a note.
+  const photoBox=await p.locator('.photo-viewport').boundingBox();
+  await p.mouse.move(photoBox.x+photoBox.width*.5,photoBox.y+photoBox.height*.55);await p.mouse.down();await p.mouse.move(photoBox.x+photoBox.width*.7,photoBox.y+photoBox.height*.62,{steps:10});await p.mouse.up();
+  assert.equal(await p.locator('.tw-compose').count(),0,'drag does not compose');
+  const clearPoint=()=>p.locator('.photo-viewport').evaluate(root=>{const r=root.getBoundingClientRect();for(const y of [.45,.6,.35])for(const x of [.45,.65,.25]){const at={x:r.left+r.width*x,y:r.top+r.height*y},n=document.elementFromPoint(at.x,at.y);if(n&&root.contains(n)&&!n.closest('button,.tw-bubble,.tw-bundle,.hotspot'))return at;}throw Error('No clear photo point');});
+  let safe=await clearPoint();await p.mouse.dblclick(safe.x,safe.y);await p.waitForTimeout(300);assert.equal(await p.locator('.tw-compose').count(),0,'double click resets photo without creating a note');
+  const gesture=await p.context().newCDPSession(p);safe=await clearPoint();
+  const pinch=[{x:safe.x-25,y:safe.y,id:31},{x:safe.x+25,y:safe.y,id:32}];
+  await gesture.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:pinch});
+  await gesture.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{...pinch[0],x:safe.x-60},{...pinch[1],x:safe.x+60}]});
+  await gesture.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});await p.waitForTimeout(300);
+  assert.equal(await p.locator('.tw-compose').count(),0,'pinching does not compose');
+  safe=await clearPoint();
+  await p.mouse.click(safe.x,safe.y);await p.locator('.tw-compose').waitFor();
+  assert.equal(await p.locator('[data-compose-kind],.tw-compose-kinds').count(),0);
+  await p.locator('.tw-compose textarea').fill('点击画面留下的位置留言');assert.equal(await p.locator('[data-compose-submit]').isEnabled(),true);
+  await p.locator('[data-compose-submit]').click();await p.locator('.tw-compose').waitFor({state:'detached'});
+  assert.equal(await p.locator('.tw-bubble.fresh').count(),1);
+  const saved=await p.evaluate(()=>Object.values(TWStore.get().bubbles).flat().find(n=>n.text==='点击画面留下的位置留言'));
+  assert.ok(saved);assert.equal(saved.kind,undefined,'note does not store a visited category');
   await p.locator('[data-journey-comments]').click();await p.waitForTimeout(350);
+  assert.equal(await p.locator('[data-comment-filter],select[name="kind"]').count(),0,'comments have no visited categories');
   assert.ok(Math.abs(await ratio(p)-.52)<.015,'opens half screen');
   if(output){fs.mkdirSync(output,{recursive:true});await p.screenshot({path:path.join(output,`half-${width}.png`)});}
   await drag(p,-150);assert.ok(await ratio(p)>.98,'drag expands full screen');

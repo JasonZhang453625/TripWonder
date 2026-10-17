@@ -1,9 +1,8 @@
-/* Wonder Coins: earned on the result of each destination, spent on coupons and sample merchant offers.
-   Balances live in TWStore (this device only). Re-playing a destination on the same day only pays the part
-   above that day's best, and that best is read from storage, so a reload cannot farm coins. */
+/* Wonder Coins: earned on the first result for each destination each day, spent on sample offers.
+   Balances and the one-time award record live in TWStore on this device. */
 (() => {
   'use strict';
-  const EARN = Object.freeze({medalScore: 80, medal: 5, speedEvery: 15, speedMax: 3, pkWin: 10, pkTie: 3, dailyCities: 3, dailyBonus: 10});
+  const EARN = Object.freeze({medalScore: 80, medal: 5, pkWin: 10, pkTie: 3});
   const t = (zh, en) => window.I18N.t(zh, en), f = (item, key) => window.I18N.f(item, key);
   const esc = value => String(value ?? '').replace(/[&<>"']/g, char => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[char]));
   const offers = () => window.TW_OFFERS || {coupons: [], sponsors: []};
@@ -11,32 +10,28 @@
   const balance = () => window.TWStore.get().wallet.balance;
   const ymd = date => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 
-  function award({cityId, day, score, quizRemaining = 0, pk = null}) {
+  function award({cityId, day, score, pk = null}) {
     const key = `${cityId}@${day}`;
     return window.TWStore.update(data => {
-      const w = data.wallet, before = w.best[key] || {score: -1, speed: 0, medal: false, pk: false}, items = [];
-      const base = Math.round(score / 10), paid = before.score < 0 ? 0 : Math.round(before.score / 10);
-      if (base > paid) items.push({zh: before.score < 0 ? `探索得分 ${score}` : `刷新最高分 ${score}`, en: before.score < 0 ? `Score ${score}` : `New best ${score}`, amount: base - paid});
+      const w = data.wallet, before = w.best[key] || {score: -1, medal: false, pk: false}, items = [];
+      const completed = data.challenged?.[cityId];
+      if (completed?.completedDay === day || completed?.result?.date === day)
+        return {total: 0, items, repeat: true, balance: w.balance};
+      if (before.score >= 0) return {total: 0, items, repeat: true, balance: w.balance};
+      const base = Math.round(score / 10);
+      if (base > 0) items.push({zh: `探索得分 ${score}`, en: `Score ${score}`, amount: base});
       const medal = score >= EARN.medalScore;
       if (medal && !before.medal) items.push({zh: '点亮徽章', en: 'Badge unlocked', amount: EARN.medal});
-      const speed = Math.min(EARN.speedMax, Math.floor(Math.max(0, quizRemaining) / 1000 / EARN.speedEvery));
-      if (speed > before.speed) items.push({zh: '答题速度', en: 'Speed bonus', amount: speed - before.speed});
       const pkPaid = pk && pk.outcome !== 'lose';
       if (pkPaid && !before.pk) items.push(pk.outcome === 'win' ? {zh: 'PK 获胜', en: 'PK win', amount: EARN.pkWin} : {zh: 'PK 打平', en: 'PK tie', amount: EARN.pkTie});
-      w.best[key] = {score: Math.max(before.score, score), speed: Math.max(before.speed, speed), medal: before.medal || medal, pk: before.pk || !!pkPaid};
-      const dailyRef = `daily:${day}`, solvedToday = Object.keys(w.best).filter(k => k.endsWith(`@${day}`)).length;
-      const refs = [];
-      if (solvedToday >= EARN.dailyCities && !w.ledger.some(entry => entry.refs?.includes(dailyRef))) {
-        items.push({zh: `今日完成 ${EARN.dailyCities} 城`, en: `${EARN.dailyCities} cities today`, amount: EARN.dailyBonus});
-        refs.push(dailyRef);
-      }
+      w.best[key] = {score: Math.max(before.score, score), medal: before.medal || medal, pk: before.pk || !!pkPaid};
       const total = items.reduce((sum, item) => sum + item.amount, 0);
       if (total) {
         w.balance += total;
-        w.ledger.unshift({type: 'earn', amount: total, cityId, day, at: Date.now(), items, refs});
+        w.ledger.unshift({type: 'earn', amount: total, cityId, day, at: Date.now(), items});
         w.ledger.length = Math.min(w.ledger.length, 120);
       }
-      return {total, items, repeat: before.score >= 0, balance: w.balance};
+      return {total, items, repeat: false, balance: w.balance};
     });
   }
 
@@ -80,7 +75,7 @@
     const locked = offers().sponsors.length - sponsors.length;
     return `<div class="page tw-mall-page">${head(t('奇境币兑换', 'Coin rewards'), back)}
       <section class="tw-mall-hero"><div class="tw-mall-balance">${coin('big')}<div><small>${t('我的奇境币', 'My Wonder Coins')}</small><b>${w.balance}</b></div></div>
-        <p>${t('完成目的地挑战赚取奇境币：每 10 分 1 枚，点亮徽章、答得快、PK 获胜还有额外奖励。', 'Earn coins from each destination: 1 for every 10 points, plus extras for badges, fast answers and PK wins.')}</p>
+        <p>${t('完成目的地挑战赚取奇境币：每 10 分 1 枚，点亮徽章和 PK 获胜还有额外奖励。', 'Earn coins from each destination: 1 for every 10 points, plus extras for badges and PK wins.')}</p>
         <button class="tw-mall-history" data-action="coin-history">${t('收支明细', 'History')}</button></section>
       <section class="tw-mall-section"><div class="tw-mall-heading"><h2>${t('旅行优惠券', 'Travel coupons')}</h2></div><div class="tw-coupon-grid">${offers().coupons.map(c => `<article class="tw-coupon-card"><div class="tw-coupon-amount">${c.discount ? t(`<strong>${c.amount}</strong><span>折</span>`, `<strong>${Math.round(100 - c.amount * 10)}%</strong><span>off</span>`) : `<span>¥</span><strong>${c.amount}</strong>`}</div><div class="tw-coupon-info"><b>${esc(t(`${c.kind}优惠券`, `${c.kindEn} coupon`))}</b><small>${esc(f(c, 'rule'))}</small>${ownedTag(c.id)}</div>${priceButton(c)}</article>`).join('')}</div></section>
       <section class="tw-mall-section"><div class="tw-mall-heading"><h2>${t('商家专区', 'Merchant offers')}</h2><span class="tw-sample">${t('示例商家', 'Samples')}</span></div>${sponsors.map(s => sponsorCard(s, cities)).join('')}${locked ? `<p class="tw-mall-locked">${t(`完成更多目的地，解锁 ${locked} 家当地商家`, `Solve more destinations to unlock ${locked} local merchants`)}</p>` : ''}</section>
@@ -112,9 +107,7 @@
   // Result page: what this round paid, counted up by app.js (data-count).
   function earnedCard(result) {
     if (!result) return '';
-    const items = result.items.map(item => `<span>+${item.amount} ${esc(t(item.zh, item.en))}</span>`).join('');
-    const note = result.total ? t(`余额 ${balance()} 枚`, `Balance ${balance()}`) : t(`今天这个目的地的奖励已经领过了，刷新最高分可以补发 · 余额 ${balance()} 枚`, `You’ve already been paid for this destination today. Beat your best to earn more · Balance ${balance()}`);
-    return `<section class="content-card tw-earned" aria-label="${t('本局奇境币', 'Coins this round')}"><div class="tw-earned-head">${coin('big')}<div><small>${t('本局获得', 'This round')}</small><b>+<span data-coin-count="${result.total}">${result.total}</span> ${t('奇境币', 'coins')}</b></div><button data-go="mall">${t('积分商城', 'Points mall')}</button></div>${items ? `<div class="tw-earned-items">${items}</div>` : ''}<p>${note}</p></section>`;
+    return `<section class="content-card tw-earned" aria-label="${t('本局奇境币', 'Coins this round')}"><div class="tw-earned-head">${coin('big')}<div class="tw-earned-total"><small>${t('本局获得', 'This round')}</small><b>+<span data-coin-count="${result.total}">${result.total}</span> ${t('奇境币', 'coins')}</b></div><div class="tw-earned-actions"><span class="tw-earned-balance">${t('余额', 'Balance')} <b>${balance()}</b> ${t('枚', 'coins')}</span><button data-go="mall">${t('积分商城', 'Points mall')}</button></div></div></section>`;
   }
   // Count the coins up once the card scrolls into view (the result details sit below the reveal).
   function animateEarned(root) {
