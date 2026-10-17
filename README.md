@@ -1,3 +1,5 @@
+**[核心文档](核心文档.md)**
+
 # TripWonder 携程 · 奇境挑战
 
 GitHub 仓库：[JasonZhang453625/TripWonder](https://github.com/JasonZhang453625/TripWonder)（私有）。项目仍由仓库所有者管理；需要协作时，在 GitHub 仓库的 Settings → Collaborators 中邀请指定账号。未提供协作者账号前不预先添加成员。
