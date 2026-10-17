@@ -51,6 +51,8 @@ function faceTexture(button,w,h,index,font=getComputedStyle(button).fontFamily){
   ctx.letterSpacing='0px';
   // Soft glass rim hugging the edge.
   ctx.strokeStyle='#8fb9b2a6';ctx.lineWidth=1.5;rounded(ctx,.75,.75,w-1.5,h-1.5,radius-.75);ctx.stroke();
+  // Pages opened from file:// taint the canvas; WebGL would then sample black, so let the DOM cards stay visible.
+  try{ctx.getImageData(0,0,1,1);}catch{throw new Error('Card artwork is cross-origin; WebGL cannot read it.');}
   const texture=new THREE.CanvasTexture(canvas);texture.colorSpace=THREE.SRGBColorSpace;texture.anisotropy=4;
   return texture;
 }
