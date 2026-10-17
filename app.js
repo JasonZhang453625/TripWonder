@@ -972,7 +972,7 @@
     else if(s.view==='cover')app.querySelector('[data-action="leave-cover"]')?.click();
     else if(s.view==='result')app.querySelector('[data-action="result-exit"]')?.click();
     else if(s.view==='journey')leaveJourney();
-    else if(s.view==='feed')go('hub',{back:true});
+    else if(s.view==='feed')go(feedResultReturn?'result':'hub',{back:true});
     else if(['publish','myjourneys','ugcreview'].includes(s.view))go('feed',{back:true});
     else if(s.view==='route')go('result',{back:true});
     else if(s.view==='mall')go(s.mallBack,{back:true});

@@ -8,7 +8,7 @@ const output = process.env.TRIPWONDER_TEST_ARTIFACTS;
 const idle = page => page.waitForFunction(() => !window.ChallengeMotion?.busy && !document.querySelector('.scene-transition'));
 async function transition(page, selector, target, back) {
   await page.evaluate(() => { window.navigationFrames = []; });
-  await page.locator(selector).click();
+  if(typeof selector==='function')await selector(page);else await page.locator(selector).click();
   await page.locator(`#app > .page[data-view="${target}"]:not([data-slide-layer="outgoing"])`).waitFor();
   await idle(page);
   const frames = await page.evaluate(() => window.navigationFrames.filter(f => f.layer));
@@ -85,6 +85,9 @@ async function assertResult(page, before) {
     const beforeFeed = await resultState(page);
     await transition(page,'.result-actions [data-go="feed"]','feed',false);
     await transition(page,'.cm-feed .page-head [data-go="result"]','result',true);
+    await assertResult(page,beforeFeed);
+    await transition(page,'.result-actions [data-go="feed"]','feed',false);
+    await transition(page,p=>p.evaluate(()=>dispatchEvent(new PopStateEvent('popstate'))),'result',true);
     await assertResult(page,beforeFeed);
     report.push('more journeys opens feed with push and feed back restores originating result');
     await transition(page,'.result-topbar [data-action="result-exit"]','feed',true);
