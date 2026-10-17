@@ -100,7 +100,7 @@
 #app .result-page :is(.primary,.secondary,.glass-light,.benefit button):disabled{opacity:1;background:#f4f5f7;border-color:#e5e7eb;color:#a2a7af;box-shadow:none;text-shadow:none}
 /* Official result footer: two full-width actions with a clear visual hierarchy. */
 #app .page.result-page .result-actions.official-result-actions{display:grid;grid-template-columns:minmax(0,1fr);gap:12px;padding-top:20px;margin-top:8px;border-top:1px solid #edf0f5}
-#app .page.result-page .result-actions.official-result-actions>button{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-width:0;min-height:50px;margin:0;padding:13px 16px;border-radius:12px;font-size:15px;font-weight:500;line-height:1.5;text-align:center}
+#app .page.result-page .result-actions.official-result-actions>button{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-width:0;min-height:50px;margin:0;padding:13px 16px;border-radius:12px;font-size:15px;font-weight:700;line-height:1.5;text-align:center}
 #app .page.result-page .result-actions.official-result-actions>button>.icon{flex-shrink:0;width:18px;height:18px}
 #app .page.result-page .result-actions.official-result-actions>.secondary{border-color:#e4ebff;background:#f0f4ff;color:#2855f7}
 #app .page.result-page .result-actions.official-result-actions>button:focus-visible{outline:2px solid #2855f7;outline-offset:3px}
