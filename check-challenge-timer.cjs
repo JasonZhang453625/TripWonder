@@ -38,7 +38,8 @@ async function reveal(page){await idle(page);await page.locator('.guess-map').cl
     assert.ok(boxes.separate&&boxes.inside,'time and pagination occupy separate space within the capsule');
     await shot(page,'edge-start');
     assert.equal(await page.locator('.hotspot').count(),0,'no clue hotspots');
-    assert.equal(await page.locator('.explore-go-quiz').count(),1,'answering is available from any scene');
+    assert.equal(await page.locator('[data-action="go-quiz"],.explore-go-quiz').count(),0,'no shortcut before the last scene');
+    assert.equal(await page.locator('[data-action="next-scene"]').getAttribute('aria-label'),'下一处');
     // The clock runs while exploring and while back on the cover.
     await advance(page,15);await timerIs(page,'00:45');
     const midway=await edge();assert.ok(midway.length<1&&midway.length>0);assert.ok(Math.abs(midway.offset+1-midway.length)<1e-6);
@@ -68,8 +69,7 @@ async function reveal(page){await idle(page);await page.locator('.guess-map').cl
     for(const i of [0,1]){await idle(page);await page.locator(`[data-option="${answers[i]}"]`).click();await page.locator('[data-action="submit"]').click();}
     await idle(page);await page.locator('[data-action="quiz-back"]').click();await page.locator('.explore-page').waitFor();await idle(page);
     await timerIs(page,'00:09');assert.ok(await page.locator('.explore-timer.urgent').count(),'urgency also shows in the scene');
-    await page.locator('[data-action="go-quiz"]').count()&&await page.locator('[data-action="go-quiz"]').click();
-    if(!(await page.locator('.quiz-page').count()))await page.locator('[data-action="next-scene"]').click();
+    await page.locator('[data-action="next-scene"]').click();
     await page.locator('.quiz-page').waitFor();await idle(page);
     // Answering the last question opens the map; going back restarts the remaining time.
     await page.locator(`[data-option="${(answers[2]+1)%4}"]`).click();await page.locator('[data-action="submit"]').click();

@@ -1,4 +1,6 @@
 @font-face{font-family:'TripWonder Brush';src:url('assets/fonts/ma-shan-zheng-result.woff2?v=20260927-zjj1') format('woff2');font-weight:400;font-style:normal;font-display:swap}
+/* Keep the small city subset first; load the full local face only for missing title glyphs. */
+@font-face{font-family:'TripWonder Brush Full';src:url('assets/fonts/ma-shan-zheng-full.woff2?v=31563e1b1d10') format('woff2');font-weight:400;font-style:normal;font-display:swap}
 
 .phone.result-mode #app{padding:0;overflow-y:auto;overflow-x:hidden;scroll-behavior:auto;overflow-anchor:none;overscroll-behavior-y:none}
 .phone.result-mode #app.result-revealing{overflow-y:hidden}
@@ -28,7 +30,7 @@
 .result-copy{position:absolute;left:var(--copy-left,28px);top:var(--copy-top,45%);transform:scale(var(--copy-scale,1));transform-origin:left top;width:calc(100% - 56px);pointer-events:none}
 .result-region{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:500;letter-spacing:.2em;color:#ffffffd9;margin-bottom:14px}
 .result-region .icon{width:13px;height:13px}
-.result-arrival{font-family:'TripWonder Brush',cursive;font-weight:400;line-height:1;margin:0;letter-spacing:0;font-synthesis:none}
+.result-arrival{font-family:'TripWonder Brush','TripWonder Brush Full',cursive;font-weight:400;line-height:1;margin:0;letter-spacing:0;font-synthesis:none}
 .result-arrival>span{display:block;font-size:clamp(30px,calc(var(--result-width,390px)*.1),44px);line-height:1.15;margin-bottom:1px}
 .result-arrival>strong{display:block;font-family:inherit;font-size:clamp(68px,calc(var(--result-width,390px)*.235),100px);font-weight:400;line-height:1.04;white-space:nowrap}
 .result-arrival i{font-style:normal;color:#ffd17d;margin-left:-.12em}

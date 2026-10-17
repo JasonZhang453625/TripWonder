@@ -30,8 +30,34 @@
   for (const journey of ugc) if (typeof journey.author === 'string' || !journey.author) journey.author = {name: journey.author || t('玩家', 'Player')};
   // A UGC journey is a guessing game: before this player has finished it, only its spoiler-free title shows.
   const label = (c, revealed) => isUgc(c) && !revealed ? f(c, 'title') : f(c, 'name');
-  const noteCount = c => window.SceneBubbles ? c.scenes.reduce((n, scene) => n + window.SceneBubbles.list(scene.id).length, 0) : 0;
-  const boardOpen = (c, played) => !isUgc(c) || (c.boardEnabled && played);
+  const commentUsers = [
+    {id: 'xiaoman', name: '小满', nameEn: 'Xiaoman'},
+    {id: 'mili', name: '米粒', nameEn: 'Mili'},
+    {id: 'azhe', name: '阿哲', nameEn: 'Zhe'},
+    {id: 'wanfeng', name: '晚风', nameEn: 'Evening Breeze'},
+    {id: 'nanfeng', name: '南风', nameEn: 'South Wind'}
+  ].map((user, index) => ({...user, avatar: `assets/community/user-${index + 1}.jpg`}));
+  // Journey comments are independent of the position-anchored scene bubbles.
+  // Keep distinct IDs so likes and replies never change a scene note.
+  function boardNotes(c) {
+    const entries = [
+      [t('这组照片好有氛围，想找个周末去走走。', 'These photos make me want to plan a weekend trip.'), 'want', 12],
+      [t('去过一次，还想换个季节再去看看。', 'I’ve been once and would love to return in a different season.'), 'been', 8],
+      [t('这个视角拍得真好，细节值得慢慢看。', 'Such a lovely perspective. There’s so much detail to take in.'), 'been', 6],
+      [t('先收藏了，下次出行再翻出来看看。', 'Saved this to come back to when I plan my next trip.'), 'want', 4],
+      [t('越看越想出发，已经开始期待了。', 'The more I look, the more I want to go.'), 'want', 2]
+    ];
+    const initial = commentUsers.map((user, index) => {
+      const id = `journey-comment:${c.id}:${user.id}`, liked = !!window.TWStore.get().likes[id];
+      return {id, userId: user.id, name: f(user, 'name'), body: entries[index][0], kind: entries[index][1], likes: entries[index][2] + Number(liked), liked};
+    });
+    return [...initial, ...(window.TWStore?.get().boardComments?.[c.id] || []).map(note => ({...note, mine: true, name: t('我', 'Me'), body: note.text, likes: Number(!!window.TWStore.get().likes[note.id]), liked: !!window.TWStore.get().likes[note.id]}))];
+  }
+  const repliesFor = id => window.TWStore?.get().boardReplies?.[id] || [];
+  const noteCount = c => boardNotes(c).reduce((n, note) => n + 1 + repliesFor(note.id).length, 0);
+  // The publisher flag controls scene bubbles only. Comments are a separate feature.
+  const boardOpen = c => !isUgc(c) || c.boardEnabled !== false;
+  const commentsOpen = (c, played) => !isUgc(c) || !!played;
   const thumb = (ctx, c, index = 0) => ctx.img(c.scenes[index].id, '');
 
   function hub(ctx) {
@@ -46,7 +72,7 @@
   const feedIcon = name => `<svg class="cm-feed-icon" viewBox="0 0 28 28" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${name === 'like'
     ? '<path d="M9 12c3-2 4-5 4-9 0-1 3-1 4 2 1 2 0 5-1 7h7c2 0 3 1 2 3l-2 9c0 1-1 2-3 2H9V12ZM3 12h6v14H3z"/>'
     : '<path d="M24 20c2-2 3-5 2-8C25 6 21 3 15 3 8 3 3 7 3 13s5 10 11 10c2 0 4 0 5-1l6 3-1-5Z"/><path d="M9 11h10M9 16h8"/>'}</svg>`;
-  const commentAvatar = () => '<span class="cm-comment-avatar" aria-hidden="true"><svg viewBox="0 0 32 32"><circle cx="16" cy="16" r="15" fill="#fffdf5"/><path d="M7 23h18v3H7z" fill="#c7b98d"/><path d="M9 22v-7c0-6 14-6 14 0v7" fill="#abc56b" stroke="#829a4c"/><circle cx="12" cy="12" r="4" fill="#f5fae6" stroke="#829a4c"/><circle cx="20" cy="12" r="4" fill="#f5fae6" stroke="#829a4c"/><circle cx="12" cy="12" r="1.2" fill="#414d32"/><circle cx="20" cy="12" r="1.2" fill="#414d32"/><path d="M13 18q3 3 6 0" fill="none" stroke="#667b3a" stroke-linecap="round"/></svg></span>';
+  const commentAvatar = () => `<span class="cm-comment-avatar" aria-hidden="true"><img src="${commentUsers[0].avatar}" alt="" width="36" height="36"></span>`;
   function postAge(value) {
     const at = Date.parse(value), days = Math.floor((Date.now() - at) / 86400000);
     if (!Number.isFinite(at)) return '';
@@ -68,14 +94,13 @@
     const medal = !userJourney && window.RewardMedal?.medal ? window.RewardMedal.medal(c) : '';
     const mark = !userJourney ? `<span class="cm-mark cm-medal${ctx.badges[c.id] ? ' is-lit' : ''}" title="${ctx.badges[c.id] ? t('已点亮徽章', 'Badge earned') : t('已挑战', 'Challenged')}"><span class="cm-medal-art" aria-hidden="true">${medal}</span><b>${ctx.badges[c.id] ? t('已点亮', 'Badge') : t('已挑战', 'Played')}</b></span>`
       : played ? `<span class="cm-mark cm-stamp">${icon('check')}<b>${t('已挑战', 'Played')}</b><small>${t(`${played.score} 分`, `${played.score} pts`)}</small></span>` : '';
-    const commentsOn = !userJourney || c.boardEnabled;
-    const comments = commentsOn ? noteCount(c) : 0;
+    const comments = noteCount(c);
     return `<article class="cm-card cm-post" data-journey="${esc(c.id)}" aria-label="${esc(title)}">
       <header class="cm-post-author"><span class="cm-post-avatar" aria-hidden="true">${thumb(ctx, c)}</span><div class="cm-post-byline"><div><b>${esc(author)}</b>${age ? `<span class="cm-post-age"><i>·</i>${esc(age)}</span>` : ''}</div><span class="cm-post-status${userJourney ? '' : ' is-local'}">${userJourney ? t('🚗 在路上', '🚗 On the road') : t('🏡 目的地分享', '🏡 Destination stories')}</span></div><button class="cm-follow" data-feed-follow="${esc(authorId)}" aria-pressed="${following}" aria-label="${esc(t(`关注 ${author}`, `Follow ${author}`))}">${following ? t('已关注', 'Following') : t('关注', 'Follow')}</button></header>
       <button class="cm-post-copy" data-post-open><strong>${esc(title)}</strong><span>${esc(text)}</span></button>
       <button class="cm-post-gallery${c.scenes.length === 1 ? ' is-single' : c.scenes.length === 2 ? ' is-pair' : ''}" data-post-open aria-label="${esc(t(`查看${title}的照片与 Journey`, `View photos and journey: ${title}`))}">${photos}${c.scenes.length > 3 ? `<span class="cm-photo-count">${t(`${c.scenes.length}图`, `${c.scenes.length} photos`)}</span>` : ''}</button>
       ${revealed ? `<div class="cm-post-place-row"><button class="cm-post-place" data-post-open>${icon('pin')}<span>${esc(f(c, 'region'))}<i>｜</i>${esc(f(c, 'name'))}</span>${icon('next')}</button>${mark}</div>` : ''}
-      <footer class="cm-post-footer"><button class="cm-comment-entry" data-post-open data-feed-discuss${commentsOn ? '' : ' disabled'} title="${commentsOn && !revealed ? t('完成挑战后可评论', 'Comment after completing the challenge') : ''}">${commentAvatar()}<span>${commentsOn ? t('发表评论', 'Add a comment') : t('评论已关闭', 'Comments off')}</span></button><button class="cm-post-reaction" data-feed-like="${esc(c.id)}" aria-pressed="${liked}" aria-label="${t('点赞', 'Like')}">${feedIcon('like')}<span data-feed-like-count>${liked ? 1 : ''}</span></button><button class="cm-post-reaction" data-post-open data-feed-discuss aria-label="${t(`查看 ${comments} 条评论`, `View ${comments} comments`)}"${commentsOn ? '' : ' disabled'}>${feedIcon('comment')}<span>${comments || ''}</span></button></footer>
+      <footer class="cm-post-footer"><button class="cm-comment-entry" data-post-open data-feed-discuss title="${!revealed ? t('完成挑战后可评论', 'Comment after completing the challenge') : ''}">${commentAvatar()}<span>${t('发表评论', 'Add a comment')}</span></button><button class="cm-post-reaction" data-feed-like="${esc(c.id)}" aria-pressed="${liked}" aria-label="${t('点赞', 'Like')}">${feedIcon('like')}<span data-feed-like-count>${liked ? 1 : ''}</span></button><button class="cm-post-reaction" data-post-open data-feed-discuss aria-label="${t(`查看 ${comments} 条评论`, `View ${comments} comments`)}">${feedIcon('comment')}<span>${comments || ''}</span></button></footer>
     </article>`;
   }
   function feed(ctx) {
@@ -90,29 +115,41 @@
   }
 
   function board(ctx, c, played) {
-    if (isUgc(c) && !c.boardEnabled) return `<section class="cm-board is-off"><h3>${t('留言板', 'Board')}</h3><p>${t('发布者没有开启这个 Journey 的留言板。', 'The author has turned the board off for this journey.')}</p></section>`;
-    if (!boardOpen(c, played)) return `<section class="cm-board is-locked"><h3>${t('留言板', 'Board')}</h3><p>${t('完成挑战后就能看到大家的留言，防止剧透。', 'Finish the challenge to see everyone’s notes. No spoilers before then.')}</p></section>`;
-    const notes = c.scenes.flatMap(scene => window.SceneBubbles?.list(scene.id).map(note => ({...note, scene})) || []);
+    if (!commentsOpen(c, played)) return `<section class="cm-board is-locked"><h3>${t('评论区', 'Comments')}</h3><p>${t('完成挑战后就能看到大家的评论，防止剧透。', 'Finish the challenge to read the comments without spoilers.')}</p></section>`;
+    const notes = boardNotes(c);
     const filter = ['been', 'want'].includes(ctx.boardFilter) ? ctx.boardFilter : 'all';
     const shown = notes.filter(note => filter === 'all' || note.kind === filter).sort((a, b) => (b.mine - a.mine) || (b.at || 0) - (a.at || 0) || b.likes - a.likes);
-    const hue = text => { let h = 0; for (const ch of String(text)) h = (h * 31 + ch.codePointAt(0)) % 360; return h; };
     const filters = [['all', t('全部', 'All')], ['been', t('去过', 'Been')], ['want', t('没去过', 'Not yet')]]
-      .map(([id, name]) => `<button class="${filter === id ? 'active' : ''}" aria-pressed="${filter === id}" data-board-filter="${id}">${name}</button>`).join('');
-    return `<section class="cm-board"><div class="cm-board-head"><h3>${t('留言板', 'Board')} <small>${notes.length}</small></h3><button class="cm-write" data-action="board-write">${icon('message')}${t('写留言', 'Leave a note')}</button></div><div class="cm-board-filters">${filters}</div>${shown.length ? shown.map(note => `<article class="cm-note${note.mine ? ' mine' : ''}"><span class="cm-avatar" style="--hue:${note.mine ? 222 : hue(note.name)}" aria-hidden="true">${esc([...String(note.name)][0] || '')}</span><div><p class="cm-note-meta"><b>${esc(note.name)}</b><span class="cm-kind kind-${note.kind}">${window.SceneBubbles.kindLabel(note.kind)}</span><span>${esc(f(note.scene, 'name'))}</span></p><p class="cm-note-text">${esc(note.body)}</p></div><button class="cm-like" data-note-like="${esc(note.id)}" aria-pressed="${note.liked}" aria-label="${t('点赞', 'Like')}">${icon('heart')}<b>${note.likes}</b></button></article>`).join('') : `<p class="cm-board-empty">${t('还没有这一类留言，来写第一条吧。', 'No notes of this kind yet. Be the first.')}</p>`}</section>`;
+      .map(([id, name]) => `<option value="${id}"${filter === id ? ' selected' : ''}>${name}</option>`).join('');
+    return `<section class="cm-board" data-comment-journey="${esc(c.id)}" data-filter="${filter}"><div class="cm-board-head"><h3>${t(`共 ${noteCount(c)} 条评论`, `${noteCount(c)} comments`)}</h3><label class="cm-board-sort"><select data-comment-filter aria-label="${t('筛选评论', 'Filter comments')}">${filters}</select></label></div><div class="cm-comments">${shown.length ? shown.map(note => noteMarkup(note)).join('') : `<p class="cm-board-empty">${t('还没有评论，说点什么吧', 'No comments yet. Start the conversation.')}</p>`}</div>${shown.length ? `<p class="cm-comments-end">${t('- THE END -', '- THE END -')}</p>` : ''}</section>`;
+  }
+
+  const commentIcon = name => `<svg class="cm-comment-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${({heart:'<path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8Z"/>',star:'<path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8-6.2-3.2L5.8 21 7 14.2 2 9.3l6.9-1L12 2Z"/>',message:'<path d="M21 11.5a9 9 0 0 1-9.5 9c-1.5 0-3-.3-4.3-1L3 21l1.4-4.2A9 9 0 1 1 21 11.5Z"/><path d="M8 11h.01M12 11h.01M16 11h.01"/>',pen:'<path d="m15 4 5 5M4 20l4.5-1L21 6.5 17.5 3 5 15.5 4 20ZM4 23h16"/>',smile:'<circle cx="12" cy="12" r="9"/><path d="M8 14s1 3 4 3 4-3 4-3M8 8h.01M16 8h.01"/>'})[name] || ''}</svg>`;
+  function noteAvatar(name, mine, userId) {
+    if (mine) return commentAvatar();
+    const user = commentUsers.find(user => user.id === userId || user.name === name || user.nameEn === name) || commentUsers[0];
+    return `<span class="cm-note-avatar" aria-hidden="true"><img src="${user.avatar}" alt="" width="36" height="36" loading="lazy"></span>`;
+  }
+  const commentAge = note => !note.at ? '' : Date.now() - note.at < 60000 ? t('刚刚', 'Just now') : Date.now() - note.at < 3600000 ? t(`${Math.floor((Date.now() - note.at) / 60000)}分钟前`, `${Math.floor((Date.now() - note.at) / 60000)}m ago`) : new Date(note.at).toLocaleDateString(isEn() ? 'en-US' : 'zh-CN', {month: '2-digit', day: '2-digit'});
+  function noteMarkup(note, parentId = '') {
+    const reply = !!parentId, replies = reply ? [] : repliesFor(note.id);
+    const name = note.mine ? t('我', 'Me') : note.name;
+    const liked = !!window.TWStore.get().likes[note.id], likes = reply ? Number(liked) : note.likes;
+    return `<article class="cm-note${reply ? ' cm-reply' : ''}" data-comment-id="${esc(note.id)}">${noteAvatar(name, note.mine, note.userId)}<div class="cm-note-main"><p class="cm-note-meta">${esc(name)}</p><p class="cm-note-text">${reply && note.to && note.to !== t('我', 'Me') ? `${t('回复', 'Reply to')} <span class="cm-reply-to">${esc(note.to)}</span>：` : ''}${esc(note.body ?? note.text)}</p><div class="cm-note-foot"><span>${esc(commentAge(note))}${!reply && note.kind ? `${note.at ? ' · ' : ''}${window.SceneBubbles.kindLabel(note.kind)}` : ''}</span><button data-comment-reply="${esc(parentId || note.id)}" data-reply-to="${esc(name)}">${t('回复', 'Reply')}</button></div>${!reply && replies.length ? `<div class="cm-replies">${replies.map((item, i) => `<div${i ? ' hidden' : ''} data-reply-row>${noteMarkup({...item, mine: true}, note.id)}</div>`).join('')}${replies.length > 1 ? `<button class="cm-expand-replies" data-comment-expand aria-expanded="false">${t(`展开 ${replies.length - 1} 条回复`, `View ${replies.length - 1} more replies`)}<span>⌄</span></button>` : ''}</div>` : ''}</div><button class="cm-like" data-note-like="${esc(note.id)}" aria-pressed="${liked}" aria-label="${esc(t(`赞 ${name} 的评论`, `Like ${name}’s comment`))}">${commentIcon('heart')}<b>${likes || ''}</b></button></article>`;
+  }
+  function commentDock(c, played) {
+    if (!commentsOpen(c, played)) return '';
+    const data = window.TWStore.get(), liked = !!data.likes[`feed:${c.id}`], saved = !!data.prefs.communitySaved?.[c.id];
+    return `<footer class="cm-comment-dock" data-dock-journey="${esc(c.id)}"><div class="cm-dock-idle"><button class="cm-dock-write" data-comment-compose>${commentIcon('pen')}<span>${t('说点什么...', 'Say something…')}</span></button><button class="cm-dock-reaction" data-comment-react="like" aria-pressed="${liked}" aria-label="${t('赞这个 Journey', 'Like this journey')}">${commentIcon('heart')}<b>${liked ? '1' : ''}</b></button><button class="cm-dock-reaction" data-comment-react="save" aria-pressed="${saved}" aria-label="${t('收藏这个 Journey', 'Save this journey')}">${commentIcon('star')}</button><button class="cm-dock-reaction" data-comment-scroll aria-label="${t('查看评论', 'View comments')}">${commentIcon('message')}<b data-comment-total>${noteCount(c)}</b></button></div><form class="cm-comment-form" hidden><div class="cm-compose-heading"><span data-reply-label>${t('发表评论', 'Leave a comment')}</span><button type="button" data-comment-cancel aria-label="${t('收起输入框', 'Close composer')}">×</button></div><textarea name="comment" rows="2" maxlength="200" aria-label="${t('评论内容', 'Your comment')}" placeholder="${t('说点什么...', 'Say something…')}" required></textarea><div class="cm-comment-tools"><select name="kind" aria-label="${t('你去过这里吗', 'Have you been here?')}"><option value="want">${t('还没去过', 'Not yet')}</option><option value="been">${t('我去过', 'I’ve been')}</option></select>${boardOpen(c) ? `<button type="button" class="cm-scene-write" data-action="board-write">${t('在场景里留言', 'Place a scene note')}</button>` : ''}<button type="button" data-comment-emoji aria-label="${t('添加表情', 'Add an emoji')}" aria-expanded="false">${commentIcon('smile')}</button><button class="cm-comment-send" type="submit" disabled>${t('发送', 'Send')}</button></div><div class="cm-emoji-picker" hidden>${['😊','❤️','👍','😍','😂','🥹','👏','✨'].map(emoji => `<button type="button" data-emoji="${emoji}">${emoji}</button>`).join('')}</div><p class="cm-comment-local">${t('评论仅保存在本机', 'Comments are saved on this device only')}</p></form><p class="cm-comment-status" role="status" aria-live="polite"></p></footer>`;
   }
   function journey(ctx) {
     const c = ctx.journey;
     if (!c) return feed(ctx);
     const ugcJourney = isUgc(c), played = ugcJourney ? ctx.played[c.id] : ctx.challenged[c.id], revealed = !ugcJourney || !!played;
-    const story = !ugcJourney ? window.ResultReveal?.destination?.(c) : null;
-    const intro = ugcJourney ? f(c, 'intro') : f(story, 'description') || t('你挑战过的目的地，看看其他旅人在这里留下了什么。', 'A destination you’ve challenged. See what other travellers left here.');
-    const medal = !ugcJourney && window.RewardMedal?.medal ? `<span class="cm-mark cm-medal cm-hero-mark${ctx.badges[c.id] ? ' is-lit' : ''}"><span class="cm-medal-art" aria-hidden="true">${window.RewardMedal.medal(c)}</span><b>${ctx.badges[c.id] ? t('已点亮', 'Badge') : t('已挑战', 'Played')}</b></span>` : played ? `<span class="cm-mark cm-stamp cm-hero-mark">${icon('check')}<b>${t('已挑战', 'Played')}</b><small>${t(`${played.score} 分`, `${played.score} pts`)}</small></span>` : '';
-    const scenes = c.scenes.map((scene, i) => revealed ? `<button class="cm-scene" data-browse-scene="${i}" aria-label="${t(`浏览第 ${i + 1} 处实景`, `Browse scene ${i + 1}`)}">${thumb(ctx, c, i)}<span>${esc(f(scene, 'name'))}</span></button>` : `<span class="cm-scene">${thumb(ctx, c, i)}<span>${t(`第 ${i + 1} 处`, `Scene ${i + 1}`)}</span></span>`).join('');
-    const actions = ugcJourney
-      ? `<button class="primary" data-action="ugc-start">${played ? t('再挑战一次', 'Play again') : t('开始挑战', 'Start the challenge')} ${icon('next')}</button>${played ? `<button class="secondary" data-action="browse">${t('浏览场景与讲解', 'Browse scenes and notes')}</button>` : ''}`
-      : `<button class="primary" data-action="browse">${t('浏览场景与讲解', 'Browse scenes and notes')} ${icon('next')}</button>`;
+    const medal = !ugcJourney && window.RewardMedal?.medal ? `<span class="cm-hero-badge${ctx.badges[c.id] ? ' is-lit' : ''}"><span class="cm-medal-art">${window.RewardMedal.medal(c)}</span></span>` : '';
+    const scenes = c.scenes.map((scene, i) => `<button class="cm-gallery-slide" ${ugcJourney ? 'data-action="ugc-start"' : `data-browse-scene="${i}"`} aria-label="${esc(ugcJourney ? t(`挑战整个 Journey，第 ${i + 1} 张照片`, `Challenge the whole journey, photo ${i + 1}`) : t(`沉浸探索：${f(scene, 'name')}`, `Explore: ${f(scene, 'name')}`))}" aria-roledescription="${t('幻灯片', 'slide')}">${thumb(ctx, c, i)}</button>`).join('');
     const header = `<header class="page-head"><button class="icon-btn" data-action="journey-back" aria-label="${t('返回', 'Back')}">${icon('back')}</button><strong>${ugcJourney ? t('玩家 Journey', 'Player journey') : t('官方目的地', 'Official destination')}</strong><span style="width:36px"></span></header>`;
-    return `<div class="page cm-page cm-journey">${header}<div class="cm-hero">${ctx.img(c.scenes[0].id, label(c, revealed))}${medal}</div><section class="cm-info"><span class="cm-channel ${ugcJourney ? 'is-ugc' : 'is-official'}">${ugcJourney ? t('玩家', 'Player') : t('官方', 'Official')}</span><h1>${esc(label(c, revealed))}</h1><p class="cm-meta">${revealed ? `${icon('pin')}${esc(f(c, 'region'))}` : t('目的地在挑战后揭晓', 'Revealed after the challenge')}${ugcJourney ? ` · ${t('发布者', 'By')} ${esc(f(c.author, 'name'))}` : ''}</p><p class="cm-intro">${esc(intro)}</p>${ugcJourney ? `<p class="cm-rule">${t('社区挑战：限时观察场景并答题，再在地图上猜位置。不参与优惠、徽章、奇境币和排行。', 'Community challenge: look and answer against the clock, then guess the spot on the map. No perks, badges, coins or rankings.')}</p>` : ''}</section><div class="cm-scenes">${scenes}</div><div class="cm-actions">${actions}</div>${board(ctx, c, played)}</div>`;
+    return `<div class="page cm-page cm-journey">${header}<div class="cm-journey-scroll"><div class="cm-hero"><div class="cm-gallery" data-gallery-journey="${esc(c.id)}" role="region" aria-roledescription="${t('轮播图', 'carousel')}" aria-label="${t('目的地照片，左右滑动，点击沉浸探索', 'Destination photos. Swipe to browse, select to explore.')}">${scenes}</div>${medal}</div><section class="cm-info"><h1>${esc(label(c, revealed))}</h1>${revealed ? `<p class="cm-meta">${icon('pin')}${esc(f(c, 'region'))}</p>` : ''}</section>${board(ctx, c, played)}</div>${commentDock(c, played)}</div>`;
   }
 
   function publish(ctx) {
@@ -129,7 +166,7 @@
         ${field('pub-intro', t('一句话介绍', 'A line about it'), `<textarea id="pub-intro" name="intro" maxlength="120" rows="2" placeholder="${t('为什么推荐这里？', 'Why do you recommend it?')}"></textarea>`)}
       </section>
       <section class="cm-form-block"><h3>${t('三道题', 'Three questions')}</h3><p class="cm-hint">${t('选中正确答案前的圆点。题目里不要出现地名。', 'Tick the circle beside the right answer. Keep place names out of the questions.')}</p>${[0, 1, 2].map(question).join('')}</section>
-      <section class="cm-form-block cm-switches"><label class="cm-switch"><input type="checkbox" name="board" checked><span><b>${t('开启留言板', 'Turn the board on')}</b><small>${t('玩家完成挑战后可以留言', 'Players can leave notes after finishing')}</small></span></label>${field('pub-author', t('昵称', 'Nickname'), `<input id="pub-author" name="author" maxlength="16" placeholder="${t('展示为发布者', 'Shown as the author')}">`)}</section>
+      <section class="cm-form-block cm-switches"><label class="cm-switch"><input type="checkbox" name="board" checked><span><b>${t('开启场景留言气泡', 'Enable scene bubbles')}</b><small>${t('在沉浸场景中查看和放置气泡，不影响独立评论区', 'View and place bubbles in scenes; independent comments stay available')}</small></span></label>${field('pub-author', t('昵称', 'Nickname'), `<input id="pub-author" name="author" maxlength="16" placeholder="${t('展示为发布者', 'Shown as the author')}">`)}</section>
       <p class="cm-error" role="alert" hidden></p>
       <button class="primary cm-submit" type="submit">${t('提交审核', 'Submit for review')}</button>
       <p class="cm-foot">${t('演示：上传服务尚未接入，提交后不会保存或上传任何内容。', 'Demo: uploads aren’t connected yet, so nothing is saved or sent.')}</p>
@@ -185,6 +222,167 @@
     }
   });
 
-  function releasePress(){window.HubCards3D?.release();}
-  window.Community = Object.freeze({isUgc, label, boardOpen, hub, feed, journey, publish, validate, previews, releasePress});
+  function refreshComments(page, filter) {
+    const section = page.querySelector('.cm-board[data-comment-journey]');
+    const c = C.cities.find(c => c.id === section?.dataset.commentJourney) || ugc.find(c => c.id === section?.dataset.commentJourney);
+    if (!c) return;
+    const expanded = [...section.querySelectorAll('[data-comment-expand][aria-expanded="true"]')].map(button => button.closest('[data-comment-id]').dataset.commentId);
+    section.outerHTML = board({boardFilter: filter || section.dataset.filter}, c, true);
+    page.querySelector('[data-comment-total]').textContent = noteCount(c);
+    for (const button of page.querySelectorAll('[data-comment-expand]')) {
+      if (expanded.includes(button.closest('[data-comment-id]').dataset.commentId)) button.click();
+    }
+  }
+  function openComposer(page, parent = '', to = '') {
+    const dock = page.querySelector('.cm-comment-dock');
+    if (!dock) return;
+    const form = dock.querySelector('form');
+    // Keep an unfinished draft when opening the same target again.
+    if (form.dataset.parent !== parent || form.dataset.to !== to) { form.reset(); form.querySelector('[type="submit"]').disabled = true; }
+    form.dataset.parent = parent; form.dataset.to = to;
+    form.querySelector('[data-reply-label]').textContent = parent ? t(`回复 ${to}`, `Reply to ${to}`) : t('发表评论', 'Leave a comment');
+    form.querySelector('[name="kind"]').hidden = !!parent;
+    const sceneWrite = form.querySelector('.cm-scene-write');
+    if (sceneWrite) sceneWrite.hidden = !!parent;
+    dock.querySelector('.cm-dock-idle').hidden = true;
+    form.hidden = false;
+    form.querySelector('textarea').focus();
+  }
+  function closeComposer(page) {
+    const dock = page.querySelector('.cm-comment-dock');
+    dock.querySelector('form').hidden = true;
+    dock.querySelector('.cm-dock-idle').hidden = false;
+    dock.querySelector('.cm-emoji-picker').hidden = true;
+    dock.querySelector('[data-comment-emoji]').setAttribute('aria-expanded', 'false');
+  }
+  document.addEventListener('click', event => {
+    const button = event.target.closest('.cm-journey button');
+    if (!button || window.ChallengeMotion?.busy) return;
+    const page = button.closest('.cm-journey');
+    if (button.hasAttribute('data-comment-compose')) openComposer(page);
+    else if (button.hasAttribute('data-comment-reply')) openComposer(page, button.dataset.commentReply, button.dataset.replyTo);
+    else if (button.hasAttribute('data-comment-cancel')) { closeComposer(page); page.querySelector('[data-comment-compose]')?.focus(); }
+    else if (button.hasAttribute('data-comment-scroll')) page.querySelector('.cm-board')?.scrollIntoView({block: 'start', behavior: 'smooth'});
+    else if (button.hasAttribute('data-comment-expand')) {
+      const open = button.getAttribute('aria-expanded') !== 'true', rows = button.parentElement.querySelectorAll(':scope > [data-reply-row]');
+      rows.forEach((row, i) => { if (i) row.hidden = !open; });
+      button.setAttribute('aria-expanded', String(open));
+      button.innerHTML = `${open ? t('收起回复', 'Hide replies') : t(`展开 ${rows.length - 1} 条回复`, `View ${rows.length - 1} more replies`)}<span>${open ? '⌃' : '⌄'}</span>`;
+    } else if (button.hasAttribute('data-comment-emoji')) {
+      const picker = page.querySelector('.cm-emoji-picker');
+      picker.hidden = !picker.hidden;
+      button.setAttribute('aria-expanded', String(!picker.hidden));
+    } else if (button.hasAttribute('data-emoji')) {
+      const field = page.querySelector('.cm-comment-form textarea');
+      if (field.value.length - (field.selectionEnd - field.selectionStart) + button.dataset.emoji.length <= field.maxLength) field.setRangeText(button.dataset.emoji, field.selectionStart, field.selectionEnd, 'end');
+      field.dispatchEvent(new Event('input', {bubbles: true})); field.focus();
+    } else if (button.hasAttribute('data-comment-react')) {
+      const id = page.querySelector('.cm-comment-dock').dataset.dockJourney, like = button.dataset.commentReact === 'like';
+      const on = window.TWStore.update(data => {
+        const collection = like ? data.likes : (data.prefs.communitySaved ||= {}), key = like ? `feed:${id}` : id;
+        if (collection[key]) delete collection[key]; else collection[key] = true;
+        return !!collection[key];
+      });
+      button.setAttribute('aria-pressed', String(on));
+      if (like) button.querySelector('b').textContent = on ? '1' : '';
+    }
+  });
+  document.addEventListener('change', event => {
+    if (event.target.matches('[data-comment-filter]')) refreshComments(event.target.closest('.cm-journey'), event.target.value);
+  });
+  document.addEventListener('input', event => {
+    if (event.target.matches('.cm-comment-form textarea')) event.target.form.querySelector('[type="submit"]').disabled = !event.target.value.trim();
+  });
+  document.addEventListener('keydown', event => {
+    if (!event.target.closest('.cm-comment-form')) return;
+    if (event.key === 'Escape') { event.preventDefault(); closeComposer(event.target.closest('.cm-journey')); }
+    if (event.key === 'Enter' && (event.ctrlKey || event.metaKey) && !event.isComposing) { event.preventDefault(); event.target.closest('form').requestSubmit(); }
+  });
+  document.addEventListener('submit', event => {
+    if (!event.target.matches('.cm-comment-form')) return;
+    event.preventDefault();
+    const form = event.target, page = form.closest('.cm-journey'), section = page.querySelector('.cm-board[data-comment-journey]');
+    const c = C.cities.find(c => c.id === section?.dataset.commentJourney) || ugc.find(c => c.id === section?.dataset.commentJourney);
+    const text = form.elements.comment.value.trim(), parent = form.dataset.parent;
+    if (!c || !text || text.length > 200 || (parent && !boardNotes(c).some(note => note.id === parent))) return;
+    const id = `comment-${globalThis.crypto?.randomUUID?.() || `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`}`;
+    window.TWStore.update(data => {
+      const note = {id, text, at: Date.now()};
+      if (parent) ((data.boardReplies ||= {})[parent] ||= []).push({...note, to: form.dataset.to});
+      else ((data.boardComments ||= {})[c.id] ||= []).unshift({...note, kind: form.elements.kind.value});
+    });
+    form.reset(); form.dataset.parent = ''; form.dataset.to = ''; form.querySelector('[type="submit"]').disabled = true;
+    closeComposer(page); refreshComments(page, 'all');
+    const status = page.querySelector('.cm-comment-status');
+    status.textContent = t('已发送，保存在本机', 'Sent and saved on this device');
+    const added = [...page.querySelectorAll('[data-comment-id]')].find(node => node.dataset.commentId === id);
+    if (parent && added?.closest('[data-reply-row]')?.hidden) added.closest('.cm-replies').querySelector('[data-comment-expand]')?.click();
+    added?.scrollIntoView({block: 'nearest', behavior: 'smooth'});
+  });
+
+  const galleryPositions = new Map();
+  let galleryCleanup = () => {};
+  function mountJourney(root) {
+    galleryCleanup();
+    const gallery = root.querySelector('.cm-gallery');
+    if (!gallery) return;
+    const slides = [...gallery.children], id = gallery.dataset.galleryJourney;
+    const controller = new AbortController(), options = {signal: controller.signal};
+    let index = Math.min(galleryPositions.get(id) || 0, slides.length - 1), down = null, suppressUntil = 0;
+    const sync = () => {
+      index = Math.max(0, Math.min(slides.length - 1, Math.round(gallery.scrollLeft / (gallery.clientWidth || 1))));
+      galleryPositions.set(id, index);
+      slides.forEach((slide, i) => { slide.tabIndex = i === index ? 0 : -1; });
+    };
+    gallery.scrollLeft = index * gallery.clientWidth;
+    sync();
+    gallery.addEventListener('scroll', sync, {...options, passive: true});
+    gallery.addEventListener('keydown', event => {
+      if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+      event.preventDefault();
+      const next = event.key === 'Home' ? 0 : event.key === 'End' ? slides.length - 1 : Math.max(0, Math.min(slides.length - 1, index + (event.key === 'ArrowRight' ? 1 : -1)));
+      gallery.scrollTo({left: next * gallery.clientWidth, behavior: 'instant'});
+      sync(); slides[next].focus({preventScroll: true});
+    }, options);
+    gallery.addEventListener('pointerdown', event => {
+      if (event.pointerType !== 'mouse' || event.button !== 0 || slides.length < 2) return;
+      suppressUntil = 0;
+      down = {id: event.pointerId, x: event.clientX, y: event.clientY, left: gallery.scrollLeft, dragging: false};
+    }, options);
+    gallery.addEventListener('pointermove', event => {
+      if (!down || event.pointerId !== down.id) return;
+      const dx = event.clientX - down.x, dy = event.clientY - down.y;
+      if (!down.dragging && Math.abs(dx) > 8 && Math.abs(dx) > Math.abs(dy)) {
+        down.dragging = true; gallery.classList.add('is-dragging'); gallery.setPointerCapture(event.pointerId);
+      }
+      if (down.dragging) { event.preventDefault(); gallery.scrollLeft = down.left - dx; }
+    }, options);
+    const endDrag = event => {
+      if (!down || event.pointerId !== down.id) return;
+      const dragged = down.dragging;
+      down = null;
+      if (dragged) {
+        suppressUntil = performance.now() + 500;
+        sync(); gallery.classList.remove('is-dragging');
+        gallery.scrollTo({left: index * gallery.clientWidth, behavior: 'smooth'});
+      }
+      if (gallery.hasPointerCapture(event.pointerId)) gallery.releasePointerCapture(event.pointerId);
+    };
+    gallery.addEventListener('pointerup', endDrag, options);
+    gallery.addEventListener('pointercancel', endDrag, options);
+    gallery.addEventListener('lostpointercapture', endDrag, options);
+    gallery.addEventListener('pointerleave', event => { if (down && !down.dragging) down = null; }, options);
+    gallery.addEventListener('click', event => {
+      if (performance.now() < suppressUntil) { event.preventDefault(); event.stopImmediatePropagation(); }
+    }, {...options, capture: true});
+    let width = gallery.clientWidth;
+    const resize = new ResizeObserver(() => {
+      if (width === gallery.clientWidth) return;
+      width = gallery.clientWidth; gallery.scrollLeft = index * width;
+    });
+    resize.observe(gallery);
+    galleryCleanup = () => { sync(); controller.abort(); resize.disconnect(); galleryCleanup = () => {}; };
+  }
+  function releasePress(){galleryCleanup();window.HubCards3D?.release();}
+  window.Community = Object.freeze({isUgc, label, boardOpen, hub, feed, journey, publish, validate, previews, releasePress, mountJourney});
 })();
