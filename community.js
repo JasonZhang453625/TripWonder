@@ -409,5 +409,6 @@
     galleryCleanup = () => { sync(); controller.abort(); resize.disconnect(); galleryCleanup = () => {}; };
   }
   function releasePress(){galleryCleanup();window.HubCards3D?.release();}
-  window.Community = Object.freeze({isUgc, label, boardOpen, hub, feed, journey, publish, validate, previews, releasePress, mountJourney, initializeSamples, register, unregister});
+  function comments(ctx){const c=ctx.journey;if(!c)return '';const played=isUgc(c)?ctx.played[c.id]:ctx.challenged[c.id];return `<div class="cm-sheet-content cm-journey">${board(ctx,c,played)}${commentDock(c,played)}</div>`;}
+  window.Community = Object.freeze({isUgc, label, boardOpen, hub, feed, journey, comments, publish, validate, previews, releasePress, mountJourney, initializeSamples, register, unregister});
 })();

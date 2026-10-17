@@ -385,14 +385,15 @@
     const ctx=communityContext();
     return Community.feed({...ctx,head:(title,back,right)=>head(title,back==='hub'&&feedResultReturn?'result':back,right)});
   }
-  function journey() { return Community.journey(communityContext()); }
+  const immersiveJourney=()=>s.view==='journey'&&!Community.isUgc(journeyById(s.journeyId));
+  function journey() { return immersiveJourney()?explore(s.scene):Community.journey(communityContext()); }
   function publish() { return Community.publish(communityContext()); }
   function openJourney(id) {
     if(!journeyById(id))return;
     // Comments opened from either kind of result are a child of that result.
     if(s.view==='result'){s.journeyBack='result';s.journeyReturn=resultReturnPoint();}
     else if(!['explore','cover','journey'].includes(s.view)){s.journeyBack='feed';s.journeyReturn=null;}
-    s.journeyId=id;s.boardFilter='all';return go('journey');
+    s.journeyId=id;s.boardFilter='all';if(!Community.isUgc(journeyById(id))){activateCity(id,'browse');s.scene=0;}return go('journey');
   }
   function leaveJourney() {
     if(s.journeyBack==='result'&&s.journeyReturn){const point=s.journeyReturn;return restoreCommunityResult(point).then(shown=>{if(shown){s.journeyReturn=null;s.journeyBack='feed';}});}
@@ -409,7 +410,7 @@
   function startBrowse(index=0,{compose=false}={}) {
     const c=journeyById(s.journeyId);if(!c)return;
     activateCity(c.id,'browse');s.composeScene=compose?index:null;
-    loadView('explore',index,()=>{s.scene=index;s.exploring=true;s.visited.add(index);});
+    loadView(Community.isUgc(c)?'explore':'journey',index,()=>{s.scene=index;s.exploring=true;s.visited.add(index);});
   }
   function startUgc() {
     const c=journeyById(s.journeyId);if(!Community.isUgc(c))return;
@@ -445,7 +446,7 @@
   function cancelPending() { transition++; pendingCleanup?.(); pendingCleanup=null; }
   async function loadView(view,index,commit) {
     cancelPending(); const ticket=transition, p=city().scenes[index].photo;
-    const config=view==='explore' && immersiveConfig(p);
+    const config=['explore','journey'].includes(view) && immersiveConfig(p);
     const immersive=!!(config && window.ImmersivePhotoViewer);
     if(immersive)window.ImmersiveSceneMedia?.setDestination(city().id,city().scenes.map(scene=>immersiveConfig(scene.photo)).filter(Boolean));
     else window.ImmersiveSceneMedia?.clear();
@@ -456,7 +457,7 @@
     const cleanOverlay=()=>{overlay?.getAnimations().forEach(a=>a.cancel());overlay?.remove();app.classList.remove('scene-loading');};
     const cleanup=()=>{
       cleanOverlay();
-      if(!transferred){incoming?.destroy();stage?.remove();if(s.view!=='explore')window.ImmersiveSceneMedia?.clear();}
+      if(!transferred){incoming?.destroy();stage?.remove();if(!['explore','journey'].includes(s.view))window.ImmersiveSceneMedia?.clear();}
       old.forEach(([b,label,disabled])=>{if(b.isConnected){b.innerHTML=label;b.disabled=disabled;b.removeAttribute('aria-busy');}});
     };
     pendingCleanup=cleanup;
@@ -502,6 +503,7 @@
     const cards=window.HubCards3D.mount(page,{suspended:true});hubWarm={page,cards};return hubWarm;
   }
   function render(ready,prepared,{deferRules=false}={}) {
+    window.JourneyComments?.destroy();
     const warmed=s.view==='hub'?hubWarm:null;cancelHubWarm(!!warmed);if(warmed)hubWarm=null;
     hubCards?.destroy();hubCards=null;
     Community.releasePress();
@@ -509,9 +511,9 @@
     bubbles?.destroy();bubbles=null;
     coverCarousel?.destroy();coverCarousel=null;
     cancelPending(); closeModal(); pauseQuizTimer(); viewer?.destroy(); viewer=null; mapView?.destroy(); mapView=null;resultReveal?.destroy();resultReveal=null;
-    if(s.view!=='explore')window.ImmersiveSceneMedia?.clear();
-    document.querySelector('#phone').classList.toggle('immersive',['cover','explore'].includes(s.view));
-    document.querySelector('#phone').classList.toggle('flat-mode',!['cover','explore'].includes(s.view));
+    if(s.view!=='explore'&&!immersiveJourney())window.ImmersiveSceneMedia?.clear();
+    document.querySelector('#phone').classList.toggle('immersive',['cover','explore'].includes(s.view)||immersiveJourney());
+    document.querySelector('#phone').classList.toggle('flat-mode',!(['cover','explore'].includes(s.view)||immersiveJourney()));
     document.querySelector('#phone').classList.toggle('quiz-mode',s.view==='quiz');
     document.querySelector('#phone').classList.toggle('home-mode',s.view==='home');
     document.querySelector('#phone').classList.toggle('result-mode',s.view==='result'&&!!(s.result||current().result));
@@ -524,15 +526,20 @@
     if(ready){const placeholder=frame.querySelector('.photo-plane>img,.cover-hero>img,.result-visual>img,.route-hero>img'); if(placeholder){ready.alt=placeholder.alt;placeholder.replaceWith(ready);}}
     app.replaceChildren(...frame.childNodes);app.scrollTop=0;showOpeningWarnings();showFriendComparison();
     if(s.view==='hub'){hubCards=warmed?.cards||window.HubCards3D?.mount(app.firstElementChild);hubCards?.present();}
-    if(s.view==='journey')Community.mountJourney(app);
+    if(immersiveJourney()){
+      const page=app.firstElementChild;
+      page.insertAdjacentHTML('beforeend',`<button class="journey-comments-trigger" data-journey-comments aria-haspopup="dialog" aria-expanded="false">${icon('message')} ${tr('评论','Comments')}</button>`);
+      JourneyComments.mount(page,Community.comments(communityContext()));
+    }
+    else if(s.view==='journey')Community.mountJourney(app);
     window.UGCService?.release();
     if(s.view==='publish')UGCService.mountPublish(app.querySelector('.cm-form'));
     if(['myjourneys','ugcreview'].includes(s.view))UGCService.mountManagement();
     persistUgc();
     document.querySelectorAll('.flow button').forEach(b=>b.classList.toggle('active',b.dataset.go===s.view || (b.dataset.go==='today'&&s.mode==='challenge'&&['cover','explore','quiz','guess','atlas','ranking'].includes(s.view)) || (b.dataset.go==='feed'&&['journey','publish'].includes(s.view)) || (b.dataset.go==='feed'&&s.mode!=='challenge'&&['cover','explore','quiz','guess'].includes(s.view))));
     app.querySelectorAll('img').forEach(el=>el.addEventListener('error',()=>{el.insertAdjacentHTML('afterend','<span class="error-image">'+tr('照片未能载入','Photo failed to load')+'</span>');},{once:true}));
-    if(s.view==='explore') { const root=app.querySelector('.photo-viewport'),config=immersiveConfig(activePhoto());viewer=prepared?.viewer||(config&&window.ImmersivePhotoViewer?new ImmersivePhotoViewer(root,activePhoto(),config):new PhotoViewer(root,activePhoto()));viewer.ready?.then(()=>{if(viewer?.root===root)viewer.present?.();},()=>{}); rememberExplored(); if(feature('bubbles')&&['browse','ugc'].includes(s.mode)&&Community.boardOpen(city())){bubbles=SceneBubbles.mount({root,viewer,scene:city().scenes[s.scene],hiddenNames:s.mode==='ugc'?hiddenNames():[],onCompose:composeNote});if(s.composeScene===s.scene){s.composeScene=null;bubbles.place?.();}} }
-    window.SceneBGM?.sync(s.view==='explore'?s.cityId:null);
+    if(s.view==='explore'||immersiveJourney()) { const root=app.querySelector('.photo-viewport'),config=immersiveConfig(activePhoto());viewer=prepared?.viewer||(config&&window.ImmersivePhotoViewer?new ImmersivePhotoViewer(root,activePhoto(),config):new PhotoViewer(root,activePhoto()));viewer.ready?.then(()=>{if(viewer?.root===root)viewer.present?.();},()=>{}); rememberExplored(); if(feature('bubbles')&&['browse','ugc'].includes(s.mode)&&Community.boardOpen(city())){bubbles=SceneBubbles.mount({root,viewer,scene:city().scenes[s.scene],hiddenNames:s.mode==='ugc'?hiddenNames():[],onCompose:composeNote});if(s.composeScene===s.scene){s.composeScene=null;bubbles.place?.();}} }
+    window.SceneBGM?.sync(s.view==='explore'||immersiveJourney()?s.cityId:null);
     resumeQuizTimer();
     if(s.view==='quiz'){QuizScene.set(app.querySelector('.quiz-page'),city(),s.questions[s.q]);}
     if(s.view==='guess'&&!mapView)mountGuess();
@@ -619,6 +626,22 @@
     if(previous==='feed'&&view==='result'&&feedResultReturn){const point=feedResultReturn;return restoreCommunityResult(point,{force}).then(shown=>{if(shown)feedResultReturn=null;});}
     if(previous==='result'&&view==='feed'&&!back)feedResultReturn=resultReturnPoint();
     if(view==='feed'&&['home','hub'].includes(previous))feedResultReturn=null;
+    if(view==='journey'&&!Community.isUgc(journeyById(s.journeyId))){
+      let staged;
+      const c=journeyById(s.journeyId);if(!c)return;
+      activateCity(c.id,'browse');
+      return ChallengeMotion.slide(prepared=>{s.view='journey';render(prepared.image,prepared.viewer?prepared:undefined);},{force,back,prepare:async()=>{
+        cancelPending();
+        const p=c.scenes[s.scene].photo,config=immersiveConfig(p);
+        if(!config||!window.ImmersivePhotoViewer)return {image:await SceneMedia.prepare(p)};
+        window.ImmersiveSceneMedia?.setDestination(c.id,c.scenes.map(scene=>immersiveConfig(scene.photo)).filter(Boolean));
+        const frame=document.createElement('div');frame.innerHTML=explore(s.scene);const page=frame.firstElementChild;
+        page.classList.add('scene-staging');page.inert=true;page.setAttribute('aria-hidden','true');document.querySelector('#phone').append(page);
+        const viewer=new ImmersivePhotoViewer(page.querySelector('.photo-viewport'),p,config);staged={page,viewer};
+        try{await viewer.ready;return {page,viewer};}catch(error){viewer.destroy();page.remove();throw error;}
+      }}).catch(error=>{if(error.name!=='AbortError')toast(tr('场景暂未载入，请重试','This scene didn’t load. Please try again.'));})
+        .finally(()=>{if(staged?.page.classList.contains('scene-staging')){staged.viewer.destroy();staged.page.remove();}});
+    }
     if(previous==='home'&&view==='hub')return ChallengeMotion.slide(commit,{force,prepare:async()=>{
       const warmed=warmHub();if(!warmed)return;
       // A cold/failed image must not hold navigation; native cards remain usable meanwhile.
@@ -883,7 +906,7 @@
         s.journeyId=id;s.journeyBack='feed';s.journeyReturn=null;startUgc();return;
       }
       const opened=openJourney(id);
-      if(b.hasAttribute('data-feed-discuss'))Promise.resolve(opened).then(()=>{if(s.view==='journey'&&s.journeyId===id)app.querySelector('.cm-board')?.scrollIntoView({block:'start'});});
+      if(b.hasAttribute('data-feed-discuss'))Promise.resolve(opened).then(()=>{if(s.view==='journey'&&s.journeyId===id)app.querySelector('[data-journey-comments]')?.click();});
       return;
     }
     if(b.dataset.feedTab){s.feedTab=b.dataset.feedTab;render();return;}
@@ -896,11 +919,11 @@
     else if(action==='pk-start')startPK();
     else if(action==='leave-cover'){if(s.mode==='ugc')exitGame();else go('hub',{back:true});}
     else if(action==='result-exit')exitGame();
-    else if(action==='discuss')openJourney(s.cityId);
+    else if(action==='discuss')Promise.resolve(openJourney(s.cityId)).then(()=>{if(immersiveJourney())app.querySelector('[data-journey-comments]')?.click();});
     else if(action==='browse')startBrowse(0);
     else if(action==='ugc-start')startUgc();
     else if(action==='journey-back')leaveJourney();
-    else if(action==='board-write'){const c=journeyById(s.journeyId);if(c&&Community.boardOpen(c))sheet(tr('选一个场景留言','Pick a scene for your note'),`<div class="cm-compose-scenes">${c.scenes.map((scene,i)=>`<button data-compose-scene="${i}">${img(scene.id,'')}<span>${esc(f(scene,'name'))}</span></button>`).join('')}</div><p class="cm-hint">${tr('进入场景后，点击画面选择留言的位置。','In the scene, tap the view to choose where your note goes.')}</p>`);}
+    else if(action==='board-write'){window.JourneyComments?.close();const c=journeyById(s.journeyId);if(c&&Community.boardOpen(c))sheet(tr('选一个场景留言','Pick a scene for your note'),`<div class="cm-compose-scenes">${c.scenes.map((scene,i)=>`<button data-compose-scene="${i}">${img(scene.id,'')}<span>${esc(f(scene,'name'))}</span></button>`).join('')}</div><p class="cm-hint">${tr('进入场景后，点击画面选择留言的位置。','In the scene, tap the view to choose where your note goes.')}</p>`);}
     else if(action==='redeem-confirm'){const res=Wallet.redeem(b.dataset.offer);if(!res.ok){toast(tr('奇境币不足','Not enough coins'));return;}if(s.view==='mall'){const y=app.scrollTop;render();app.scrollTop=y;}else closeModal();sheet(tr('兑换成功','Redeemed'),Wallet.successMarkup(res));}
     else if(action==='coin-history')sheet(tr('收支明细','Coin history'),Wallet.historyMarkup());
     else if(action==='reset-demo')sheet(tr('重置演示数据','Reset demo data'),`<p>${tr('将清空本机的奇境币、兑换记录、场景留言和 PK 记录，用于重新演示。今日挑战进度不受影响。','This clears coins, redemptions, scene notes and PK history on this device so the demo can start fresh. Today’s challenge progress is kept.')}</p><button class="primary" data-action="reset-demo-confirm">${tr('确认清空','Clear demo data')}</button>`);
@@ -912,11 +935,11 @@
     else if(action==='prev-city'){const prev=previousDestination(s.cityId);if(prev)selectCity(prev,{back:true});}
     else if(action==='next-city'){const next=nextDestination(s.cityId,true);if(next)selectCity(next);else go('hub');}
     else if(action==='quiz-back'&&s.view==='quiz'){if(expired()){tick();return;}s.exploring=true;go('explore',{back:true});}
-    else if(action==='leave'){if(s.mode==='browse'){s.journeyId=s.cityId;go('journey',{back:true});}else if(s.mode==='ugc')exitGame();else go('cover');}
-    else if(action==='prev-scene'){if(s.scene>0){const prev=s.scene-1;loadView('explore',prev,()=>{s.scene=prev;});}}
+    else if(action==='leave'){if(s.mode==='browse'){if(immersiveJourney())leaveJourney();else go('journey',{back:true});}else if(s.mode==='ugc')exitGame();else go('cover');}
+    else if(action==='prev-scene'){if(s.scene>0){const prev=s.scene-1;loadView(s.mode==='browse'&&!Community.isUgc(city())?'journey':'explore',prev,()=>{s.scene=prev;});}}
     else if(action==='bgm'){const on=SceneBGM.isMuted();SceneBGM.setMuted(!on);b.setAttribute('aria-pressed',String(on));b.innerHTML=icon(on?'sound':'soundOff');const title=SceneBGM.title(s.cityId);toast(on?tr(`背景音乐 · ${title.zh}`,`Music · ${title.en}`):tr('已关闭背景音乐','Music off'));}
     else if(action==='fav'){const on=!s.bookmarks[s.cityId];s.bookmarks[s.cityId]=on;b.setAttribute('aria-pressed',String(on));b.setAttribute('aria-label',favLabel(on));if(on)playFavoriteSound();}
-    else if(action==='next-scene'){if(s.scene<city().scenes.length-1){const next=s.scene+1;loadView('explore',next,()=>{s.scene=next;s.visited.add(next);});}else if(s.mode==='browse'){s.journeyId=s.cityId;go('journey',{back:true});}else beginQuiz();}
+    else if(action==='next-scene'){if(s.scene<city().scenes.length-1){const next=s.scene+1;loadView(s.mode==='browse'&&!Community.isUgc(city())?'journey':'explore',next,()=>{s.scene=next;s.visited.add(next);});}else if(s.mode==='browse'){if(immersiveJourney())leaveJourney();else go('journey',{back:true});}else beginQuiz();}
     else if(action==='speak'){if(!('speechSynthesis' in window)){toast(tr('当前浏览器不支持朗读','Read aloud isn’t supported in this browser'));return;}const u=new SpeechSynthesisUtterance(modalRoot.querySelector('#clue-text').textContent);u.lang=en()?'en-US':'zh-CN';u.rate=.92;const restore=()=>window.SceneBGM?.duck(clueSheet?'clue':null);u.onstart=()=>window.SceneBGM?.duck('speech');u.onend=restore;u.onerror=()=>{restore();toast(tr('朗读暂不可用','Read aloud is unavailable right now'));};speechSynthesis.cancel();speechSynthesis.speak(u);}
     else if(action==='submit')submitAnswer();
     else if(action==='guess-submit')submitGuess();
@@ -962,6 +985,7 @@
   // One back behaviour for the Android back button and the browser back gesture.
   // Returns false only on the home page, where leaving the prototype is expected.
   const handleBack=()=>{
+    if(window.JourneyComments?.close())return true;
     if(document.querySelector('.hp-layer')){HomePromo.dismiss();return true;}
     if(modalRoot.firstElementChild){dismissModal();return true;}
     if(pendingCleanup||ChallengeMotion.busy){cancelPending();ChallengeMotion.cancel();return true;}
