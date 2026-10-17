@@ -1,7 +1,7 @@
 // Visible assistant -> editable route -> save -> reopen, including mobile layouts.
 const assert=require('node:assert/strict');
 const {chromium}=require(process.env.PLAYWRIGHT_PATH||'C:/Users/Administrator/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
-const base=process.env.TRIPWONDER_BASE||'http://127.0.0.1:8795/';
+const base=process.env.TRIPWONDER_BASE||'http://127.0.0.1:8798/';
 const idle=page=>page.waitForFunction(()=>!window.ChallengeMotion?.busy&&!document.querySelector('.scene-transition'));
 (async()=>{
   const browser=await chromium.launch({executablePath:process.env.BROWSER_PATH||'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe',headless:true});
@@ -18,14 +18,14 @@ const idle=page=>page.waitForFunction(()=>!window.ChallengeMotion?.busy&&!docume
     await page.setViewportSize({width:390,height:844});
     await page.goto(base);await page.locator('.th-app[data-go="itinerary"]').click();
     await page.locator('.ip-page').waitFor();
-    assert.equal(await page.locator('.ip-cities button').count(),5);
+    assert.equal(await page.locator('.ip-cities button').count(),0,'no unplayed challenge spoilers from the home entry');
     assert.match(await page.locator('.ip-route-card').innerText(),/舟山·海天佛国三日文化之旅/);
     const before=await page.locator('.ip-ideas').innerText();
     await page.locator('[data-ip="refresh"]').click();
     assert.notEqual(await page.locator('.ip-ideas').innerText(),before);
     await page.locator('[data-ip="generate"]').click();
     assert.equal(await page.locator('#ip-prompt').evaluate(el=>el===document.activeElement),true);
-    await page.locator('[data-ip-city="北京"]').click();
+    await page.locator('#ip-prompt').fill('北京');assert.equal(await page.locator('[data-ip-poi]').count(),3);
     await page.locator('[data-ip="date"]').click();await page.locator('#ip-date').fill('2026-11-01');await page.locator('[data-ip="save-date"]').click();
     await page.locator('[data-ip="people"]').click();await page.locator('[data-ip-choice="people:3"]').click();
     await page.locator('[data-ip="theme"]').click();await page.locator('[data-ip-choice="theme:文化"]').click();
@@ -53,7 +53,7 @@ const idle=page=>page.waitForFunction(()=>!window.ChallengeMotion?.busy&&!docume
     const resultPage=await browser.newPage({viewport:{width:390,height:844}});
     resultPage.on('pageerror',e=>errors.push(e.message));
     await resultPage.clock.setFixedTime(new Date());
-    const token=Buffer.from(JSON.stringify({cityId:'shenzhen',score:0})).toString('base64url');
+    const token=Buffer.from(JSON.stringify({cityId:'hongkong',score:0})).toString('base64url');
     await resultPage.goto(`${base}?challenge=${token}`);
     await resultPage.locator('.rules-popover [data-action="close"]').click();
     await resultPage.locator('#app [data-action="start"]').click();await resultPage.locator('.photo-viewport').waitFor();
@@ -63,11 +63,20 @@ const idle=page=>page.waitForFunction(()=>!window.ChallengeMotion?.busy&&!docume
     await resultPage.locator('[data-action="guess-submit"]').click();await resultPage.locator('[data-action="show-result"]').click();
     await resultPage.locator('.result-page').waitFor();await idle(resultPage);
     await resultPage.locator('#app [data-go="route"]').click();await resultPage.locator('.ip-page').waitFor();
-    assert.equal(await resultPage.locator('#ip-prompt').inputValue(),'深圳');
-    await resultPage.locator('[data-ip-city="北京"]').click();await resultPage.locator('[data-ip="generate"]').click();
+    assert.equal(await resultPage.locator('#ip-prompt').inputValue(),'香港');
+    assert.deepEqual(await resultPage.locator('[data-ip-poi]').allTextContents(),['太平山顶凌霄阁＋','尖沙咀天星码头＋','深水埗鸭寮街＋']);
+    if(process.env.TRIPWONDER_POI_ARTIFACTS)await resultPage.screenshot({path:process.env.TRIPWONDER_POI_ARTIFACTS});
+    for(const id of ['hk-peak','hk-star-ferry','hk-sham-shui-po'])await resultPage.locator('[data-ip-poi="'+id+'"]').click();
+    const poiText=await resultPage.locator('#ip-prompt').inputValue();
+    await resultPage.locator('[data-ip-poi="hk-peak"]').click();assert.equal(await resultPage.locator('#ip-prompt').inputValue(),poiText,'selecting a POI twice does not duplicate it');
+    await resultPage.locator('#ip-prompt').fill(poiText+'，1天');await resultPage.locator('[data-ip="generate"]').click();await resultPage.locator('.route-tabs').waitFor();
+    const stops=await resultPage.locator('.route-stop strong').allTextContents();for(const name of ['太平山顶凌霄阁','尖沙咀天星码头','深水埗鸭寮街'])assert.ok(stops.includes(name),'selected scene POI stays in generated route: '+name);
+    await resultPage.locator('.page-head [data-go="itinerary"]').first().click();
+    assert.equal(await resultPage.locator('[data-ip-poi="hk-peak"]').count(),1,'suggestions remain tied to the originating challenge');
+    await resultPage.locator('#ip-prompt').fill('北京');await resultPage.locator('[data-ip="generate"]').click();
     await resultPage.locator('.route-tabs').waitFor();await resultPage.locator('.page-head [data-go="itinerary"]').first().click();
     await resultPage.locator('.ip-back').click();await resultPage.locator('.result-page').waitFor();await idle(resultPage);
-    assert.match(await resultPage.locator('.result-page').innerText(),/深圳/,'returns to the original challenge result after planning a different city');
+    assert.match(await resultPage.locator('.result-page').innerText(),/香港/,'returns to the original challenge result after planning a different city');
     assert.deepEqual(errors,[]);await resultPage.close();
     if(process.env.TRIPWONDER_TEST_ARTIFACTS){await page.setViewportSize({width:390,height:844});await page.locator('#ip-prompt').fill('');await page.screenshot({path:process.env.TRIPWONDER_TEST_ARTIFACTS});}
     console.log('PASS: assistant controls, input safety, route generation/save/reopen, manual creation, result origin return, entry/back, 320/390/430px layouts; no JS errors');

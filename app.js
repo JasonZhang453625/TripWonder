@@ -311,10 +311,11 @@
   function travelMinutes(a,b) { const km=distance(a,b); return Math.max(15,Math.ceil((km/32*60+12)/5)*5); }
   function makeRoute() {
     const stops=[...city().stops], capacity=s.pace==='慢游'?1:s.pace==='紧凑'?3:2;
-    const target=Math.min(stops.length,s.days*capacity);
+    const preferred=stop=>(s.plannerPoiStops||[]).includes(stop.name);
+    const target=Math.min(stops.length,Math.max(s.days*capacity,stops.filter(preferred).length));
     const featured=stop=>city().scenes.some(scene=>scene.name===stop.name || scene.id===stop.id || (stop.id&&scene.id.split('-').at(-1)===stop.id.split('-').at(-1)));
-    const priority=[...stops.filter(stop=>s.theme!=='自动'&&stop.interests?.includes(s.theme)),...stops.filter(featured),...stops].filter((stop,index,all)=>all.indexOf(stop)===index);
-    const anchorCount=Math.min(target,priority.filter(stop=>(s.theme!=='自动'&&stop.interests?.includes(s.theme))||featured(stop)).length);
+    const priority=[...stops.filter(preferred),...stops.filter(stop=>s.theme!=='自动'&&stop.interests?.includes(s.theme)),...stops.filter(featured),...stops].filter((stop,index,all)=>all.indexOf(stop)===index);
+    const anchorCount=Math.min(target,priority.filter(stop=>preferred(stop)||(s.theme!=='自动'&&stop.interests?.includes(s.theme))||featured(stop)).length);
     const chosen=priority.slice(0,anchorCount);
     const arrange=items=>{
       const sizes=Array.from({length:s.days},(_,i)=>Math.floor(items.length/s.days)+(i<items.length%s.days?1:0));
@@ -378,7 +379,7 @@
   function route() { if(!current().result&&!s.route)return empty(tr('先发现，再出发','Discover first, then go'),tr('完成目的地挑战后，就能规划这座城市的行程。','Finish the destination challenge to plan a trip to this city.')); if(!s.route)makeRoute(); const c=city(),name=esc(cname(c)); return `<div class="page">${head(tr('我的路线','My route'),s.plannerRoute?'itinerary':current().result?'result':'itinerary',`<button class="head-action" data-go="itinerary">${tr('行程单','My Trips')}</button>`)}<div class="route-hero">${img(c.scenes.at(-1).id,cname(c))}<div><span class="pill">${tr('可调整的路线示例','Sample route you can adjust')}</span><h2>${tr(`${name} ${s.days} 日`,`${name} in ${daysLabel(s.days)}`)}</h2><p>${tr('从刚才的景点出发，按兴趣安排停留。','Starting from the scenes you just explored, with stops picked by interest.')}</p></div></div><div class="route-tabs">${[1,2,3].map(d=>`<button class="${s.days===d?'active':''}" data-days="${d}">${daysLabel(d)}</button>`).join('')}</div><div class="route-controls"><label>${tr('节奏','Pace')}<select id="route-pace">${PACES.map(v=>`<option value="${v}" ${s.pace===v?'selected':''}>${term(v)}</option>`).join('')}</select></label><label>${tr('兴趣','Interest')}<select id="route-theme">${THEMES.map(v=>`<option value="${v}" ${s.theme===v?'selected':''}>${term(v)}</option>`).join('')}</select></label><label>${tr('出发日期','Start date')}<input id="route-date" type="date" value="${esc(s.date)}"></label></div>${s.route.map((day,di)=>{let clock=9*60,prior=null;return `<section class="day-card"><div class="day-label">${tr(`第 ${di+1} 天`,`Day ${di+1}`)}</div>${day.map((stopName,si)=>{const stop=stopByName(stopName); const transfer=prior?travelMinutes(prior,stop):0; clock+=transfer;const at=time(clock);clock+=stop.visitMinutes;prior=stop;return `<div class="route-stop"><div class="row"><strong>${esc(cname(stop))}</strong><span class="time">${at}</span></div><p>${prior&&si>0?tr(`建议预留约 ${transfer} 分钟交通 · `,`Allow about ${transfer} min to get here · `):''}${tr(`停留约 ${stop.visitMinutes} 分钟。`,`Stay about ${stop.visitMinutes} min. `)}${esc(f(stop,'note'))}</p><div class="stop-actions"><button data-swap="${di}-${si}">${tr('替换','Swap')}</button><button data-move="${di}-${si}-up" ${si===0?'disabled':''}>${tr('上移','Move up')}</button><button data-move="${di}-${si}-down" ${si===day.length-1?'disabled':''}>${tr('下移','Move down')}</button></div></div>`;}).join('')}</section>`;}).join('')}<section class="content-card"><h3>${tr('接着安排出行','Book the rest of your trip')}</h3><div class="travel-products">${[['bed',tr('附近酒店','Nearby hotels')],['ticket',tr('景点门票','Attraction tickets')],['train',tr('往返交通','Getting there')]].map(([i,label])=>`<button data-product="${label}">${icon(i)}${label}</button>`).join('')}</div>${benefitStatus(c.id)==='active'?`<p class="tiny muted">${tr('已领取的示例权益可在门票承接弹窗中查看使用范围。','Open attraction tickets to see where your claimed sample perks apply.')}</p>`:''}</section><div class="route-bottom"><button class="primary" data-action="save-trip">${tr('保存到我的行程','Save to My Trips')}</button><p class="demo-note">${tr('基于本地景点资料生成；交通为直线距离粗估，时间与开放情况请出发前核实。','Generated from the prototype’s own sight data. Travel times are rough straight-line estimates; check times and opening hours before you go.')}</p></div></div>`; }
   function atlas() { return CollectionPages.atlas({order,cities:C.cities,daily:s.daily,badges:s.badges,img,head,esc,back:s.collectionBack}); }
   function ranking() { return CollectionPages.ranking({order,cities:C.cities,daily:s.daily,rank:s.rank,head,esc,icon,img,back:s.collectionBack}); }
-  function plannerContext() { return {esc,tr,cities:C.cities,itineraries:s.itineraries,img,back:s.itineraryBack,sheet,closeModal,toast,rerender:render,onPlan:(id,draft)=>{activateCity(id);s.days=draft.days;s.date=draft.date;s.theme=draft.theme;s.plannerPeople=draft.people;s.plannerRoute=true;makeRoute();go('route',{editRoute:true});}}; }
+  function plannerContext() { return {esc,tr,cities:C.cities,destination:plannerResultReturn?journeyById(plannerResultReturn.cityId):(current().result||s.plannerRoute?city():null),itineraries:s.itineraries,img,back:s.itineraryBack,sheet,closeModal,toast,rerender:render,onPlan:(id,draft)=>{activateCity(id);s.days=draft.days;s.date=draft.date;s.theme=draft.theme;s.plannerPeople=draft.people;s.plannerPoiStops=[...new Set(draft.poiStopNames||[])];s.plannerRoute=true;makeRoute();go('route',{editRoute:true});}}; }
   function itinerary() { return ItineraryPlanner.render(plannerContext()); }
   function profile() { return ProfilePage.render({cities:C.cities,order,daily:s.daily,badges:s.badges,itineraries:s.itineraries,head,esc,icon,extra:feature('wallet')?Wallet.profileCard():''}); }
   function mall() { return feature('wallet')?Wallet.mall({head,back:s.mallBack,cities:C.cities,solved:Object.keys(s.daily).filter(id=>s.daily[id]?.result)}):empty(tr('奇境币兑换','Coin rewards'),tr('当前演示未开启奇境币。','Wonder Coins are switched off in this demo.')); }
@@ -427,8 +428,8 @@
   function startUgc() {
     const c=journeyById(s.journeyId);if(!Community.isUgc(c))return;
     if(s.view==='feed'||s.view==='journey')ugcBack=s.view;
-    activateCity(c.id,'ugc');
     ugcBack=ugcBack==='hub'?'feed':ugcBack;
+    activateCity(c.id,'ugc');
     // Every entry into a player journey is a fresh round with a full clock; the best score stays on the card.
     delete s.ugcResults[c.id];Object.assign(s,freshProgress());s.result=null;
     start();
@@ -632,7 +633,7 @@
       cityProgress.set(`${s.mode}:${s.cityId}`,{scene:s.scene,exploring:s.exploring,deadline:s.deadline,quizRemaining:s.quizRemaining,clues:new Set(s.clues),visited:new Set(s.visited),questions:[...s.questions],answers:[...s.answers],q:s.q,selected:s.selected,guess:s.guess,guessDone:s.guessDone,pk:s.pk});
       Object.assign(s,cityProgress.get(`${mode}:${id}`)||freshProgress());
     }
-    s.mode=mode;s.cityId=id;s.result=current().result||null;s.route=null;s.days=2;s.pace='舒适';s.theme='自动';s.date='';s.plannerRoute=false;s.plannerPeople=0;
+    s.mode=mode;s.cityId=id;s.result=current().result||null;s.route=null;s.days=2;s.pace='舒适';s.theme='自动';s.date='';s.plannerRoute=false;s.plannerPeople=0;s.plannerPoiStops=[];
   }
   function selectCity(id,{back=false}={}) {
     const destination=C.cities.find(c=>c.id===id);if(!destination)return;
@@ -948,7 +949,7 @@
     if(b.dataset.days){s.days=Number(b.dataset.days);makeRoute();render();return;}
     if(b.dataset.rank){s.rank=b.dataset.rank;render();return;}
     if(b.dataset.review!==undefined){const a=(s.result||current().result).answers[Number(b.dataset.review)],url=answerSource(a),source=url?`<a href="${esc(url)}" target="_blank" rel="noopener noreferrer">${tr('资料出处','Source')} ↗</a>`:esc(sourceLabel(a));const options=f(a,'options');sheet(tr(`第 ${Number(b.dataset.review)+1} 题`,`Question ${Number(b.dataset.review)+1}`), `<p><b>${esc(f(a,'q'))}</b></p><p>${tr('你的答案：','Your answer: ')}${a.selected===null?tr('未作答','Not answered'):esc(options[a.selected])}<br>${tr('正确答案：','Correct answer: ')}${esc(options[a.answer])}</p><div class="clue-quote">${esc(f(a,'explain'))}<br>${source}</div>`);return;}
-    if(b.dataset.itinerary){activateCity(b.dataset.itinerary);s.plannerRoute=true;const it=s.itineraries[b.dataset.itinerary];s.days=it.days;s.pace=it.pace;s.theme=it.theme;s.date=it.date;s.route=it.route.map(d=>[...d]);go('route',{editRoute:true});return;}
+    if(b.dataset.itinerary){activateCity(b.dataset.itinerary);s.plannerRoute=true;const it=s.itineraries[b.dataset.itinerary];s.days=it.days;s.pace=it.pace;s.theme=it.theme;s.date=it.date;s.route=it.route.map(d=>[...d]);s.plannerPoiStops=[...(it.poiStops||[])];go('route',{editRoute:true});return;}
     if(b.dataset.swap){const [di,si]=b.dataset.swap.split('-').map(Number),used=s.route.flat(),other=city().stops.filter(x=>!used.includes(x.name));sheet(tr('替换停留地点','Swap this stop'),`<div class="swap-list">${other.length?other.map(x=>`<button class="answer-line" data-replace="${di}-${si}" data-stop="${esc(x.name)}"><span>${esc(cname(x))}</span><small>${esc(term(x.theme||'景点'))}</small></button>`).join(''):`<p>${tr('此目的地的其他景点已全部排入路线。可先缩短天数，再进行替换。','Every other sight here is already in your route. Shorten the trip first, then swap.')}</p>`}</div>`);return;}
     if(b.dataset.replace){const [di,si]=b.dataset.replace.split('-').map(Number);s.route[di][si]=b.dataset.stop;render();return;}
     if(b.dataset.move){const [di,si,direction]=b.dataset.move.split('-'),list=s.route[Number(di)],from=Number(si),to=from+(direction==='up'?-1:1);if(to>=0&&to<list.length){[list[from],list[to]]=[list[to],list[from]];render();}return;}
@@ -1023,7 +1024,7 @@
       app.inert=true;previousFocus=b;
     }
     else if(action==='share')share();else if(action==='share-challenge')sendChallenge(b);
-    else if(action==='save-trip'){s.itineraries[s.cityId]={city:city().name,days:s.days,pace:s.pace,theme:s.theme,date:s.date,route:s.route.map(d=>[...d])};const cn=esc(cname(city()));sheet(tr('路线已保存','Route saved'),`<p>${tr(`${cn} ${s.days} 日路线已保存在本次体验中，刷新页面后会重新开始。`,`Your ${daysLabel(s.days)} ${cn} route is saved for this session. It resets when you reload the page.`)}</p><button class="primary" data-go="itinerary">${tr('查看我的行程','View My Trips')}</button>`);}
+    else if(action==='save-trip'){s.itineraries[s.cityId]={city:city().name,days:s.days,pace:s.pace,theme:s.theme,date:s.date,poiStops:[...(s.plannerPoiStops||[])],route:s.route.map(d=>[...d])};const cn=esc(cname(city()));sheet(tr('路线已保存','Route saved'),`<p>${tr(`${cn} ${s.days} 日路线已保存在本次体验中，刷新页面后会重新开始。`,`Your ${daysLabel(s.days)} ${cn} route is saved for this session. It resets when you reload the page.`)}</p><button class="primary" data-go="itinerary">${tr('查看我的行程','View My Trips')}</button>`);}
     else if(action==='search')go('today');
     else if(action==='home-chip'){const input=app.querySelector('.th-search input');if(input){input.value=b.textContent;input.focus();}}
     else if(action==='home-ai')go('itinerary');

@@ -14,7 +14,6 @@
   // EDGE: px from the view's edge where fading starts; EDGE_SCALE: size at the edge. BOB: float animation height.
   const STRIPS = 3, GROUP = .1, EDGE = 42, EDGE_SCALE = .86, BOB = 6;
   const ENVELOPE = '<svg class="tw-bundle-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5.5" width="17" height="13" rx="2.5"/><path d="m4.5 7.5 7.5 5.5 7.5-5.5"/></svg>';
-  const rad = d => d * Math.PI / 180;
   const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 
   function notes(sceneId) {
@@ -27,18 +26,6 @@
   // Photo position (0–1) at the centre of the screen.
   function pointUV(root, viewer, clientX, clientY) {
     if (viewer?.photoAt && viewer.projection) return viewer.photoAt(clientX, clientY);
-    if (Array.isArray(viewer?.markers) && viewer.state && viewer.eye) {
-      // Inverse of the immersive projection (see projectMarkers): screen point -> ray -> cylinder -> photo coordinates.
-      const view = root.getBoundingClientRect();
-      const sx = (clientX - view.left) / view.width, sy = (clientY - view.top) / view.height;
-      const yaw = rad(viewer.state.yaw), r = viewer.config.radius;
-      const angle = (sx - .5) * 2 * Math.atan(viewer.th), slope = Math.tan(rad(viewer.state.pitch)) + viewer.tv * (1 - 2 * sy);
-      const dx = Math.sin(yaw) * Math.cos(angle) + Math.cos(yaw) * Math.sin(angle), dz = -Math.cos(yaw) * Math.cos(angle) + Math.sin(yaw) * Math.sin(angle);
-      const ex = viewer.eye.x, ez = viewer.eye.z;
-      const b = ex * dx + ez * dz, k = ex * ex + ez * ez - r * r, hit = -b + Math.sqrt(Math.max(0, b * b - k));
-      const hx = ex + hit * dx, hz = ez + hit * dz;
-      return {u: .5 + Math.atan2(hx, -hz) / (2 * viewer.halfH), v: .5 - hit * slope / (r * 2 * viewer.tanV)};
-    }
     const plane = root.querySelector('.photo-plane').getBoundingClientRect();
     return {u: (clientX - plane.left) / plane.width, v: (clientY - plane.top) / plane.height};
   }
@@ -281,9 +268,7 @@
     field.addEventListener('input', sync);
   }
 
-  // The community board lists a journey's notes outside the scene view.
-  const list = sceneId => notes(sceneId).map(note => ({...note, sceneId, likes: likes(note), liked: liked(note), name: note.mine ? t('我', 'Me') : isEn() ? note.nameEn : note.name, body: note.mine ? note.text : isEn() ? note.textEn : note.text}));
   const toggleLike = id => window.TWStore.update(data => { if (data.likes[id]) delete data.likes[id]; else data.likes[id] = true; return !!data.likes[id]; });
 
-  window.SceneBubbles = Object.freeze({mount, composeMarkup, bindCompose, list, toggleLike});
+  window.SceneBubbles = Object.freeze({mount, composeMarkup, bindCompose, toggleLike});
 })();

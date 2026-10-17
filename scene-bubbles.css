@@ -1,8 +1,9 @@
 /* Traveller notes on the explore scene (scene-bubbles.js): strips for the three most-liked notes, envelope bubbles for the rest. */
 /* Zero-size anchor at the photo point. scene-bubbles.js sets --edge-alpha / --edge-scale near the view's edge;
    scaling this anchor (origin 0 0) shrinks a note towards its point without moving it. */
-.photo-plane :is(.tw-bubble,.tw-bundle){position:absolute;width:0;height:0;z-index:2;opacity:var(--edge-alpha,1);transform:scale(calc(var(--inverse-zoom,1) * var(--edge-scale,1)));transform-origin:0 0}
-.photo-plane .tw-bundle{z-index:1}
+.photo-plane :is(.tw-bubble,.tw-bundle){position:absolute;width:0;height:0;z-index:1;opacity:var(--edge-alpha,1);transform:scale(calc(var(--inverse-zoom,1) * var(--edge-scale,1)));transform-origin:0 0}
+/* Below the clue hotspots (z-index 2), so a note never blocks a clue; an opened note (z-index 3) sits on top. */
+.photo-plane .tw-bundle{z-index:0}
 .photo-plane :is(.tw-bubble,.tw-bundle)[hidden]{display:none}
 .photo-plane :is(.tw-bubble,.tw-bundle).is-out{visibility:hidden;pointer-events:none}
 .tw-bubble-float{position:absolute;left:0;bottom:4px;translate:-50% 0;display:grid;justify-items:center;transform-origin:50% 100%;animation:tw-bubble-in .45s cubic-bezier(.3,1.4,.5,1) both,tw-bubble-float 5.5s ease-in-out infinite;animation-delay:0s,var(--float-delay,0s)}
@@ -56,12 +57,11 @@
 .phone:has(.clue-dialog) :is(.tw-bubble,.tw-bundle),.scene-loading :is(.tw-bubble,.tw-bundle){opacity:0;pointer-events:none}
 
 /* Bottom-right control, matching the scene capsule on the left. */
-.phone .explore-page.tw-placing .explore-bottom,.explore-page.tw-placing .tw-bubble-bar,.explore-page.tw-placing .hotspot{visibility:hidden}
+.phone .explore-page.tw-placing .explore-bottom,.explore-page.tw-placing .hotspot{visibility:hidden}
 
 /* Placing a note: tap the view to drop a pin, then confirm. */
 .tw-place{position:absolute;inset:0;z-index:4;pointer-events:none}
 .tw-place-hint{position:absolute;left:50%;top:104px;translate:-50% 0;margin:0;padding:7px 14px;border-radius:16px;background:#0b1a3ab3;color:#fff;font-size:12px;white-space:nowrap}
-@keyframes tw-cross{50%{scale:1.12}}
 .tw-place-actions{position:absolute;left:20px;right:20px;bottom:30px;display:flex;gap:10px;pointer-events:auto}
 .tw-place-actions button{flex:1;height:50px;border-radius:14px;font-size:14px;font-weight:650}
 .tw-place-cancel{background:#ffffff36;color:#fff;border:1px solid #ffffff8a;-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}

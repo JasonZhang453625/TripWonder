@@ -67,32 +67,38 @@ async function closeRules(page){if(await page.locator('.rules-popover').count())
     // Today's challenge shows no notes; they live in the community, on cities this player has challenged.
     await page.goto(base);await page.locator('.entry').first().click();await page.locator('.cm-entry[data-go="today"]').click();await page.locator('.cover-page').waitFor();await idle(page);await closeRules(page);
     await page.locator('[data-action="start"]').click();await page.locator('.explore-page').waitFor();await idle(page);
-    assert.equal(await page.locator('.tw-bubble,.tw-bubble-bar').count(),0,'no notes in the challenge');
-    // Scene notes in community browse mode: visible, filterable, posted notes are escaped, and they persist.
+    assert.equal(await page.locator('.tw-bubble,.tw-bundle').count(),0,'no notes in the challenge');
+    // Scene notes in the community: the three most-liked notes are strips, every other note is counted once in an
+    // envelope bubble (nearby ones grouped), a tap on the photo writes a note, and posted notes are escaped and persist.
     await page.evaluate(()=>TWStore.update(data=>{data.challenged={datong:{at:Date.now(),result:{score:50}}};}));
-    await page.goto(base);await page.locator('.entry').first().click();await page.locator('.cm-entry[data-go="feed"]').click();await page.locator('[data-journey="datong"]').click();await page.locator('.cm-journey').waitFor();await idle(page);
-    await page.locator('[data-action="browse"]').click();await page.locator('.explore-page').waitFor();await idle(page);
-    await page.locator('.tw-bubble').first().waitFor({state:'attached'});
-    assert.ok(await page.locator('.tw-bubble.on').count()>0,'some notes float on arrival');
-    const current=await page.evaluate(()=>{const scenes=TRIPWONDER_CATALOG.cities.flatMap(c=>c.scenes.map(sc=>({c,sc})));const id=[...document.querySelectorAll('.tw-bubble')].map(b=>b.dataset.id).find(id=>id.startsWith('seed-'));const hit=scenes.find(x=>id?.startsWith(`seed-${x.sc.id}-`));return {name:hit.c.name,scene:hit.sc.id};});
-    await page.locator('[data-bubble-filter]').click();
-    assert.ok(await page.evaluate(()=>[...document.querySelectorAll('.tw-bubble')].every(b=>b.classList.contains('kind-been'))),'filter shows "been" notes');
-    await page.locator('[data-bubble-filter]').click();await page.locator('[data-bubble-filter]').click();
-    assert.equal(await page.locator('.tw-bubble').count(),0,'notes can be switched off');
-    await page.locator('[data-bubble-new]').click();await page.locator('.photo-viewport').click({position:{x:190,y:330}});await page.locator('[data-place-ok]').click();await page.locator('.tw-compose').waitFor();
-    assert.ok(await page.locator('[data-compose-submit]').isDisabled(),'a note needs a choice and text');
-    await page.locator('[data-compose-kind="been"]').click();
+    await page.goto(base);await page.evaluate(()=>window.HomePromo?.dismiss());await page.locator('.th-wonder').click();await page.locator('.cm-hub').waitFor();await idle(page);
+    await page.locator('.cm-entry[data-go="feed"]').click();await page.locator('.cm-feed').waitFor();await idle(page);
+    await page.locator('[data-journey="datong"] .cm-post-gallery').click();await page.locator('#app .photo-viewport[data-rendered="true"]').waitFor();await idle(page);
+    await page.locator('.photo-plane .tw-bubble').first().waitFor({state:'attached'});
+    const current=await page.evaluate(()=>{
+      const strips=[...document.querySelectorAll('.photo-plane .tw-bubble')].map(n=>n.dataset.id),bundles=[...document.querySelectorAll('.photo-plane .tw-bundle')];
+      const grouped=bundles.flatMap(b=>[...b.querySelectorAll('.tw-bundle-note')].map(n=>n.dataset.id));
+      const counted=bundles.reduce((n,b)=>n+Number(b.querySelector('.tw-bundle-pill b').textContent),0);
+      const scene=strips[0].match(/^seed-(.+)-\d+$/)[1],seed=TW_BUBBLE_SEED[scene];
+      const top=seed.map((note,index)=>({note,index})).sort((a,b)=>b.note.likes-a.note.likes||a.index-b.index).slice(0,3).map(x=>x.note.id);
+      return {name:TRIPWONDER_CATALOG.cities.find(c=>c.scenes.some(sc=>sc.id===scene)).name,scene,strips,top,grouped,counted,total:seed.length,largest:Math.max(...bundles.map(b=>b.querySelectorAll('.tw-bundle-note').length))};
+    });
+    assert.deepEqual(current.strips,current.top,'the three most-liked notes are strips');
+    assert.equal(current.counted,current.grouped.length,'a bubble shows how many notes it holds');
+    assert.equal(new Set([...current.strips,...current.grouped]).size,current.total,'every note shows exactly once');
+    assert.ok(current.largest>1,'nearby notes share a bubble');
+    const spot=await page.locator('.photo-viewport').evaluate(root=>{const r=root.getBoundingClientRect();for(const y of [.5,.62,.38])for(const x of [.5,.3,.7]){const at={x:r.left+r.width*x,y:r.top+r.height*y},n=document.elementFromPoint(at.x,at.y);if(n&&root.contains(n)&&!n.closest('button,a,.tw-bubble,.tw-bundle,.hotspot'))return at;}return null;});
+    assert.ok(spot,'a clear spot on the photo');
+    await page.mouse.click(spot.x,spot.y);await page.locator('.tw-compose').waitFor();
+    assert.ok(await page.locator('[data-compose-submit]').isDisabled(),'a note needs text');
     await page.locator('.tw-compose textarea').fill(`<img src=x onerror="window.__xss=1">${current.name}真好`);
     await page.locator('[data-compose-submit]').click();await page.locator('.tw-bubble.mine').waitFor({state:'attached'});
     const mine=await page.locator('.tw-bubble.mine .tw-bubble-more p').textContent();
     assert.ok(mine.includes(current.name),'a challenged city is no secret in the community');
-    assert.equal(await page.locator('.tw-bubble img').count(),0);assert.equal(await page.evaluate(()=>window.__xss),undefined,'note text is escaped');
+    assert.equal(await page.locator('.tw-bubble-text img,.tw-bubble-more img').count(),0);assert.equal(await page.evaluate(()=>window.__xss),undefined,'note text is escaped');
     assert.equal(await page.evaluate(scene=>TWStore.get().bubbles[scene]?.length,current.scene),1,'note saved');
     assert.ok(await page.evaluate(scene=>!!TWStore.get().explored[scene],current.scene),'explored scene remembered');
-    await page.locator('[data-bubble-filter]').click();await page.locator('[data-bubble-filter]').click();await page.locator('[data-bubble-filter]').click();
-    assert.equal(await page.evaluate(()=>localStorage.getItem('tripwonder-bubble-filter')),'off');
     await page.evaluate(()=>TWStore.reset());
-    assert.equal(await page.evaluate(()=>localStorage.getItem('tripwonder-bubble-filter')),null,'demo reset turns scene notes back on');
 
     // Friend link through the real UI: the friend becomes the PK opponent, the 60-second quiz times out,
     // unanswered questions score 0, and the VS card carries the link's score (no second comparison card).
@@ -133,6 +139,6 @@ async function closeRules(page){if(await page.locator('.rules-popover').count())
     assert.deepEqual(lockedErrors,[]);
     await page.evaluate(()=>TWStore.reset());
     assert.deepEqual(errors,[]);
-    console.log('PASS: coin rules and same-day replay guard across reloads; daily bonus once; redeem and overspend guard; reproducible PK and exact friend scores; anonymous sample notes; rewards page hides unsolved cities; community scene notes filter, post, escape and persist; demo reset restores notes; explored scenes recorded; no notes in the challenge; friend link plays as PK through the shared 2-minute timeout (red at 15 s, beat in the last 10 s, unanswered score 0); blocked storage still works.');
+    console.log('PASS: coin rules and same-day replay guard across reloads; daily bonus once; redeem and overspend guard; reproducible PK and exact friend scores; anonymous sample notes; rewards page hides unsolved cities; community scene notes: top-three strips, grouped envelope bubbles counted once, tap to post, escaped and persisted; explored scenes recorded; no notes in the challenge; friend link plays as PK through the shared 2-minute timeout (red at 15 s, beat in the last 10 s, unanswered score 0); blocked storage still works.');
   }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});

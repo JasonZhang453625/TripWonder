@@ -19,6 +19,7 @@
 .ip-compose h2>span{font-size:20px}
 .ip-input-frame{height:229px;border:1px solid transparent;border-radius:10px;background:linear-gradient(#fff,#fff) padding-box,linear-gradient(105deg,#51b2ef,#5869ff 55%,#ab66e8) border-box;display:flex;flex-direction:column;overflow:hidden}
 .ip-cities{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;flex:none;padding:12px 11px 6px}
+.ip-cities:empty{display:none}
 .ip-cities::-webkit-scrollbar,.ip-photo-strip::-webkit-scrollbar,.ip-ideas::-webkit-scrollbar{display:none}
 .ip-cities button{background:#fff;border:1px solid #f1f1f3;border-radius:22px;font-size:14px;padding:6px 8px;display:flex;align-items:center;gap:5px;flex:none;line-height:20px}
 .ip-cities button span{border-radius:50%;background:#eaf5fd;color:#3895e9;width:17px;height:17px;display:grid;place-items:center;font-size:17px;line-height:17px}
