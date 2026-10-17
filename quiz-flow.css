@@ -14,7 +14,7 @@
   min-height: 100%;
   padding: var(--quiz-top-inset) 0 0;
   color: var(--quiz-ink);
-  background: #f8faff;
+  background: #071626;
 }
 
 .phone.quiz-mode #app { padding-top: 0; }

@@ -106,6 +106,8 @@ html:not(.mobile-device) .home-body {padding-bottom:108px}
   html:not(.mobile-device) .workspace {padding:40px 32px}
   html:not(.mobile-device) .phone {
     border:0;border-radius:var(--screen-radius);height:860px;max-height:calc(100vh - 80px);
+    /* The screen's antialiased edge must blend into the black bezel. */
+    background:#07080a;isolation:isolate;
     box-shadow:
       0 0 0 11px #07080a,
       0 0 0 12px #2b2d33,
@@ -114,6 +116,11 @@ html:not(.mobile-device) .home-body {padding-bottom:108px}
       0 0 0 15.5px #2a2c31,
       0 50px 90px -18px #1b36704d,
       0 24px 40px -20px #0c1a3a47;
+  }
+  /* Clip composited scene/photo layers to the same curve as the hardware. */
+  html:not(.mobile-device) .phone.immersive #app,
+  html:not(.mobile-device) .phone.quiz-mode #app {
+    clip-path:inset(0 round var(--screen-radius));
   }
   /* Faint cover-glass reflection and screen edge. */
   html:not(.mobile-device) .phone::after {
