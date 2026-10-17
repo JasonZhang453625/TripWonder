@@ -279,9 +279,8 @@
 #app .cover-page.cover-ugc .cover-dock{grid-template-columns:1fr}
 /* Player-journey places have longer names than the two-character city names the brush headline is sized for. */
 .result-ugc .result-arrival>strong{font-size:clamp(40px,calc(var(--result-width,390px)*.12),56px);white-space:normal;line-height:1.12}
+.cm-draft-status:empty{display:none}
 .cm-draft-status{font-size:12px;line-height:1.6;color:#64748b}
-.cm-question-scene{display:flex;align-items:center;gap:10px;font-size:12px;color:#64748b;margin-bottom:10px}
-.cm-question-scene select{flex:1;min-width:0;border:1px solid #dce3eb;border-radius:8px;background:#fff;padding:8px}
 .cm-submissions{padding:0 18px 32px}
 .cm-submissions .page-head{margin:0 -18px}
 .cm-management-note{font-size:12px;line-height:1.7;color:#7b8494}

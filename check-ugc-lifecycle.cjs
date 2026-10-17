@@ -6,7 +6,7 @@ const executablePath=process.env.TRIPWONDER_BROWSER||'C:/Program Files (x86)/Mic
 const idle=p=>p.waitForFunction(()=>!window.ChallengeMotion?.busy&&!document.querySelector('#app.scene-loading'));
 async function feed(p){await p.evaluate(()=>HomePromo.dismiss());await p.locator('#app .th-wonder').click();await p.locator('#app .cm-entry-community').click();await p.locator('#app .cm-feed').waitFor();await idle(p);}
 async function fill(p){
-  const values={name:'测试海湾',title:'沿水慢行的周末',region:'福建',lat:'24.4447',lng:'118.0898',intro:'走进港口街区，寻找画面中的细节。',author:'旅程测试员'};
+  const values={name:'测试海湾',title:'沿水慢行的周末',region:'福建',lat:'24.4447',lng:'118.0898',intro:'走进港口街区，寻找画面中的细节。'};
   for(let i=0;i<3;i++){values[`q${i}`]=`第${i+1}张照片的主要景观是什么？`;for(let j=0;j<4;j++)values[`o${i}-${j}`]=['港口街道','高山雪地','森林营地','沙漠公路'][j];values[`explain${i}`]='照片里的船只与建筑提供了观察依据。';}
   for(const [name,value]of Object.entries(values))await p.locator(`.cm-form [name="${name}"]`).fill(value);
   for(let i=0;i<3;i++)await p.locator(`.cm-form [name="a${i}"][value="${i%2}"]`).check();
@@ -74,7 +74,7 @@ async function submit(p){await p.locator('.cm-submit').click();await p.locator('
  await p.locator('#app [data-action="next-scene"]').click();await p.waitForFunction(()=>document.querySelector('#app .scene-counter')?.textContent.trim()==='3 / 3'&&!document.querySelector('#app.scene-loading'));
  await p.locator('#app [data-action="next-scene"]').click();await p.locator('.quiz-page').waitFor();await idle(p);
  await p.locator('[data-option="0"]').click();await p.reload();await p.locator('.quiz-page').waitFor();await idle(p);assert.equal(await p.locator('[data-option="0"]').getAttribute('aria-pressed'),'true');
- for(let i=0;i<3;i++){await p.locator(`[data-option="${i%2}"]`).click();await p.locator('[data-action="submit"]').click();await idle(p);}
+ for(let i=0;i<3;i++){await p.locator(`[data-option="${i%2}"]`).click();await p.locator('[data-action="submit"]').click();await p.locator('.quiz-reveal').waitFor();await p.locator('[data-action="submit"]').click();await idle(p);}
  await p.locator('#guess-map').waitFor();const map=p.locator('#guess-map'),box=await map.boundingBox();await map.click({position:{x:box.width*.55,y:box.height*.42}});await p.reload();await p.locator('#guess-map').waitFor();assert.equal(await p.locator('[data-action="guess-submit"]').isEnabled(),true);
  await p.locator('[data-action="guess-submit"]').click();await p.locator('[data-action="show-result"]').click();await p.locator('.result-ugc').waitFor();await idle(p);assert.equal(await p.locator('.badge-benefit,.coupon-benefit').count(),0);
  assert.equal(await p.evaluate(()=>TWStore.get().wallet.balance),0);assert.deepEqual(await p.evaluate(()=>TWStore.get().challenged),{});

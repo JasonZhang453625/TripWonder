@@ -117,7 +117,9 @@ async function closeRules(page){if(await page.locator('.rules-popover').count())
     await fp.locator('[data-action="go-quiz"]').click();await fp.locator('.quiz-page').waitFor();await idle(fp);
     assert.equal(await fp.locator('.quiz-header .pk-hud').count(),1,'PK progress replaces the title');
     const firstAnswer=await fp.evaluate(()=>TRIPWONDER_CATALOG.cities.find(c=>c.id==='datong').questions[0].answer);
-    await fp.locator(`[data-option="${firstAnswer}"]`).click();await fp.locator('[data-action="submit"]').click();await idle(fp);
+    await fp.locator(`[data-option="${firstAnswer}"]`).click();await fp.locator('[data-action="submit"]').click();
+    assert.match(await fp.locator('.quiz-reveal').textContent(),/答对了 +20/,'the answer is revealed at once');assert.equal(await fp.locator('.option.correct').count(),1);
+    await fp.locator('[data-action="submit"]').click();await idle(fp);
     await fp.clock.fastForward(Math.max(0,await fp.evaluate(()=>{const [m,s]=document.querySelector('#timer').textContent.split(':').map(Number);return (m*60+s-8)*1000;})));await fp.waitForFunction(()=>document.querySelector('.quiz-timer')?.classList.contains('final'));
     assert.equal(await fp.locator('.quiz-timer.urgent').count(),1,'red from 15 s');
     await fp.clock.fastForward(9000);await fp.locator('.guess-map').waitFor();

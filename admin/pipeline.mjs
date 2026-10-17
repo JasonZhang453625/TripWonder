@@ -10,6 +10,7 @@ import {chatJson, MODEL} from './mimo.mjs';
 
 const require = createRequire(import.meta.url);
 const UGCContract = require('../ugc-contract.js');
+const QuizRules = require('../quiz-rules.js');
 export const ROOT = path.resolve(ADMIN_DIR, '..');
 export const UPLOAD_DIR = path.join(DATA_DIR, 'uploads');
 fs.mkdirSync(UPLOAD_DIR, {recursive: true});
@@ -310,13 +311,7 @@ async function stepQuestions({input, state, progress}) {
   throw new Error(`题目多次生成仍不合格（${lastProblem}）`);
 }
 
-// Stems and options must not test book knowledge. The explanation may still cite a statistic's year.
-const KNOWLEDGE = [
-  [/\d{3,4}\s*年/, '考了年份'],
-  [/(秦|汉|晋|隋|唐|宋|辽|金|元|明|清|北魏|民国)(朝|代|时期)/, '考了朝代'],
-  [/谁(设计|建造|修建|题写)|哪位|哪首诗|诗句|出自/, '考了人物或诗文出处']
-];
-
+// Every rule lives in content/QUIZ-SPEC.md; quiz-rules.js holds the checks shared with the question-bank tests.
 function parseQuestions(json, input, banned, problems) {
   const list = Array.isArray(json?.questions) ? json.questions : [];
   if (list.length < 3) { problems.push('需要 3 道题'); return null; }
@@ -326,20 +321,10 @@ function parseQuestions(json, input, banned, problems) {
     answer: Number(q.answer), explain: String(q.explain ?? '').trim()
   }));
   for (const [i, q] of out.entries()) {
-    const n = i + 1;
-    if (!Number.isInteger(q.sceneIndex) || q.sceneIndex < 0 || q.sceneIndex >= input.scenes.length) problems.push(`第 ${n} 题 sceneIndex 无效`);
-    if (q.q.length < 6 || q.q.length > 70) problems.push(`第 ${n} 题题干长度不合适`);
-    if (q.options.length !== 4 || new Set(q.options).size !== 4 || q.options.some(o => !o || o.length > 30)) problems.push(`第 ${n} 题需要 4 个互不相同、不超过 16 字的选项`);
-    if (!Number.isInteger(q.answer) || q.answer < 0 || q.answer > 3) problems.push(`第 ${n} 题 answer 需为 0–3`);
-    if (!q.explain || q.explain.length > 120) problems.push(`第 ${n} 题解析为空或过长`);
-    const hit = leaks([q.q, ...q.options, q.explain].join(' '), banned);
-    if (hit.length) problems.push(`第 ${n} 题出现了禁用词「${hit.join('、')}」`);
-    const knowledge = KNOWLEDGE.filter(([pattern]) => pattern.test([q.q, ...q.options].join(' '))).map(([, why]) => why);
-    if (knowledge.length) problems.push(`第 ${n} 题${knowledge.join('、')}，属于知识性题目，请换成靠观察画面和常识推理的题`);
+    if (!Number.isInteger(q.sceneIndex) || q.sceneIndex < 0 || q.sceneIndex >= input.scenes.length) problems.push(`第 ${i + 1} 题 sceneIndex 无效`);
+    for (const problem of QuizRules.lint(q, banned)) problems.push(`第 ${i + 1} 题${problem}`);
   }
-  if (out.some((q, i) => q.level !== i + 1)) problems.push('3 道题需按 level 1、2、3 由易到难排列');
-  if (input.scenes.length >= 3 && new Set(out.map(q => q.sceneIndex)).size < 3) problems.push('3 道题应分别对应 3 个不同场景');
-  if (new Set(out.map(q => q.answer)).size < 2) problems.push('3 道题的正确答案位置不要全相同');
+  problems.push(...QuizRules.lintSet(out, input.scenes.length));
   return problems.length ? null : out;
 }
 

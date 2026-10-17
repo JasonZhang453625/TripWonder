@@ -15,7 +15,7 @@ async function finish(page){
     if(n<count)await page.locator('.scene-counter').filter({hasText:`${n+1} / ${count}`}).waitFor();
     await idle(page);
   }
-  for(let n=0;n<3;n++){await page.locator('[data-option="0"]').click();await page.locator('[data-action="submit"]').click();await idle(page);}
+  for(let n=0;n<3;n++){await page.locator('[data-option="0"]').click();await page.locator('[data-action="submit"]').click();await page.locator('.quiz-reveal').waitFor();await page.locator('[data-action="submit"]').click();await idle(page);}
   await page.locator('.guess-map').click({position:{x:170,y:260}});
   await page.locator('[data-action="guess-submit"]').click();await page.locator('[data-action="show-result"]').click();await idle(page);
   await page.locator('.result-page').waitFor();

@@ -83,7 +83,6 @@
 .result-page .friend-compare>b{color:#2855f7;font-size:18px;font-weight:650}
 .result-page .friend-compare small{color:#858b95}
 .result-page .result-actions{padding:16px 0 0}
-.result-page .stop-nav{gap:10px;margin-top:10px}
 .result-page .demo-note{font-size:10px;line-height:1.8;color:#858b95;margin:22px 0 0}
 /* The experiment is scoped here so shared controls on other pages stay intact. */
 #app .result-page :is(.primary,.secondary,.glass-light),#app .result-page .benefit button{border:1px solid #d6dae1;border-radius:6px;background:#fff;box-shadow:none;text-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none;color:#171e2b;font-weight:600;letter-spacing:0}
@@ -99,6 +98,13 @@
 }
 #app .result-page :is(.primary,.secondary,.glass-light,.benefit button):active{box-shadow:none}
 #app .result-page :is(.primary,.secondary,.glass-light,.benefit button):disabled{opacity:1;background:#f4f5f7;border-color:#e5e7eb;color:#a2a7af;box-shadow:none;text-shadow:none}
+/* Official result footer: two full-width actions with a clear visual hierarchy. */
+#app .page.result-page .result-actions.official-result-actions{display:grid;grid-template-columns:minmax(0,1fr);gap:12px;padding-top:20px;margin-top:8px;border-top:1px solid #edf0f5}
+#app .page.result-page .result-actions.official-result-actions>button{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-width:0;min-height:50px;margin:0;padding:13px 16px;border-radius:12px;font-size:15px;font-weight:500;line-height:1.5;text-align:center}
+#app .page.result-page .result-actions.official-result-actions>button>.icon{flex-shrink:0;width:18px;height:18px}
+#app .page.result-page .result-actions.official-result-actions>.secondary{border-color:#e4ebff;background:#f0f4ff;color:#2855f7}
+#app .page.result-page .result-actions.official-result-actions>button:focus-visible{outline:2px solid #2855f7;outline-offset:3px}
+@media(hover:hover){#app .page.result-page .result-actions.official-result-actions>.secondary:hover{background:#e5ecff;border-color:#cedbff}}
 .result-short .result-description{max-width:52%;font-size:12px}
 .result-short .result-score-breakdown,.result-short .result-scroll-cue{display:none}
 .result-short .result-arrival>strong{font-size:82px}

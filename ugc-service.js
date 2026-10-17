@@ -127,14 +127,6 @@
     } finally { bitmap.close(); }
   }
   function formError(form, error) { const box = form.querySelector('.cm-error'); box.hidden = false; box.textContent = error.message || String(error); }
-  function syncScenes(form) {
-    const count = form.elements.photos.files.length || 3;
-    form.querySelectorAll('[data-question-scene]').forEach((select,i) => {
-      const value = select.value || String(i);
-      select.innerHTML = Array.from({length:count},(_,n) => `<option value="${n}">${t(`第 ${n+1} 张照片`,`Photo ${n+1}`)}</option>`).join('');
-      select.value = Number(value) < count ? value : String(Math.min(i,count-1));
-    });
-  }
   function currentDraft() {
     return rows.get(editingId) || {id:`ugc-${crypto.randomUUID()}`,state:'draft',fields:{},photos:[],revision:Date.now(),updatedAt:Date.now()};
   }
@@ -154,8 +146,7 @@
       const transfer = new DataTransfer(); record.photos.forEach(p => transfer.items.add(new File([p.original],p.name,{type:p.type})));
       form.elements.photos.files = transfer.files; Community.previews(form.elements.photos);
     }
-    syncScenes(form); form.querySelectorAll('[data-question-scene]').forEach((s,i) => { s.value = record.fields[`scene${i}`] ?? String(i); });
-    status.textContent = storageError || (backend ? t('已连接后台，审核通过后发布','Connected. Publish after review.') : t('本机原型：投稿、审核与发布保存在此设备','Prototype: submissions and reviews stay on this device.'));
+    status.textContent = storageError || '';
     const draft = async () => {
       clearTimeout(saveTimer); if (submitting || form.dataset.submitted === 'true' || record.state !== 'draft') return;
       record = {...record,fields:fieldsOf(form),updatedAt:Date.now()};
@@ -166,7 +157,6 @@
     form.addEventListener('change',event => {
       rememberFields();
       if (event.target !== form.elements.photos) { draft(); return; }
-      syncScenes(form);
       const files = [...event.target.files], generation=++photoGeneration;
       photoTask = (async () => {
         if (files.length > 9) throw Error('最多选择 9 张照片');

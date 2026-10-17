@@ -11,7 +11,7 @@
       if (options.length !== 4 || options.some(o => !o || o.length > 30) || new Set(options).size !== 4) throw Error(`第 ${i + 1} 题需要四个不同的选项（各不超过 30 字）`);
       if (q.answer == null || q.answer === '' || !Number.isInteger(answer) || answer < 0 || answer > 3) throw Error(`请为第 ${i + 1} 题选择正确答案`);
       if (!Number.isInteger(sceneIndex) || sceneIndex < 0 || sceneIndex >= count) throw Error(`请为第 ${i + 1} 题选择对应照片`);
-      if (forbidden.some(word => [text, ...options].join(' ').includes(word))) throw Error(`第 ${i + 1} 题不能透露目的地或所在城市`);
+      if (forbidden.some(word => [text, ...options, String(q.explain || '')].join(' ').includes(word))) throw Error(`第 ${i + 1} 题不能透露目的地或所在城市`);
       return {q: text, options, answer, sceneIndex, level: i + 1, explain: String(q.explain || `正确答案是「${options[answer]}」，可结合第 ${sceneIndex + 1} 张照片观察。`).trim().slice(0, 120)};
     });
     if (new Set(out.map(q => q.sceneIndex)).size !== 3) throw Error('三道题请选择三张不同的照片');

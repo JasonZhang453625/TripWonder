@@ -1,6 +1,6 @@
 // Today's challenge runs on one clock: it starts at the first scene, keeps running through the cover, the scenes and
 // the quiz, turns red at 15 s and beats in the last 10 s, and on time-out submits the current answers and opens the map.
-// Returning from the map with time left restarts the same clock. TRIPWONDER_BASE / TRIPWONDER_BROWSER override defaults.
+// A revealed answer freezes the clock until the player moves on. TRIPWONDER_BASE / TRIPWONDER_BROWSER override defaults.
 const {chromium,devices}=require(process.env.PLAYWRIGHT_PATH||'C:/Users/Administrator/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
 const assert=require('node:assert/strict');
 const fs=require('node:fs');
@@ -66,18 +66,18 @@ async function reveal(page){await idle(page);await page.locator('.guess-map').cl
     await shot(page,'quiz-urgent');
     // Answer two questions, then go back to a scene: the clock keeps running there.
     const answers=await page.evaluate(()=>TRIPWONDER_CATALOG.cities.find(c=>c.id==='datong').questions.map(q=>q.answer));
-    for(const i of [0,1]){await idle(page);await page.locator(`[data-option="${answers[i]}"]`).click();await page.locator('[data-action="submit"]').click();}
+    for(const i of [0,1]){
+      await idle(page);await page.locator(`[data-option="${answers[i]}"]`).click();await page.locator('[data-action="submit"]').click();
+      await page.locator('.quiz-reveal.is-correct').waitFor();
+      if(i===0){await advance(page,5);await timerIs(page,'00:09');assert.equal(await page.locator('.quiz-timer.paused').count(),1,'reading the explanation costs no time');}
+      await page.locator('[data-action="submit"]').click();
+    }
     await idle(page);await page.locator('[data-action="quiz-back"]').click();await page.locator('.explore-page').waitFor();await idle(page);
     await timerIs(page,'00:09');assert.ok(await page.locator('.explore-timer.urgent').count(),'urgency also shows in the scene');
     await page.locator('[data-action="next-scene"]').click();
     await page.locator('.quiz-page').waitFor();await idle(page);
-    // Answering the last question opens the map; going back restarts the remaining time.
-    await page.locator(`[data-option="${(answers[2]+1)%4}"]`).click();await page.locator('[data-action="submit"]').click();
-    await page.locator('.guess-map').waitFor();await idle(page);
-    assert.equal(await page.locator('#timer').count(),0,'the map has no countdown');
-    assert.equal(await page.locator('.countdown-edge').count(),0,'manual submission removes the edge');
-    await advance(page,300);await page.locator('[data-action="guess-back"]').click();await page.locator('.quiz-page').waitFor();await timerIs(page,'00:09');
-    // Time-out submits the selected answer and opens the map without a way back.
+    // Time-out on the last question submits the selected answer and opens the map without a way back.
+    await page.locator(`[data-option="${(answers[2]+1)%4}"]`).click();
     await advance(page,9);await page.locator('.countdown-edge.is-ended').waitFor();
     assert.equal((await edge()).length,0,'both paths meet at the bottom centre at zero');
     await shot(page,'edge-end');

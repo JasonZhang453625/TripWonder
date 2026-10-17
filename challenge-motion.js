@@ -202,6 +202,12 @@ window.ChallengeMotion=(()=>{
     animate(card,[{opacity:.35,translate:'0 12px'},{opacity:1,translate:'0 0'}],{duration:420});
     update(heading);
   }
+  // An answered question: the right option pops, a wrong pick shakes once, and the explanation rises in.
+  function answer(card,correct){
+    animate(card?.querySelector('.option.correct'),[{scale:1},{scale:1.025},{scale:1}],{duration:380});
+    if(!correct)animate(card?.querySelector('.option.wrong'),[{translate:'0 0'},{translate:'-5px 0'},{translate:'4px 0'},{translate:'0 0'}],{duration:320,easing:'ease-out'});
+    animate(card?.querySelector('.quiz-reveal'),[{opacity:0,translate:'0 10px'},{opacity:1,translate:'0 0'}],{duration:360});
+  }
   function dialogIn(overlay){
     overlay.classList.add('flow-dialog');
     animate(overlay,[{opacity:0},{opacity:1}],{duration:200});
@@ -216,5 +222,5 @@ window.ChallengeMotion=(()=>{
     ]);
     if(overlay.isConnected)done();
   }
-  return {run,slide,expand,cancel,press,hold,select,activate,update,reveal,dialogIn,dialogOut,get busy(){return busy;}};
+  return {run,slide,expand,cancel,press,hold,select,activate,update,reveal,answer,dialogIn,dialogOut,get busy(){return busy;}};
 })();

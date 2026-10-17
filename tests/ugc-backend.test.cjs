@@ -7,7 +7,7 @@ test('self-authored upload → one generation job → review → publication →
  try{
   fs.mkdirSync(path.join(dir,'admin'),{recursive:true});
   for(const file of ['server.mjs','db.mjs','pipeline.mjs','mimo.mjs','export.mjs'])fs.copyFileSync(path.join(root,'admin',file),path.join(dir,'admin',file));
-  fs.copyFileSync(path.join(root,'ugc-contract.js'),path.join(dir,'ugc-contract.js'));
+  for(const file of ['ugc-contract.js','quiz-rules.js'])fs.copyFileSync(path.join(root,file),path.join(dir,file));
   const net=require('node:net'),probe=net.createServer();await new Promise(r=>probe.listen(0,'127.0.0.1',r));const port=probe.address().port;await new Promise(r=>probe.close(r));
   const base=`http://127.0.0.1:${port}`;let logs='';
   server=cp.spawn(process.execPath,['admin/server.mjs'],{cwd:dir,windowsHide:true,env:{...process.env,NODE_PATH:path.join(root,'node_modules'),PORT:String(port),TRIPWONDER_DB:path.join(dir,'admin/data/test.db'),MIMO_BASE_URL:'http://127.0.0.1:1',MIMO_API_KEY:'not-used-for-self-authored'}});
