@@ -36,7 +36,6 @@
       const s = en.scenes[scene.id];
       if (!s) continue;
       scene.nameEn = s.name; scene.typeEn = s.type;
-      scene.hotspots.forEach((hotspot, index) => { hotspot.titleEn = s.hotspots[index]; });
     }
     city.questions.forEach((question, index) => {
       const q = en.questions[index];

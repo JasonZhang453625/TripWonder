@@ -10,7 +10,7 @@ const clamp = THREE.MathUtils.clamp;
 // Sphere-interior photo view in ONE full-screen pass. Perspective rays originate
 // at the sphere center; rotation and zoom never translate the camera. Frames are
 // drawn only while the view is changing. No depth map or generated scenery.
-// UI, game state and clue dialogs remain owned by app.js.
+// UI and game state remain owned by app.js.
 window.ImmersivePhotoViewer = class {
   constructor(root, photo, config = window.resolveImmersiveScene(photo)) {
     this.root = root;
@@ -220,7 +220,7 @@ window.ImmersivePhotoViewer = class {
   }
 
   // Public adapter for future uploads and photo-anchored interactions. Coordinates
-  // match the shader and hotspot projection, so notes stay on the photographed object.
+  // match the shader and marker projection, so notes stay on the photographed object.
   photoAt(clientX, clientY) {
     const rect = this.root.getBoundingClientRect();
     return spherePhotoAt((clientX - rect.left) / rect.width, (clientY - rect.top) / rect.height,

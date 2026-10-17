@@ -29,7 +29,7 @@ scene.photo = {
 const config = window.resolveImmersiveScene(photo);
 const viewer = new window.ImmersivePhotoViewer(previewRoot, photo, config);
 await viewer.ready;
-// previewRoot 内需要一个 .photo-plane；纯图片预览不要添加 .hotspot。
+// previewRoot 内需要一个 .photo-plane。
 // 切换、关闭或取消预览时调用 viewer.destroy()。
 ```
 
@@ -41,7 +41,7 @@ await viewer.ready;
 
 大于设备纹理上限时等比缩绘 GPU 纹理，缓存和原文件不变。正常尺寸保留原生像素。画面静止时不持续渲染。正式游戏继续使用现有手机视口布局，在 390×780（高宽 18:9）和 360×720 下验收；不限制真实手机必须是某一种屏幕比例。
 
-热点与留言共享 `sphere-projection.mjs` 的正逆变换：`sphereScreenAt()` 把照片点投到屏幕，`spherePhotoAt()` / `viewer.photoAt()` 把屏幕点还原到照片坐标。新增后台若需要标注线索，可直接使用这套坐标，不再复制旧圆柱算法。
+留言气泡共享 `sphere-projection.mjs` 的正逆变换：`sphereScreenAt()` 把照片点投到屏幕，`spherePhotoAt()` / `viewer.photoAt()` 把屏幕点还原到照片坐标。需要在照片上定位的新功能可直接使用这套坐标，不再复制旧圆柱算法。
 
 ## 构建与检查
 
@@ -71,7 +71,7 @@ node check-sphere-game.cjs
 ## 本次验证记录
 
 - `npm run build:viewer`、`npm run build`、`npm test` 通过（12 项球面几何/坐标测试、9 项移动更新与构建测试）。
-- `check-sphere-game.cjs`：8 城 23 场景、全部线索点击、答题往返；未配置的 4096×1024 横图、触屏拖动、3 倍缩放、复位、留言定位和窄屏适配通过。
+- `check-sphere-game.cjs`：8 城全部场景的球面投影（浏览页不再出现讲解点）、答题往返；未配置的 4096×1024 横图、触屏拖动、3 倍缩放、复位、留言定位和窄屏适配通过。
 - `check-scene-transition.cjs`：慢加载保留旧图、预加载去重、失败重试、取消切换、减少动态效果及 file:// 内嵌预览通过。
 - 同 ID 的版本化图片地址能够覆盖旧目录配置。源码与原图没有被图片投影操作写回修改。
 - 验证环境为桌面 Chrome 模拟手机视口，尚未进行 Android/iOS 真机验收，未部署到正式网址。

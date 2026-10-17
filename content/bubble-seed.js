@@ -1,6 +1,6 @@
 /* Sample traveller notes floating over each scene (scene-bubbles.js). All samples are fictional.
-   Rule: like the clues, no note may name the city, province or landmark — the player still has to guess.
-   Positions are photo percentages (like hotspots) and keep clear of the scene's hotspots.
+   Rule: like the questions, no note may name the city, province or landmark — the player still has to guess.
+   Positions are photo percentages.
    Row: [x, y, 'been' | 'want', nameIndex, 中文, English, likes] */
 (() => {
   'use strict';

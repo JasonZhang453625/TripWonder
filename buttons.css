@@ -27,11 +27,7 @@
 #app .primary .icon,#modal-root .primary .icon {width:18px;height:18px}
 
 /* ---------- Light glass: secondary actions on light pages ---------- */
-#app .secondary,#modal-root .secondary,
-#app .page-head .icon-btn,#modal-root .sheet .icon-btn,
-#app .head-action,#modal-root .clue-footer button,
-#app .stop-actions button,#app .travel-products button,
-#app .route-tabs button {
+#app .secondary,#modal-root .secondary,#app .page-head .icon-btn,#modal-root .sheet .icon-btn,#app .head-action,#app .stop-actions button,#app .travel-products button,#app .route-tabs button{
   color:var(--brand-blue,#2855f7);border:1px solid #ffffffe6;
   background:var(--glass-light);box-shadow:var(--glass-light-shadow);
   -webkit-backdrop-filter:blur(14px) saturate(140%);backdrop-filter:blur(14px) saturate(140%);
@@ -44,7 +40,7 @@
 #app .page-head .icon-btn,#modal-root .sheet .icon-btn {width:36px;height:36px;color:#26344d}
 #app .page-head .icon-btn .icon,#modal-root .sheet .icon-btn .icon {width:20px;height:20px}
 #app .head-action {padding:7px 12px;border-radius:16px;font-size:12px;font-weight:600}
-#modal-root .clue-footer button {padding:8px 16px;border-radius:18px;min-height:36px}
+
 #app .stop-actions button {border-radius:10px;padding:6px 12px;min-height:30px}
 #app .stop-actions button:disabled {opacity:.4}
 #app .travel-products button {border-radius:14px;font-weight:600}

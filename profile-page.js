@@ -36,7 +36,7 @@
           <button class="pf-itinerary" data-go="itinerary"><span class="pf-feature-icon">${icon('bag')}</span><span><strong>${t('我的行程', 'My trips')}</strong><small>${trips ? t(`已保存 ${trips} 份旅行路线`, `${trips} saved ${trips === 1 ? 'route' : 'routes'}`) : t('把心动的发现，变成下一次出发', 'Turn a discovery into your next trip')}</small></span>${icon('next')}</button>
         </section>
         <section class="pf-interests"><div class="pf-section-heading"><h2>${t('我的旅行偏好', 'Your travel interests')}</h2>${icon('spark')}</div>
-          ${interests.length ? `<div class="pf-tags">${interests.map(([tag]) => `<span>${esc(term(tag))}</span>`).join('')}</div>` : `<p>${t('探索喜欢的线索，慢慢发现你的旅行偏好。', 'Explore the clues you love to discover your travel interests.')}</p>`}
+          ${interests.length ? `<div class="pf-tags">${interests.map(([tag]) => `<span>${esc(term(tag))}</span>`).join('')}</div>` : `<p>${t('多挑战几座城市，慢慢发现你的旅行偏好。', 'Take on more destinations to discover your travel interests.')}</p>`}
         </section>
         <button class="pf-explore" data-go="${remaining ? 'today' : 'atlas'}"><span>${remaining ? t(completed.length ? '继续今日探索' : '开启今日探索', completed.length ? 'Continue exploring' : 'Start exploring today') : t('回看我的发现', 'Revisit my discoveries')}</span>${icon('next')}</button>
       </div>

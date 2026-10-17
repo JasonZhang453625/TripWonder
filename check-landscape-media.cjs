@@ -26,10 +26,9 @@ const sha=file=>crypto.createHash('sha256').update(fs.readFileSync(file)).digest
       }
       const config=ctx.window.IMMERSIVE_SCENES[scene.id];
       if(config?.sourceUrl){const version=config.sourceUrl.split('?v=')[1];assert.equal(version,sha(immersive).slice(0,12),`${scene.id}: cached texture version`);}
-      assert.equal(scene.hotspots.length,3,`${scene.id}: three matching clues`);
-      assert.ok(scene.hotspots.every(h=>h.x>=0&&h.x<=100&&h.y>=0&&h.y<=100),`${scene.id}: clue positions`);
+      assert.equal(scene.hotspots,undefined,`${scene.id}: no clue hotspots`);
       report.push({city:city.id,scene:scene.id,width,height,megapixels:+(width*height/1e6).toFixed(1)});
     }
   }
-  console.log(JSON.stringify(report,null,2));console.log(`PASS: ${report.length} scenes, native UHD landscape originals, derivatives, hashes, scene links and clue coordinates`);
+  console.log(JSON.stringify(report,null,2));console.log(`PASS: ${report.length} scenes, native UHD landscape originals, derivatives, hashes, scene links and no clue hotspots`);
 })().catch(e=>{console.error(e);process.exitCode=1;});

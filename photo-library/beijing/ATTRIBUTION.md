@@ -17,7 +17,7 @@ Pexels 许可允许免费使用与修改，不强制署名；这里仍保留摄�
 - https://www.dpm.org.cn/explore/building/236491.html
 - https://gygl.beijing.gov.cn/mlgy/mlgy_gyjg01/202204/t20220403_2653746.html
 
-各场景的讲解点、题目与行程站点另在 `content/beijing.js` 的 source 字段逐条标注。行程中的游览时长、坐标是原型规划参数，开放时间与预约以官方当日公告为准。
+各场景的题目与行程站点另在 `content/beijing.js` 的 source 字段逐条标注。行程中的游览时长、坐标是原型规划参数，开放时间与预约以官方当日公告为准。
 
 ## 补充说明
 

@@ -21,4 +21,4 @@ Pexels 许可允许免费使用与修改，不强制署名；这里仍保留摄�
 - http://www.sznews.com/news/content/2021-04/06/content_24108184.htm
 - https://www.gov.cn/jrzg/2010-08/27/content_1689210.htm
 
-各场景的讲解点、题目与行程站点另在 `content/shenzhen.js` 的 source 字段逐条标注。行程中的游览时长、坐标是原型规划参数，开放时间与预约以官方当日公告为准。
+各场景的题目与行程站点另在 `content/shenzhen.js` 的 source 字段逐条标注。行程中的游览时长、坐标是原型规划参数，开放时间与预约以官方当日公告为准。

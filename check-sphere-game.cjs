@@ -5,7 +5,7 @@ const base=process.env.TRIPWONDER_URL || 'http://127.0.0.1:8766/';
 const output=process.env.TRIPWONDER_TEST_ARTIFACTS || path.join(os.tmpdir(),'tripwonder-sphere-game');
 fs.mkdirSync(output,{recursive:true});
 const CITIES=['zhangjiajie','guilin','beijing','shanghai','shenzhen','hongkong','suzhou','datong'];
-// The challenge has no clues or notes; they are browsed in the community once a city has been challenged.
+// The challenge has no traveller notes; they are browsed in the community once a city has been challenged.
 // mode 'challenge' opens the city's cover through a friend link; 'browse' opens its community page.
 async function cover(browser,city,mode='challenge'){
  const page=await browser.newPage({viewport:{width:390,height:780},hasTouch:true});
@@ -36,14 +36,8 @@ async function ready(page){await page.locator('#app .photo-viewport[data-rendere
     if(index){await page.locator('#app [data-action="next-scene"]').click();await ready(page);}
     const data=await page.evaluate(()=>{const v=window.testSphereViewer;return {id:v.config.id,projection:v.root.dataset.projection,size:v.root.dataset.sourceSize,aspect:v.sourceAspect,eye:v.eye};});
     assert.equal(data.projection,'sphere');assert.equal(data.eye,undefined);
-    // Verify photo-anchored clue projection and clickability, even near the photo edges.
-    const markerCount=await page.evaluate(()=>testSphereViewer.markers.filter(m=>m.element.matches('.hotspot')).length);
-    assert.ok(markerCount>0,`${data.id} shows its clues when browsing`);
-    for(let n=0;n<markerCount;n++){
-     const marker=await page.evaluate(n=>{const v=testSphereViewer,m=v.markers.filter(m=>m.element.matches('.hotspot'))[n];v.state.yaw=v.state.targetYaw=(m.u-.5)*v.projection.horizontalSpan*180/Math.PI;v.state.pitch=v.state.targetPitch=(.5-m.v)*v.projection.verticalSpan*180/Math.PI;v.updateCamera();v.renderer.render(v.scene,v.camera);return {hidden:m.hidden,u:m.u,v:m.v};},n);
-     assert.equal(marker.hidden,false,`${data.id} clue ${n} unreachable`);
-     await page.locator('#app [data-clue="'+n+'"]').click();await page.locator('.clue-dialog').waitFor();await page.keyboard.press('Escape');await page.locator('.clue-dialog-overlay').waitFor({state:'detached'});
-    }
+    // Scenes no longer carry clue hotspots: browsing shows the photo and traveller notes only.
+    assert.equal(await page.locator("#app .hotspot, #app [data-clue]").count(),0,`${data.id} shows no clue hotspots`);
     await page.evaluate(()=>{const v=testSphereViewer;v.state.yaw=v.state.targetYaw=v.homeYaw();v.state.pitch=v.state.targetPitch=0;v.updateCamera();v.renderer.render(v.scene,v.camera);});
     if(index===0)await page.locator('#phone').screenshot({path:path.join(output,city+'.png')});
     report.push(data);

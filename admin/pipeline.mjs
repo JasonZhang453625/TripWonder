@@ -1,5 +1,5 @@
-// "生成 journey" pipeline: uploads -> image variants -> MiMo hotspots ->
-// MiMo questions/location/stops -> validated journey document in SQLite.
+// "生成 journey" pipeline: uploads -> image variants -> MiMo questions/location/stops (vision, from
+// the scene photos themselves) -> validated journey document in SQLite.
 // Each step is resumable: results are kept in job.state, so a retry only redoes what failed.
 import fs from 'node:fs';
 import path from 'node:path';
@@ -20,7 +20,6 @@ try { sharp = require('sharp'); } catch {
 
 export const STEPS = [
   {key: 'images', label: '图片转换'},
-  {key: 'hotspots', label: '讲解点生成'},
   {key: 'questions', label: '题目生成'},
   {key: 'location', label: '地图位置与路线'},
   {key: 'save', label: '写入数据库'}
@@ -28,7 +27,6 @@ export const STEPS = [
 export const RESERVED_IDS = ['datong', 'shenzhen', 'suzhou', 'guilin', 'hongkong', 'beijing', 'shanghai', 'zhangjiajie'];
 // quizSeconds is the whole challenge clock (exploring + answering), as in the game.
 export const DEFAULT_RULES = {quizSeconds: 60, points: [20, 20, 20], guess: {max: 40, fullKm: 25, decayKm: 450}};
-const TAGS = ['建筑', '历史', '地理', '自然', '城市', '生活', '体验', '文化', '美食', '交通'];
 const INTERESTS = ['建筑', '文化', '摄影', '自然', '美食'];
 const CHINA = {minLat: 3.5, maxLat: 54, minLng: 73, maxLng: 136};
 
@@ -107,7 +105,8 @@ async function run(jobId) {
   let job = getJob(jobId);
   const {input} = job;
   const state = job.state || {};
-  const steps = job.steps;
+  // Jobs created before a step was retired (e.g. the old hotspot step) keep only the current steps.
+  const steps = job.steps.filter(step => STEPS.some(s => s.key === step.key));
   updateJob(jobId, {status: 'running', error: null});
   const set = (key, status, detail = '') => {
     const step = steps.find(s => s.key === key);
@@ -195,99 +194,59 @@ function bannedWords(input) {
 }
 const leaks = (text, banned) => banned.filter(word => String(text).includes(word));
 
-// ---------- step 3: hotspots (vision, one call per scene) ----------
-async function stepHotspots({input, state, progress}) {
-  state.hotspots ||= {}; state.types ||= {}; state.recognized ||= {};
-  const banned = bannedWords(input), prompt = loadPrompt('scene-hotspots.md');
-  const pending = input.scenes.map((scene, index) => ({scene, index, id: sceneId(input, index)})).filter(x => !state.hotspots[x.id]);
-  let done = input.scenes.length - pending.length;
-  progress(`${done}/${input.scenes.length}`);
-  const errors = [];
-  const queue = [...pending];
-  await Promise.all(Array.from({length: Math.min(3, queue.length)}, async () => {
-    while (queue.length) {
-      const item = queue.shift();
-      try {
-        const result = await hotspotsForScene(input, item, prompt, banned, state);
-        Object.assign(state.hotspots, {[item.id]: result.hotspots});
-        state.types[item.id] = result.type; state.recognized[item.id] = result.recognized;
-        progress(`${++done}/${input.scenes.length}`);
-      } catch (error) { errors.push(`${item.scene.name}：${error.message}`); }
-    }
-  }));
-  if (errors.length) throw new Error(errors.join('；'));
-  return {detail: `${input.scenes.length} 处 × 3 个讲解点`};
+// ---------- step 2: questions + location + stops (vision, all scenes in one call) ----------
+// The model looks at the photos themselves. Players see no notes on the photos, so every question
+// has to be answerable by looking carefully and reasoning with common sense, from easy to hard.
+const QUESTION_IMAGE_EDGE = 1024;
+async function sceneImage(state, id) {
+  const buffer = await sharp(abs(state.photos[id].screen.src))
+    .resize(QUESTION_IMAGE_EDGE, QUESTION_IMAGE_EDGE, {fit: 'inside', withoutEnlargement: true}).webp({quality: 78}).toBuffer();
+  return 'data:image/webp;base64,' + buffer.toString('base64');
 }
 
-async function hotspotsForScene(input, {scene, index, id}, prompt, banned, state) {
-  const image = 'data:image/webp;base64,' + fs.readFileSync(abs(state.photos[id].screen.src)).toString('base64');
-  let retryNote = '', lastProblem = '';
-  for (let attempt = 1; attempt <= 3; attempt++) {
-    const user = fill(prompt.user, {
-      destinationName: input.name, region: input.region, sceneName: scene.name,
-      sceneNote: scene.note ? `；${scene.note}` : '', banned: banned.join('、'), retryNote
-    });
-    const {json} = await chatJson({system: prompt.system, user, images: [image]});
-    const problems = [];
-    const parsed = parseHotspots(json, banned, problems);
-    if (parsed) return {hotspots: parsed, type: String(json.type || '').trim().slice(0, 8) || '景点实景', recognized: String(json.recognized || '')};
-    lastProblem = problems.join('；');
-    retryNote = `**上一次输出不合格，原因：${lastProblem}。请修正后重新输出。**\n\n`;
-  }
-  throw new Error(`讲解点多次生成仍不合格（${lastProblem}）`);
-}
-
-function parseHotspots(json, banned, problems) {
-  const list = Array.isArray(json?.hotspots) ? json.hotspots : [];
-  if (list.length < 3) { problems.push('需要恰好 3 个讲解点'); return null; }
-  const out = list.slice(0, 3).map(h => {
-    const num = v => Math.round(Math.min(94, Math.max(6, Number(v) / 10)) * 10) / 10;
-    return {x: num(h.x), y: num(h.y), title: String(h.title ?? '').trim(), tag: TAGS.includes(h.tag) ? h.tag : '文化', text: String(h.text ?? '').trim()};
-  });
-  for (const [i, h] of out.entries()) {
-    if (!Number.isFinite(h.x) || !Number.isFinite(h.y)) problems.push(`第 ${i + 1} 个坐标无效`);
-    if (h.title.length < 2 || h.title.length > 16) problems.push(`第 ${i + 1} 个标题长度应为 4–12 字`);
-    if (h.text.length < 40 || h.text.length > 200) problems.push(`第 ${i + 1} 个正文应为 60–120 字（当前 ${h.text.length}）`);
-    const hit = leaks(h.title + h.text, banned);
-    if (hit.length) problems.push(`第 ${i + 1} 个讲解点出现了禁用词「${hit.join('、')}」`);
-  }
-  for (let a = 0; a < 3; a++) for (let b = a + 1; b < 3; b++) {
-    if (Math.hypot(out[a].x - out[b].x, out[a].y - out[b].y) < 12) problems.push('讲解点之间距离太近，请分散在画面不同位置');
-  }
-  return problems.length ? null : out;
-}
-
-// ---------- step 4: questions + location + stops (text only) ----------
-async function stepQuestions({input, state}) {
-  if (state.generated) return {detail: '3 道题'};
+async function stepQuestions({input, state, progress}) {
+  if (state.generated) return {detail: '3 道题 · 由易到难'};
   const banned = bannedWords(input), prompt = loadPrompt('journey-questions.md');
-  const scenesText = input.scenes.map((scene, index) => {
-    const id = sceneId(input, index);
-    return `【第${index + 1}处 · sceneIndex ${index} · 「${scene.name}」· ${state.types[id]}】\n` +
-      state.hotspots[id].map(h => `- ${h.title}（${h.tag}）：${h.text}`).join('\n');
-  }).join('\n\n');
+  const ids = input.scenes.map((_, index) => sceneId(input, index));
+  const images = await Promise.all(ids.map(id => sceneImage(state, id)));
+  const scenesText = input.scenes.map((scene, index) =>
+    `【第${index + 1}处 · sceneIndex ${index} · 第 ${index + 1} 张照片 · 「${scene.name}」${scene.note ? ` · 备注：${scene.note}` : ''}】`).join('\n');
   let retryNote = '', lastProblem = '';
   for (let attempt = 1; attempt <= 3; attempt++) {
+    progress(attempt > 1 ? `第 ${attempt} 次生成` : '');
     const user = fill(prompt.user, {
       destinationName: input.name, region: input.region, sceneCount: String(input.scenes.length),
       coordHint: input.lat == null ? '未提供' : `${input.lat}, ${input.lng}`, banned: banned.join('、'),
       scenes: scenesText, retryNote
     });
-    const {json} = await chatJson({system: prompt.system, user});
+    const {json} = await chatJson({system: prompt.system, user, images});
     const problems = [];
     const questions = parseQuestions(json, input, banned, problems);
-    if (questions) { state.generated = {questions, location: json.location || {}, stops: Array.isArray(json.stops) ? json.stops : []}; return {detail: '3 道题'}; }
+    if (questions) {
+      const types = Array.isArray(json.sceneTypes) ? json.sceneTypes : [];
+      state.types = Object.fromEntries(ids.map((id, i) => [id, String(types[i] ?? '').trim().slice(0, 8) || '景点实景']));
+      state.generated = {questions, location: json.location || {}, stops: Array.isArray(json.stops) ? json.stops : []};
+      return {detail: '3 道题 · 由易到难'};
+    }
     lastProblem = problems.join('；');
     retryNote = `**上一次输出不合格，原因：${lastProblem}。请修正后重新输出。**\n\n`;
   }
   throw new Error(`题目多次生成仍不合格（${lastProblem}）`);
 }
 
+// Stems and options must not test book knowledge. The explanation may still cite a statistic's year.
+const KNOWLEDGE = [
+  [/\d{3,4}\s*年/, '考了年份'],
+  [/(秦|汉|晋|隋|唐|宋|辽|金|元|明|清|北魏|民国)(朝|代|时期)/, '考了朝代'],
+  [/谁(设计|建造|修建|题写)|哪位|哪首诗|诗句|出自/, '考了人物或诗文出处']
+];
+
 function parseQuestions(json, input, banned, problems) {
   const list = Array.isArray(json?.questions) ? json.questions : [];
   if (list.length < 3) { problems.push('需要 3 道题'); return null; }
   const out = list.slice(0, 3).map(q => ({
-    sceneIndex: Number(q.sceneIndex), q: String(q.q ?? '').trim(), options: Array.isArray(q.options) ? q.options.map(o => String(o).trim()) : [],
+    level: Number(q.level), sceneIndex: Number(q.sceneIndex), q: String(q.q ?? '').trim(),
+    options: Array.isArray(q.options) ? q.options.map(o => String(o).trim()) : [],
     answer: Number(q.answer), explain: String(q.explain ?? '').trim()
   }));
   for (const [i, q] of out.entries()) {
@@ -299,13 +258,16 @@ function parseQuestions(json, input, banned, problems) {
     if (!q.explain || q.explain.length > 120) problems.push(`第 ${n} 题解析为空或过长`);
     const hit = leaks([q.q, ...q.options, q.explain].join(' '), banned);
     if (hit.length) problems.push(`第 ${n} 题出现了禁用词「${hit.join('、')}」`);
+    const knowledge = KNOWLEDGE.filter(([pattern]) => pattern.test([q.q, ...q.options].join(' '))).map(([, why]) => why);
+    if (knowledge.length) problems.push(`第 ${n} 题${knowledge.join('、')}，属于知识性题目，请换成靠观察画面和常识推理的题`);
   }
+  if (out.some((q, i) => q.level !== i + 1)) problems.push('3 道题需按 level 1、2、3 由易到难排列');
   if (input.scenes.length >= 3 && new Set(out.map(q => q.sceneIndex)).size < 3) problems.push('3 道题应分别对应 3 个不同场景');
   if (new Set(out.map(q => q.answer)).size < 2) problems.push('3 道题的正确答案位置不要全相同');
   return problems.length ? null : out;
 }
 
-// ---------- step 5: location, stops, assemble ----------
+// ---------- step 3: location, stops, assemble ----------
 const km = (a, b) => {
   const rad = d => d * Math.PI / 180, dLat = rad(b.lat - a.lat), dLng = rad(b.lng - a.lng);
   const h = Math.sin(dLat / 2) ** 2 + Math.cos(rad(a.lat)) * Math.cos(rad(b.lat)) * Math.sin(dLng / 2) ** 2;
@@ -343,24 +305,24 @@ async function stepLocation({input, state}) {
   return {detail: `${state.assembled.lat}, ${state.assembled.lng} · ${stops.length} 个站点${flags.length ? ' · 待核对' : ''}`};
 }
 
-// ---------- step 6: build document, validate, save ----------
+// ---------- step 4: build document, validate, save ----------
 async function stepSave({input, state}) {
   const {assembled, generated} = state;
   const scenes = input.scenes.map((scene, index) => {
     const id = sceneId(input, index);
     return {
-      id, name: scene.name, type: state.types[id], photo: state.photos[id], hotspots: state.hotspots[id]
+      id, name: scene.name, type: state.types[id], photo: state.photos[id]
     };
   });
   const questions = generated.questions.map((q, i) => ({
-    q: q.q, options: q.options, answer: q.answer, points: input.rules.points[i], explain: q.explain, sceneId: sceneId(input, q.sceneIndex)
+    level: q.level, q: q.q, options: q.options, answer: q.answer, points: input.rules.points[i], explain: q.explain, sceneId: sceneId(input, q.sceneIndex)
   }));
   const journey = {
     id: input.id, name: input.name, ...(input.nameEn ? {nameEn: input.nameEn} : {}), region: input.region,
     channel: input.channel || 'official', ...(input.channel === 'ugc' ? {title: input.title, boardEnabled: input.boardEnabled, author: input.author} : {}),
     lat: assembled.lat, lng: assembled.lng, intro: input.intro, rules: input.rules, guess: input.rules.guess,
     scenes, questions, stops: assembled.stops,
-    generated: {model: MODEL, at: new Date().toISOString(), flags: assembled.flags, recognized: state.recognized, locationReason: assembled.reason}
+    generated: {model: MODEL, at: new Date().toISOString(), flags: assembled.flags, locationReason: assembled.reason}
   };
   validateJourney(journey);
   saveJourney(input.id, journey, {status: 'ready', review: 'pending'});
@@ -380,8 +342,6 @@ export function validateJourney(journey) {
     const p = scene.photo;
     if (!p?.screen?.src || !p.thumb?.src || !p.detail?.src || !p.width || !p.height) bad(`${scene.id} 缺少图片版本`);
     for (const variant of [p.screen, p.thumb, p.detail, p.original]) if (!fs.existsSync(abs(variant.src))) bad(`文件不存在：${variant.src}`);
-    if (!Array.isArray(scene.hotspots) || scene.hotspots.length !== 3) bad(`${scene.id} 需要 3 个讲解点`);
-    for (const h of scene.hotspots) if (!(h.x >= 0 && h.x <= 100 && h.y >= 0 && h.y <= 100) || !text(h.title) || !text(h.text)) bad(`${scene.id} 讲解点`);
   }
   if (!Array.isArray(journey.questions) || journey.questions.length !== 3) bad('需要 3 道题');
   for (const q of journey.questions) {
@@ -390,4 +350,4 @@ export function validateJourney(journey) {
 }
 export const sceneFolder = (id, index) => abs(sceneDir({id}, index));
 
-const STEP_FUNCS = {images: stepImages, hotspots: stepHotspots, questions: stepQuestions, location: stepLocation, save: stepSave};
+const STEP_FUNCS = {images: stepImages, questions: stepQuestions, location: stepLocation, save: stepSave};

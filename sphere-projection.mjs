@@ -1,5 +1,5 @@
 // A rectangular photograph covers a finite patch of a sphere. All rays originate
-// at its center. Shared by rendering, hotspot projection and note placement.
+// at its center. Shared by rendering, marker projection and note placement.
 const rad = degrees => degrees * Math.PI / 180;
 const clamp = (value, low, high) => Math.max(low, Math.min(high, value));
 export function sphereProjection(imageAspect, viewportAspect, zoom = 1) {

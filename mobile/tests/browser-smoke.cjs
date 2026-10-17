@@ -41,11 +41,6 @@ const server=http.createServer((req,res)=>{
   await page.waitForFunction(()=>document.querySelector('.photo-viewport')?.dataset.sourceSize==='7002x4668');
   await page.locator('.scene-transition').waitFor({state:'detached'});
   report.nativeSceneSize=await page.locator('.photo-viewport').getAttribute('data-source-size');
-  await page.locator('[data-clue="0"]').click();
-  await page.locator('#modal-root [role="dialog"]').waitFor();
-  await page.evaluate(()=>nativeListeners.backButton({}));
-  await page.locator('#modal-root [role="dialog"]').waitFor({state:'detached'});
-  assert.equal(await page.locator('.explore-page').count(),1);
   await page.evaluate(()=>nativeListeners.backButton({}));await page.locator('.cover-page').waitFor();
   await page.waitForTimeout(500);
   await page.evaluate(()=>nativeListeners.backButton({}));await page.locator('.trip-home').waitFor();

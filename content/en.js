@@ -1,13 +1,13 @@
 // English for the destination library. catalog.js merges it as <key>En fields beside the Chinese.
-// Scenes are keyed by id, hotspots and questions by position, stops by their Chinese name.
-// As in the Chinese, clue titles and questions never name the city before the answer is revealed.
+// Scenes are keyed by id, questions by position, stops by their Chinese name.
+// As in the Chinese, questions never name the city before the answer is revealed.
 window.CONTENT_EN = {
   datong: {
     name: 'Datong', region: 'Shanxi',
     scenes: {
-      yungang: { name: 'Yungang Grottoes', type: 'Cave art', hotspots: ['Why is it open to the sky?', 'Imperial caves of the Northern Wei', 'Robe and aureole'] },
-      huayan: { name: 'Huayan Temple', type: 'Temple architecture', hotspots: ['A mortise-and-tenon timber pagoda', 'Two halls from the Liao and Jin', 'The copper crypt beneath the pagoda'] },
-      xuankong: { name: 'Hanging Temple', type: 'Cliffside architecture', hotspots: ['How the beams carry the load', 'Why this cliff face?', 'Three teachings in one'] }
+      yungang: { name: 'Yungang Grottoes', type: 'Cave art' },
+      huayan: { name: 'Huayan Temple', type: 'Temple architecture' },
+      xuankong: { name: 'Hanging Temple', type: 'Cliffside architecture' }
     },
     questions: [
       { q: 'Why is the Buddha in the first scene exposed to the open air?',
@@ -32,9 +32,9 @@ window.CONTENT_EN = {
   shenzhen: {
     name: 'Shenzhen', region: 'Guangdong',
     scenes: {
-      'sz-futian': { name: 'Futian CBD · Ping An Finance Centre', type: 'City skyline', hotspots: ['The tallest “needle”', 'The observation deck below the crown', 'The city’s scale between the towers'] },
-      'sz-houhai': { name: 'Shenzhen at night', type: 'View from above', hotspots: ['The distant cluster of towers', 'The ridge between the towers', 'A ribbon of light around the hill'] },
-      'sz-qianhai': { name: 'Qianhai · Joy Harbour', type: 'Waterfront new district', hotspots: ['The glowing Ferris wheel', 'Cabins and one full turn', 'Two characters on the light sign'] }
+      'sz-futian': { name: 'Futian CBD · Ping An Finance Centre', type: 'City skyline' },
+      'sz-houhai': { name: 'Shenzhen at night', type: 'View from above' },
+      'sz-qianhai': { name: 'Qianhai · Joy Harbour', type: 'Waterfront new district' }
     },
     questions: [
   {
@@ -55,7 +55,7 @@ window.CONTENT_EN = {
       "A row of piers along the shore",
       "A rectangular sports ground"
     ],
-    "explain": "The dark outline in the middle of the picture has rolling slopes and trees, with lit buildings in front of and behind it and a curving road on the left. The clue “The ridge between the towers” points to exactly this terrain."
+    "explain": "The dark outline in the middle of the picture has rolling slopes and trees, with lit buildings in front of and behind it and a curving road on the left: a tree-covered ridge."
   },
   {
     "q": "What mainly makes the Ferris wheel in the third scene change colour at night?",
@@ -82,30 +82,15 @@ window.CONTENT_EN = {
     scenes: {
   "suzhou-zhuozheng": {
     "name": "Humble Administrator’s Garden · Autumn pond",
-    "type": "Classical garden",
-    "hotspots": [
-      "A pond connects the views",
-      "Leaves mark the season",
-      "A changing view along the bank"
-    ]
+    "type": "Classical garden"
   },
   "suzhou-huqiu": {
     "name": "Tiger Hill · Pagoda beyond the gate",
-    "type": "Pagoda courtyard",
-    "hotspots": [
-      "The pagoda above the trees",
-      "White walls and dark eaves",
-      "Trees and the paved approach"
-    ]
+    "type": "Pagoda courtyard"
   },
   "suzhou-shantang": {
     "name": "Shantang Street · Houses by the canal",
-    "type": "Canal neighbourhood",
-    "hotspots": [
-      "Houses line the canal",
-      "Dark frames on white walls",
-      "Another row of houses in the water"
-    ]
+    "type": "Canal neighbourhood"
   }
 },
     questions: [
@@ -152,9 +137,9 @@ window.CONTENT_EN = {
   guilin: {
     name: 'Guilin', region: 'Guangxi',
     scenes: {
-      'gl-xingping': { name: 'Xingping · River view from Laozhai Hill', type: 'Riverside old town', hotspots: ['The river bends sharply below', 'A 1,700-year-old town', 'Peaks rising straight from the ground'] },
-      'gl-yulong': { name: 'Bamboo rafts on the Yulong River', type: 'River rafting', hotspots: ['Rafts under colourful parasols', 'Clumps of bamboo on the bank', 'A small river in the mist'] },
-      'gl-longji': { name: 'Longji Rice Terraces', type: 'Mountain rice farming', hotspots: ['The curving lines aren’t roads', 'A wooden hut in the fields', 'The gold doesn’t last all year'] }
+      'gl-xingping': { name: 'Xingping · River view from Laozhai Hill', type: 'Riverside old town' },
+      'gl-yulong': { name: 'Bamboo rafts on the Yulong River', type: 'River rafting' },
+      'gl-longji': { name: 'Longji Rice Terraces', type: 'Mountain rice farming' }
     },
     questions: [
       { q: 'Seen from above, what does the river do beside the town at the foot of the hills?',
@@ -179,9 +164,9 @@ window.CONTENT_EN = {
   hongkong: {
     name: 'Hong Kong', region: 'Hong Kong SAR',
     scenes: {
-      'hk-peak': { name: 'Victoria Peak · Harbour at night', type: 'Night view from the peak', hotspots: ['A triangular tower like bamboo', 'The harbour between two shores', 'How high are you standing?'] },
-      'hk-star-ferry': { name: 'Star Ferry', type: 'Harbour crossing', hotspots: ['Upper and lower decks', 'White cabin, green hull', 'The tour sign on the hull'] },
-      'hk-sham-shui-po': { name: 'Sham Shui Po', type: 'Everyday street life', hotspots: ['The bakery building at the end of the street', 'The place name on the sign', 'A street of tightly packed buildings'] }
+      'hk-peak': { name: 'Victoria Peak · Harbour at night', type: 'Night view from the peak' },
+      'hk-star-ferry': { name: 'Star Ferry', type: 'Harbour crossing' },
+      'hk-sham-shui-po': { name: 'Sham Shui Po', type: 'Everyday street life' }
     },
     questions: [
       { q: 'Judging from the picture, where is the photographer standing?',
@@ -206,9 +191,9 @@ window.CONTENT_EN = {
   beijing: {
     name: 'Beijing', region: 'Beijing',
     scenes: {
-      'bj-zhengyangmen': { name: 'Zhengyangmen Arrow Tower', type: 'City gate', hotspots: ['Count the arrow windows', 'White arched window hoods', 'The high point of the central axis'] },
-      'bj-hongyige': { name: 'Hongyi Pavilion, Palace Museum', type: 'Palace architecture', hotspots: ['Two storeys, one roof', 'A plaque with three names', 'Once full of gold and silver'] },
-      'bj-beihai': { name: 'Glazed Archway of Xiaoxitian, Beihai Park', type: 'Imperial garden', hotspots: ['A panel read from right to left', 'Built for a mother’s longevity', 'The hall beyond the archway'] }
+      'bj-zhengyangmen': { name: 'Zhengyangmen Arrow Tower', type: 'City gate' },
+      'bj-hongyige': { name: 'Hongyi Pavilion, Palace Museum', type: 'Palace architecture' },
+      'bj-beihai': { name: 'Glazed Archway of Xiaoxitian, Beihai Park', type: 'Imperial garden' }
     },
     questions: [
       { q: 'What were the rows of small square windows on the gate tower originally for?',
@@ -233,9 +218,9 @@ window.CONTENT_EN = {
   shanghai: {
     name: 'Shanghai', region: 'Shanghai',
     scenes: {
-      'sh-bund': { name: 'The Bund · HSBC Building & Custom House', type: 'Heritage architecture', hotspots: ['The bank under the dome', 'A clock tower that strikes the hours', 'Neighbouring numbers on the list'] },
-      'sh-lujiazui': { name: 'Lujiazui skyline', type: 'City skyline', hotspots: ['Pearls large and small on a jade plate', 'The financial district across the river', '“Muddy Ferry Road”, lost to time'] },
-      'sh-bund-night': { name: 'The Bund at night, from across the river', type: 'Riverside night view', hotspots: ['A row of old buildings', 'The slender white tower by the river', 'Ribbons of light on the river'] }
+      'sh-bund': { name: 'The Bund · HSBC Building & Custom House', type: 'Heritage architecture' },
+      'sh-lujiazui': { name: 'Lujiazui skyline', type: 'City skyline' },
+      'sh-bund-night': { name: 'The Bund at night, from across the river', type: 'Riverside night view' }
     },
     questions: [
       { q: 'What is mounted on the tower at the top of the building on the right?',
@@ -259,10 +244,10 @@ window.CONTENT_EN = {
   zhangjiajie: {
     name: 'Zhangjiajie', region: 'Hunan',
     scenes: {
-      'zjj-tianzishan': { name: 'Tianzi Mountain · Sandstone peak forest', type: 'Peak forest vista', hotspots: ['Peaks standing like stone pillars', 'Mountains fading into the distance', 'Green valleys below the peaks'] },
-      'zjj-misty-peaks': { name: 'Misty peaks · Light in the mountains', type: 'Light and shadow', hotspots: ['The sunlit side', 'Rows of rock walls stretching away', 'Leaves right in front of you'] },
-      'zjj-tianmen-cave': { name: 'Tianmen Mountain · Tianmen Cave', type: 'Natural arch', hotspots: ['Sky through the middle of the mountain', '999 steps to the opening', 'From sandstone pillars to karst cliffs'] },
-      'zjj-winding-road': { name: 'Tianmen Mountain · Heaven-Linking Avenue', type: 'Mountain switchbacks', hotspots: ['Switchback after switchback', 'An arch hidden beneath the road', 'Where do the 99 bends lead?'] }
+      'zjj-tianzishan': { name: 'Tianzi Mountain · Sandstone peak forest', type: 'Peak forest vista' },
+      'zjj-misty-peaks': { name: 'Misty peaks · Light in the mountains', type: 'Light and shadow' },
+      'zjj-tianmen-cave': { name: 'Tianmen Mountain · Tianmen Cave', type: 'Natural arch' },
+      'zjj-winding-road': { name: 'Tianmen Mountain · Heaven-Linking Avenue', type: 'Mountain switchbacks' }
     },
     questions: [
       { q: 'Which landform appears again and again in the first two scenes?',

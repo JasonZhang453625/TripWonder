@@ -64,17 +64,17 @@
   const mmss = ms => { const sec=Math.max(0,Math.ceil(ms/1000)); return String(Math.floor(sec/60)).padStart(2,'0')+':'+String(sec%60).padStart(2,'0'); };
   const s = {
     view:invitation?'cover':'home', cityId: invitation?.cityId || order.find(id => !daily[id]?.result && !daily[id]?.skipped) || order[0],
-    scene:0, exploring:false, deadline:0, quizRemaining:QUIZ_DURATION, clues:new Set(), visited:new Set([0]), questions:[], answers:[], q:0, selected:null,
+    scene:0, exploring:false, deadline:0, quizRemaining:QUIZ_DURATION, visited:new Set([0]), questions:[], answers:[], q:0, selected:null,
     result:null, days:2, pace:'舒适', theme:'自动', date:'', route:null, rank:'今日', collectionBack:'today', itineraryBack:'home',
     daily, benefits, badges:Object.fromEntries(Object.entries(challenged).filter(([,record])=>record?.badge).map(([id,record])=>[id,record.badge])), invitation, itineraries:{}, bookmarks:{}, rulesSeen:false, pk:null, mallBack:'home',
     // Entry split: challenge = today's official draw (rewards, no notes); browse = a community visit to a journey
-    // (clues and notes, no quiz); ugc = a player journey's game (no rewards of any kind).
+    // (scenes and notes, no quiz); ugc = a player journey's game (no rewards of any kind).
     mode:'challenge', ugcResults:{}, journeyId:null, journeyBack:'feed', journeyReturn:null, feedTab:'all', boardFilter:'all', composeScene:null
   };
   // Gameplay layer (tw-store.js): coins, simulated PK and scene notes, each switchable for the live demo.
   const feature = name => !!window.TW_FEATURES?.[name] && !!window.TWStore && !!{wallet:window.Wallet,pk:window.PKMode,bubbles:window.SceneBubbles}[name];
   let bubbles=null, pkMatching=false, hubCards=null;
-  let timer, viewer, mapView, resultReveal, coverCarousel, clueSheet, toastTimer, transition=0, pendingCleanup, rulesCleanup, previousFocus, activeShare, resultRouteReturn;
+  let timer, viewer, mapView, resultReveal, coverCarousel, toastTimer, transition=0, pendingCleanup, rulesCleanup, previousFocus, activeShare, resultRouteReturn;
   const cityProgress = new Map();
   const journeyById = id => C.cities.find(c => c.id === id) || C.ugc?.find(c => c.id === id);
   const city = () => journeyById(s.cityId) || C.cities[0];
@@ -156,9 +156,9 @@
   // Existing catalog entries may carry an optimized/embedded asset config. New
   // uploaded photo objects use the same sphere viewer without adding a config row.
   function immersiveConfig(photo) { return window.resolveImmersiveScene?.(photo,window.IMMERSIVE_SCENES?.[photo?.id]) || window.IMMERSIVE_SCENES?.[photo?.id]; }
-  // Challenge and player-journey games show no clue hotspots and run on the shared clock; a community visit
-  // (browse) shows the clues and notes and has no quiz.
-  function explore(index=s.scene) { const scene=city().scenes[index],last=index===city().scenes.length-1,browse=!gameMode(),lastLabel=browse?tr('完成浏览','Done'):tr('开始答题','Answer now'); return `<div class="page explore-page${browse?' explore-browse':' explore-game'}"><div class="photo-viewport" tabindex="0" role="region" aria-label="${tr('景点照片，可双指缩放、拖动转动视角','Scene photo. Pinch to zoom, drag to look around')}"><div class="photo-plane">${immersiveConfig(scene.photo)?'':img(scene.id,tr(`第${index+1}处景点`,`Scene ${index+1}`),true)}${browse?scene.hotspots.map((h,i)=>`<button class="hotspot ${s.clues.has(`${index}-${i}`)?'read':i===scene.hotspots.findIndex((_,j)=>!s.clues.has(`${index}-${j}`))?'next':''}" data-clue="${i}" aria-label="${tr(`查看讲解 ${i+1}`,`Open note ${i+1}`)}" aria-haspopup="dialog" style="left:${h.x}%;top:${h.y}%;--pulse-delay:${i*-.8}s"><span class="hotspot-dot" aria-hidden="true"></span></button>`).join(''):''}</div></div><header class="immersive-top"><button class="glass round" data-action="leave" aria-label="${browse?tr('返回 Journey','Back to the journey'):tr('退出挑战','Leave the challenge')}">${icon('back')}</button>${browse?`<span class="scene-counter">${index+1} / ${city().scenes.length}</span>`:`<span class="glass timer explore-timer" role="timer" aria-label="${tr('挑战剩余时间','Time left')}"><svg class="icon quiz-clock" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l3 2"/></svg><b id="timer">${mmss(remaining())}</b><small class="scene-counter">${index+1} / ${city().scenes.length}</small></span>`}<span class="top-right">${bgmButton()}<button class="glass round fav" data-action="fav" aria-pressed="${!!s.bookmarks[s.cityId]}" aria-label="${favLabel(s.bookmarks[s.cityId])}">${icon('heart')}</button></span></header><div class="explore-bottom"><div class="scene-nav${last?' scene-nav-last':''}" role="group" aria-label="${tr('场景导航','Scene navigation')}"><button class="prev-scene" data-action="prev-scene" aria-label="${tr('上一处','Previous scene')}"${index?'':' disabled'}>${icon('back')}</button><button data-action="next-scene" aria-label="${last?lastLabel:tr('下一处','Next scene')}">${last?lastLabel:icon('next')}</button></div></div>${!browse&&!last?`<button class="explore-go-quiz" data-action="go-quiz">${tr('去答题','Answer now')}${icon('next')}</button>`:''}</div>`; }
+  // Challenge and player-journey games run on the shared clock; a community visit (browse) shows the scenes
+  // with traveller notes and has no quiz.
+  function explore(index=s.scene) { const scene=city().scenes[index],last=index===city().scenes.length-1,browse=!gameMode(),lastLabel=browse?tr('完成浏览','Done'):tr('开始答题','Answer now'); return `<div class="page explore-page${browse?' explore-browse':' explore-game'}"><div class="photo-viewport" tabindex="0" role="region" aria-label="${tr('景点照片，可双指缩放、拖动转动视角','Scene photo. Pinch to zoom, drag to look around')}"><div class="photo-plane">${immersiveConfig(scene.photo)?'':img(scene.id,tr(`第${index+1}处景点`,`Scene ${index+1}`),true)}</div></div><header class="immersive-top"><button class="glass round" data-action="leave" aria-label="${browse?tr('返回 Journey','Back to the journey'):tr('退出挑战','Leave the challenge')}">${icon('back')}</button>${browse?`<span class="scene-counter">${index+1} / ${city().scenes.length}</span>`:`<span class="glass timer explore-timer" role="timer" aria-label="${tr('挑战剩余时间','Time left')}"><svg class="icon quiz-clock" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l3 2"/></svg><b id="timer">${mmss(remaining())}</b><small class="scene-counter">${index+1} / ${city().scenes.length}</small></span>`}<span class="top-right">${bgmButton()}<button class="glass round fav" data-action="fav" aria-pressed="${!!s.bookmarks[s.cityId]}" aria-label="${favLabel(s.bookmarks[s.cityId])}">${icon('heart')}</button></span></header><div class="explore-bottom"><div class="scene-nav${last?' scene-nav-last':''}" role="group" aria-label="${tr('场景导航','Scene navigation')}"><button class="prev-scene" data-action="prev-scene" aria-label="${tr('上一处','Previous scene')}"${index?'':' disabled'}>${icon('back')}</button><button data-action="next-scene" aria-label="${last?lastLabel:tr('下一处','Next scene')}">${last?lastLabel:icon('next')}</button></div></div>${!browse&&!last?`<button class="explore-go-quiz" data-action="go-quiz">${tr('去答题','Answer now')}${icon('next')}</button>`:''}</div>`; }
   function favLabel(on) { return on?tr('取消收藏','Remove from saved'):tr('收藏这个目的地','Save this destination'); }
   function quizBody() {
     const q=s.questions[s.q];
@@ -233,8 +233,7 @@
   }
   function recall(index) {
     const scene=city().scenes[index];if(!scene)return;
-    const read=gameMode()?[]:scene.hotspots.filter((_,j)=>s.clues.has(`${index}-${j}`));
-    sheet(tr(`第 ${index+1} 处实景`,`Scene ${index+1}`),`<div class="recall-photo">${img(scene.id,tr(`第 ${index+1} 处景点`,`Scene ${index+1}`))}</div>${read.length?`<p class="recall-note">${tr('你在这里点开过的线索：','Clues you opened here:')}</p>`:''}${read.length?`<div class="tag-row recall-tags">${read.map(h=>`<span class="pill">${esc(f(h,'title'))}</span>`).join('')}</div>`:''}`);
+    sheet(tr(`第 ${index+1} 处实景`,`Scene ${index+1}`),`<div class="recall-photo">${img(scene.id,tr(`第 ${index+1} 处景点`,`Scene ${index+1}`))}</div>`);
   }
   const rewardTerms = () => tr('领取后 30 日内有效。优惠券具体可用范围请查看活动规则。','Valid for 30 days after claiming. See the campaign rules for where each coupon can be used.');
   // Prices stay in yuan in both languages: the rewards are for trips in China.
@@ -503,12 +502,12 @@
     if(s.view==='home'&&!s.promoSeen){s.promoSeen=true;HomePromo.show({phone:document.querySelector('#phone'),getTarget:()=>app.querySelector('.th-wonder .th-app-icon'),onAccept:()=>go('hub')});}else if(s.view!=='home')HomePromo.dismiss();
     if(s.view==='cover')mountCover();else SceneMedia.retain([]);
   }
-  const freshProgress = () => ({scene:0,exploring:false,deadline:0,quizRemaining:QUIZ_DURATION,clues:new Set(),visited:new Set([0]),questions:[],answers:[],q:0,selected:null,guess:null,guessDone:false,pk:null});
+  const freshProgress = () => ({scene:0,exploring:false,deadline:0,quizRemaining:QUIZ_DURATION,visited:new Set([0]),questions:[],answers:[],q:0,selected:null,guess:null,guessDone:false,pk:null});
   // Progress is kept per mode and journey, so a community visit never touches today's challenge state.
   function activateCity(id,mode='challenge') {
     if(s.cityId!==id||s.mode!==mode){
       pauseQuizTimer();
-      cityProgress.set(`${s.mode}:${s.cityId}`,{scene:s.scene,exploring:s.exploring,deadline:s.deadline,quizRemaining:s.quizRemaining,clues:new Set(s.clues),visited:new Set(s.visited),questions:[...s.questions],answers:[...s.answers],q:s.q,selected:s.selected,guess:s.guess,guessDone:s.guessDone,pk:s.pk});
+      cityProgress.set(`${s.mode}:${s.cityId}`,{scene:s.scene,exploring:s.exploring,deadline:s.deadline,quizRemaining:s.quizRemaining,visited:new Set(s.visited),questions:[...s.questions],answers:[...s.answers],q:s.q,selected:s.selected,guess:s.guess,guessDone:s.guessDone,pk:s.pk});
       Object.assign(s,cityProgress.get(`${mode}:${id}`)||freshProgress());
     }
     s.mode=mode;s.cityId=id;s.result=current().result||null;s.route=null;s.days=2;s.pace='舒适';s.theme='自动';s.date='';
@@ -582,8 +581,8 @@
     if(['quiz','guess'].includes(previous)||['quiz','guess'].includes(view)||(view==='result'&&previous!==view))return ChallengeMotion.run(commit,{force,back:back||view==='cover'});
     ChallengeMotion.cancel();return commit();
   }
-  function sheet(title,content,kind='') { resultReveal?.finishTransition();closeModal();previousFocus=document.activeElement;modalRoot.innerHTML=`<div class="modal-overlay ${kind?`${kind}-overlay`:''}"><section class="sheet ${kind}" role="dialog" aria-modal="true" aria-label="${esc(title)}" tabindex="-1"><div class="sheet-handle"></div><div class="sheet-heading"><h2>${esc(title)}</h2>${kind==='clue-dialog'?'':`<button class="icon-btn sheet-close" data-action="close" aria-label="${tr('关闭','Close')}">${icon('close')}</button>`}</div>${content}</section></div>`;modalRoot.querySelector('.sheet').focus({preventScroll:true});if(kind==='clue-dialog'){app.inert=true;clueSheet=ClueSheet.mount(modalRoot.firstElementChild,closeModal);window.SceneBGM?.duck('clue');}else if(['quiz','guess','result'].includes(s.view))ChallengeMotion.dialogIn(modalRoot.firstElementChild); }
-  function closeModal() { clueSheet?.destroy();clueSheet=null;window.SceneBGM?.duck(null);rulesCleanup?.();rulesCleanup=null;activeShare=null;app.inert=false;document.querySelector('[data-action="rules"]')?.setAttribute('aria-expanded','false');window.speechSynthesis?.cancel?.();modalRoot.innerHTML='';if(previousFocus?.isConnected)previousFocus.focus({preventScroll:true});previousFocus=null; }
+  function sheet(title,content,kind='') { resultReveal?.finishTransition();closeModal();previousFocus=document.activeElement;modalRoot.innerHTML=`<div class="modal-overlay ${kind?`${kind}-overlay`:''}"><section class="sheet ${kind}" role="dialog" aria-modal="true" aria-label="${esc(title)}" tabindex="-1"><div class="sheet-handle"></div><div class="sheet-heading"><h2>${esc(title)}</h2><button class="icon-btn sheet-close" data-action="close" aria-label="${tr('关闭','Close')}">${icon('close')}</button></div>${content}</section></div>`;modalRoot.querySelector('.sheet').focus({preventScroll:true});if(['quiz','guess','result'].includes(s.view))ChallengeMotion.dialogIn(modalRoot.firstElementChild); }
+  function closeModal() { rulesCleanup?.();rulesCleanup=null;activeShare=null;app.inert=false;document.querySelector('[data-action="rules"]')?.setAttribute('aria-expanded','false');modalRoot.innerHTML='';if(previousFocus?.isConnected)previousFocus.focus({preventScroll:true});previousFocus=null; }
   function showRules() {
     closeModal(); const anchor=app.querySelector('[data-action="rules"]');if(!anchor)return;
     previousFocus=anchor;anchor.setAttribute('aria-expanded','true');
@@ -593,7 +592,6 @@
     position();const observer=new ResizeObserver(position);observer.observe(phone);rulesCleanup=()=>observer.disconnect();app.inert=true;panel.focus({preventScroll:true});
   }
   function dismissModal(after) {
-    if(clueSheet){clueSheet.dismiss();return;}
     const reward=modalRoot.querySelector('.reward-dialog-overlay');
     if(reward){
       if(reward.classList.contains('closing'))return;
@@ -609,7 +607,7 @@
     if(resume&&expired()){timeUp();return;}
     pauseQuizTimer();
     // The clock starts once the first scene is on screen and then runs through exploring and answering.
-    loadView('explore',resume?s.scene:0,()=>{if(!resume){Object.assign(s,{scene:0,exploring:true,deadline:Date.now()+quizMs(),quizRemaining:quizMs(),visited:new Set([0]),answers:[],questions:[],q:0,selected:null});s.clues.clear();}});
+    loadView('explore',resume?s.scene:0,()=>{if(!resume){Object.assign(s,{scene:0,exploring:true,deadline:Date.now()+quizMs(),quizRemaining:quizMs(),visited:new Set([0]),answers:[],questions:[],q:0,selected:null});}});
   }
   const remaining = () => s.deadline?Math.max(0,s.deadline-Date.now()):s.quizRemaining;
   const expired = () => !!s.deadline&&s.deadline<=Date.now();
@@ -653,13 +651,10 @@
     s.guess=null;s.guessDone=false;go('guess',{force:timedOut});
   }
   // Only one unread explore point is shown large at a time; reading it hands the spotlight to the next.
-  function spotlightNextClue() { const spots=[...app.querySelectorAll('.hotspot[data-clue]')];spots.forEach(el=>el.classList.remove('next'));spots.find(el=>!el.classList.contains('read'))?.classList.add('next'); }
-  function clue(index) { const h=city().scenes[s.scene].hotspots[index];if(!h)return;s.clues.add(`${s.scene}-${index}`);app.querySelector(`[data-clue="${index}"]`)?.classList.add('read');spotlightNextClue();const source=h.source?.startsWith('http')?`<a href="${esc(h.source)}" target="_blank" rel="noopener noreferrer">${tr('资料出处','Source')} ↗</a>`:'';sheet(f(h,'title'),`<p id="clue-text">${esc(f(h,'text'))}</p><div class="clue-footer"><button data-action="speak">${tr('朗读','Read aloud')}</button>${source}</div>`,'clue-dialog'); }
-  // Fallback sources read "第 n 处 · 线索标题"; in English they point at the same hotspot by its translated title.
-  function sourceHotspot(answer) { const match=answer.source?.match(/第\s*(\d+)\s*处\s*·\s*(.+)/);if(!match)return null;return {n:Number(match[1]),hotspot:city().scenes[Number(match[1])-1]?.hotspots.find(h=>h.title===match[2])}; }
-  function sourceLabel(answer) { const found=sourceHotspot(answer);return en()&&found?.hotspot?`Scene ${found.n} · ${f(found.hotspot,'title')}`:(en()&&/[\u4e00-\u9fa5]/.test(answer.source||'')?'':answer.source||''); }
-  function answerSource(answer) { if(answer.source?.startsWith('http'))return answer.source;return sourceHotspot(answer)?.hotspot?.source||null; }
-  function finish() { const counts={};for(const key of s.clues){const [i,j]=key.split('-').map(Number),tag=city().scenes[i].hotspots[j]?.tag;if(tag)counts[tag]=(counts[tag]||0)+1;}const tags=Object.keys(counts).sort((a,b)=>counts[b]-counts[a]).slice(0,2);const quiz=s.answers.reduce((n,a)=>n+(a.correct?a.points:0),0),r={score:quiz+(s.guess?.points||0),quiz,guess:s.guess?{...s.guess}:null,correct:s.answers.filter(a=>a.correct).length,answers:s.answers,clues:s.clues.size,tags:tags.length?tags:['旅行发现'],date:day};
+  // Non-link sources read "第 n 处 · …" (they once named a clue); they now point at the scene itself.
+  function sourceLabel(answer) { const scene=answer.source?.match(/第\s*(\d+)\s*处/);if(scene)return tr(`第 ${scene[1]} 处实景`,`Scene ${scene[1]}`);return en()&&/[\u4e00-\u9fa5]/.test(answer.source||'')?'':answer.source||''; }
+  function answerSource(answer) { return answer.source?.startsWith('http')?answer.source:null; }
+  function finish() { const quiz=s.answers.reduce((n,a)=>n+(a.correct?a.points:0),0),r={score:quiz+(s.guess?.points||0),quiz,guess:s.guess?{...s.guess}:null,correct:s.answers.filter(a=>a.correct).length,answers:s.answers,tags:[],date:day};
     // A player journey records only that it was played: no coins, PK, badge, perks or today's progress.
     if(s.mode==='ugc'){s.result=r;s.ugcResults[s.cityId]={result:r};if(window.TWStore)TWStore.update(data=>{const old=data.ugcPlayed?.[s.cityId];if(!old||r.score>=old.score)data.ugcPlayed={...data.ugcPlayed,[s.cityId]:{at:Date.now(),score:r.score}};});return;}
     if(s.pk)r.pk=PKMode.settle(s.pk,r,quizMs()-s.quizRemaining);if(feature('wallet'))r.coins=Wallet.award({cityId:s.cityId,day,score:r.score,quizRemaining:s.quizRemaining,pk:r.pk});s.result=r;const previous=current().result;s.daily[s.cityId]={...current(),result:!previous||r.score>previous.score?r:previous,skipped:false};
@@ -697,7 +692,7 @@
         <circle cx="650" cy="730" r="23" fill="#edf2ff"/><path d="M638 730h24m-9-9 9 9-9 9" fill="none" stroke="#3264ff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
         <path d="M44 786h632" stroke="#e8edf5"/>
         <g text-anchor="middle" fill="#233451" font-size="28" font-weight="650"><text x="147" y="831">${r.guess?.points??0}<tspan fill="#9aa5b6" font-size="20" font-weight="400"> / ${{...GUESS,...c.guess}.max}</tspan></text><text x="360" y="831">${r.quiz??r.score}<tspan fill="#9aa5b6" font-size="20" font-weight="400"> / ${quizTotal(c)}</tspan></text><text x="573" y="831">${c.scenes.length}<tspan font-size="20" font-weight="400">${tr(' 处','')}</tspan></text></g>
-        <g text-anchor="middle" fill="#8290a5" font-size="20"><text x="147" y="866">${tr('地图定位','Map guess')}</text><text x="360" y="866">${tr('线索答题','Clue quiz')}</text><text x="573" y="866">${tr('探索实景','Scenes')}</text></g>
+        <g text-anchor="middle" fill="#8290a5" font-size="20"><text x="147" y="866">${tr('地图定位','Map guess')}</text><text x="360" y="866">${tr('看图答题','Photo quiz')}</text><text x="573" y="866">${tr('探索实景','Scenes')}</text></g>
       </g></svg>`;
   }
   async function shareImage(session) {
@@ -790,7 +785,6 @@
     if(b.dataset.shareChannel){chooseShareOption(b);return;}
     if(b.dataset.city){selectCity(b.dataset.city);return;} if(b.dataset.go){if(b.matches('.cm-entry')&&hubCards&&!hubCards.destroyed)hubCards.activate(b,()=>go(b.dataset.go));else go(b.dataset.go);return;}
     if(b.dataset.service){product(b.dataset.service);return;}if(b.dataset.product){product(b.dataset.product);return;}
-    if(b.dataset.clue!==undefined){clue(Number(b.dataset.clue));return;}
     if(b.dataset.recall!==undefined){recall(Number(b.dataset.recall));return;}
     if(b.dataset.option!==undefined){selectAnswer(Number(b.dataset.option));return;}
     if(b.dataset.days){s.days=Number(b.dataset.days);makeRoute();render();return;}
@@ -839,7 +833,6 @@
     else if(action==='bgm'){const on=SceneBGM.isMuted();SceneBGM.setMuted(!on);b.setAttribute('aria-pressed',String(on));b.innerHTML=icon(on?'sound':'soundOff');const title=SceneBGM.title(s.cityId);toast(on?tr(`背景音乐 · ${title.zh}`,`Music · ${title.en}`):tr('已关闭背景音乐','Music off'));}
     else if(action==='fav'){const on=!s.bookmarks[s.cityId];s.bookmarks[s.cityId]=on;b.setAttribute('aria-pressed',String(on));b.setAttribute('aria-label',favLabel(on));if(on)playFavoriteSound();}
     else if(action==='next-scene'){if(s.scene<city().scenes.length-1){const next=s.scene+1;loadView('explore',next,()=>{s.scene=next;s.visited.add(next);});}else if(s.mode==='browse'){s.journeyId=s.cityId;go('journey',{back:true});}else beginQuiz();}
-    else if(action==='speak'){if(!('speechSynthesis' in window)){toast(tr('当前浏览器不支持朗读','Read aloud isn’t supported in this browser'));return;}const u=new SpeechSynthesisUtterance(modalRoot.querySelector('#clue-text').textContent);u.lang=en()?'en-US':'zh-CN';u.rate=.92;const restore=()=>window.SceneBGM?.duck(clueSheet?'clue':null);u.onstart=()=>window.SceneBGM?.duck('speech');u.onend=restore;u.onerror=()=>{restore();toast(tr('朗读暂不可用','Read aloud is unavailable right now'));};speechSynthesis.cancel();speechSynthesis.speak(u);}
     else if(action==='submit')submitAnswer();
     else if(action==='guess-submit')submitGuess();
     else if(action==='guess-back'){if(s.guessDone){exitGame();return;}if(!s.guessDone&&s.quizRemaining>0&&s.answers.length===3){const last=s.answers.pop();s.q=2;s.selected=last.selected;s.deadline=Date.now()+s.quizRemaining;go('quiz',{back:true});}}
@@ -880,7 +873,7 @@
     if(!event.target.matches('.th-search'))return;event.preventDefault();const q=event.target.q.value.trim();q?toast(tr(`搜索「${q}」暂未接入，当前原型仅演示输入`,`Search for “${q}” isn’t connected yet. This prototype only demonstrates typing.`)):event.target.q.focus();});
   document.addEventListener('keydown',event=>{if(!modalRoot.innerHTML)return;if(event.key==='Escape')dismissModal();if(event.key==='Tab'){const f=[...modalRoot.querySelectorAll('button:not(:disabled),a[href],input:not([hidden]):not(:disabled),[tabindex="0"]')].filter(el=>el.getClientRects().length&&getComputedStyle(el).visibility!=='hidden');if(!f.length)return;if(event.shiftKey&&(document.activeElement===f[0]||document.activeElement===modalRoot.querySelector('[role="dialog"]'))){event.preventDefault();f.at(-1).focus();}else if(!event.shiftKey&&document.activeElement===f.at(-1)){event.preventDefault();f[0].focus();}}});
   modalRoot.addEventListener('click',event=>{if(event.target.classList.contains('modal-overlay')||event.target.classList.contains('rules-overlay'))dismissModal();});
-  window.addEventListener('pagehide',()=>{window.SceneBGM?.pause();cancelPending();SceneMedia.retain([]);viewer?.destroy();window.ImmersiveSceneMedia?.clear();resultReveal?.destroy();window.speechSynthesis?.cancel?.();});
+  window.addEventListener('pagehide',()=>{window.SceneBGM?.pause();cancelPending();SceneMedia.retain([]);viewer?.destroy();window.ImmersiveSceneMedia?.clear();resultReveal?.destroy();});
   // One back behaviour for the Android back button and the browser back gesture.
   // Returns false only on the home page, where leaving the prototype is expected.
   const handleBack=()=>{
