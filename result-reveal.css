@@ -15,7 +15,7 @@
 .result-shade{position:absolute;inset:0;background:linear-gradient(180deg,#06131e7a 0%,#0718270a 24%,#0718270a 36%,#081a2f78 58%,#07182ce0 83%,#091a2ff5 100%)}
 .result-topbar{--bar-top:calc(var(--statusbar-h,54px) + 8px);--bar-side:22px;position:sticky;top:var(--bar-top);height:44px;margin:0 22px -44px;display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:8px;z-index:26;color:white}
 .result-topbar>.result-tool{justify-self:start}
-.result-top-actions{display:flex;justify-self:end;gap:8px}
+.result-top-actions{display:flex;grid-column:3;justify-self:end;gap:8px}
 /* White bar reaches the top of the scroller (status bar / safe area included); result-reveal.js drives --bar-opacity from scroll. */
 .result-topbar::before{content:'';position:absolute;top:calc(-1 * var(--bar-top));bottom:-8px;left:calc(-1 * var(--bar-side));right:calc(-1 * var(--bar-side));z-index:-1;background:#fff;border-bottom:1px solid #e5e7eb;opacity:var(--bar-opacity,0);pointer-events:none}
 [data-slide-layer="outgoing"] .result-topbar::before{opacity:var(--slide-bar-opacity,0)!important}
