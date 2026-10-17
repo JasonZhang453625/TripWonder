@@ -246,11 +246,21 @@
 .ugc-result-note p{margin:8px 0 0;font-size:12px;line-height:1.6;color:#6d7890}
 
 /* Shared challenge clock in the explore view, and the "answer now" capsule */
+.explore-game>.immersive-top{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr)}
+.explore-game>.immersive-top>button:first-child{justify-self:start}
+.explore-game>.immersive-top>.top-right{justify-self:end}
 .explore-page .explore-timer{display:inline-flex;align-items:center;gap:6px;font-variant-numeric:tabular-nums}
 .explore-page .explore-timer .scene-counter{position:static;left:auto;transform:none;white-space:nowrap}
 .explore-page .explore-timer .quiz-clock{width:16px;height:16px;stroke:currentColor}
 .explore-page .explore-timer b{font-weight:650;font-size:13px}
 .explore-page .explore-timer small{font-size:11px;opacity:.75;padding-left:6px;border-left:1px solid #ffffff4d}
+@media(max-width:350px){
+  .explore-game>.immersive-top>.top-right{gap:4px}
+  .explore-page .explore-timer{gap:3px;padding-left:6px;padding-right:6px}
+  .explore-page .explore-timer .quiz-clock{width:14px;height:14px}
+  .explore-page .explore-timer b{font-size:12px}
+  .explore-page .explore-timer small{font-size:10px;padding-left:4px}
+}
 .explore-page .explore-timer.urgent{background:#a43329c9}
 .explore-page .explore-timer.final{background:#e0412fe6;border-color:#ffc2b8}
 .explore-page .explore-timer.beat{animation:cm-beat .45s ease}
