@@ -135,7 +135,7 @@
     const list = tab === 'official'
       ? (officials.length ? officials.map(c => postCard(ctx, c)).join('') : `<div class="cm-empty"><p>${t('完成今日挑战后，你去过的目的地会出现在这里，可以看看大家的留言。', 'Finish today’s challenge and the destinations you’ve been to will appear here, with everyone’s notes.')}</p><button class="primary" data-go="today">${t('去今日挑战', 'Go to today’s challenge')}</button></div>`)
       : [...(tab === 'all' ? officials : []), ...ugc].map(c => postCard(ctx, c)).join('');
-    return `<div class="page cm-page cm-feed">${ctx.head(t('社区', 'Community'), 'hub')}<div class="cm-community-tools"><button data-ugc-import>${t('导入旅程','Import journey')}</button><button data-ugc-mine>${t('我的发布','My journeys')}</button><button data-ugc-review>${t('本机审核','Local review')}</button></div><div class="cm-tabs" role="tablist" aria-label="${t('社区分类', 'Community categories')}">${tabs}</div><div class="cm-feed-scroll"><div class="cm-list">${list || `<div class="cm-empty">${t('还没有新的分享，来发布第一篇吧。', 'No stories yet. Share the first one.')}</div>`}</div></div><button class="cm-publish-fab" data-go="publish" aria-label="${t('发布 Journey', 'Post a journey')}"><span aria-hidden="true">+</span></button></div>`;
+    return `<div class="page cm-page cm-feed">${ctx.head(t('社区', 'Community'), 'hub')}<div class="cm-tabs" role="tablist" aria-label="${t('社区分类', 'Community categories')}">${tabs}</div><div class="cm-feed-scroll"><div class="cm-list">${list || `<div class="cm-empty">${t('还没有新的分享，来发布第一篇吧。', 'No stories yet. Share the first one.')}</div>`}</div></div><button class="cm-publish-fab" data-go="publish" aria-label="${t('发布 Journey', 'Post a journey')}"><span aria-hidden="true">+</span></button></div>`;
   }
 
   function board(ctx, c, played) {
