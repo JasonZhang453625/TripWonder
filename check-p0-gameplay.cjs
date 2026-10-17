@@ -16,23 +16,24 @@ async function closeRules(page){if(await page.locator('.rules-popover').count())
     const errors=[];page.on('pageerror',error=>errors.push(error.message));
     await page.goto(base);await page.evaluate(()=>TWStore.reset());
 
-    // Coins: base + badge + speed + PK win; same-day replays only pay above the stored best, even after a reload.
+    // Coins: score + badge + PK win; speed, improved-score replays and additional destinations add no bonus.
     const day='2026-10-15';
     const first=await page.evaluate(day=>Wallet.award({cityId:'datong',day,score:85,quizRemaining:40000,pk:{outcome:'win'}}),day);
-    assert.equal(first.total,9+5+2+10,'85 points, badge, 40 s left and a PK win');
+    assert.equal(first.total,9+5+10,'85 points, badge and a PK win');
     await page.reload();
-    assert.equal(await page.evaluate(()=>TWStore.get().wallet.balance),26,'balance survives a reload');
+    assert.equal(await page.evaluate(()=>TWStore.get().wallet.balance),24,'balance survives a reload');
     assert.equal((await page.evaluate(day=>Wallet.award({cityId:'datong',day,score:85,quizRemaining:40000,pk:{outcome:'win'}}),day)).total,0,'a repeat after reload pays nothing');
-    assert.equal((await page.evaluate(day=>Wallet.award({cityId:'datong',day,score:95,quizRemaining:50000}),day)).total,1+1,'a new best pays the difference and the faster finish');
+    assert.equal((await page.evaluate(day=>Wallet.award({cityId:'datong',day,score:95,quizRemaining:50000}),day)).total,0,'a new best pays nothing');
     assert.equal((await page.evaluate(day=>Wallet.award({cityId:'beijing',day,score:40}),day)).total,4);
     const third=await page.evaluate(day=>Wallet.award({cityId:'suzhou',day,score:40}),day);
-    assert.equal(third.total,4+10,'third destination of the day adds the daily bonus');
+    assert.equal(third.total,4,'third destination does not add a daily bonus');
     await page.reload();
-    assert.equal((await page.evaluate(day=>Wallet.award({cityId:'guilin',day,score:40}),day)).total,4,'daily bonus is paid once');
+    assert.equal((await page.evaluate(day=>Wallet.award({cityId:'guilin',day,score:40}),day)).total,4,'each destination pays only its score reward');
+    await page.evaluate(()=>TWStore.update(data=>{data.wallet.balance=1500;}));
     const before=await page.evaluate(()=>Wallet.balance());
     const bought=await page.evaluate(()=>Wallet.redeem('c-food'));
     assert.ok(bought.ok&&/^TW[A-Z0-9]{4}-[A-Z0-9]{4}$/.test(bought.code));
-    assert.equal(await page.evaluate(()=>Wallet.balance()),before-15);
+    assert.equal(await page.evaluate(()=>Wallet.balance()),before-1500);
     assert.equal((await page.evaluate(()=>Wallet.redeem('c-hotel'))).reason,'balance','cannot overspend');
 
     // PK: the same city, day and opponent always replay the same match; a friend's link lands exactly on their score.
@@ -58,8 +59,8 @@ async function closeRules(page){if(await page.locator('.rules-popover').count())
     assert.deepEqual(leaks.out,[],'seed notes stay anonymous');assert.deepEqual(leaks.missing,[],'every scene has sample notes');
 
     // Rewards page before any result: only merchants without a city.
-    await page.evaluate(()=>TWStore.reset());await page.reload();
-    await page.evaluate(()=>document.querySelector('[data-go="profile"]').click());await page.locator('.profile-page').waitFor();await idle(page);
+    await page.evaluate(()=>TWStore.reset());await page.goto(base);await page.evaluate(()=>window.HomePromo?.dismiss());
+    await page.locator('.th-nav [data-go="profile"]').waitFor();await page.locator('.th-nav [data-go="profile"]').click();await page.locator('.profile-page').waitFor();await idle(page);
     await page.locator('.pf-wallet-main').click();await page.locator('.tw-mall-page').waitFor();await idle(page);
     const mallText=await page.locator('.tw-mall-page').textContent(),cityNames=await page.evaluate(()=>TRIPWONDER_CATALOG.cities.map(c=>c.name));
     for(const name of cityNames)assert.ok(!mallText.includes(name),`rewards page does not name ${name} before it is solved`);
