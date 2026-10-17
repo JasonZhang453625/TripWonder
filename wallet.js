@@ -113,8 +113,8 @@
   function earnedCard(result) {
     if (!result) return '';
     const items = result.items.map(item => `<span>+${item.amount} ${esc(t(item.zh, item.en))}</span>`).join('');
-    const note = result.total ? t(`余额 ${balance()} 枚 · 同城同日再挑战只补发超过最高分的部分`, `Balance ${balance()} · Replays today only pay above your best`) : t(`今天这个目的地的奖励已经领过了，刷新最高分可以补发 · 余额 ${balance()} 枚`, `You’ve already been paid for this destination today. Beat your best to earn more · Balance ${balance()}`);
-    return `<section class="content-card tw-earned" aria-label="${t('本局奇境币', 'Coins this round')}"><div class="tw-earned-head">${coin('big')}<div><small>${t('本局获得', 'This round')}</small><b>+<span data-coin-count="${result.total}">${result.total}</span> ${t('奇境币', 'coins')}</b></div><button data-go="mall">${t('去兑换', 'Redeem')}</button></div>${items ? `<div class="tw-earned-items">${items}</div>` : ''}<p>${note}</p></section>`;
+    const note = result.total ? t(`余额 ${balance()} 枚`, `Balance ${balance()}`) : t(`今天这个目的地的奖励已经领过了，刷新最高分可以补发 · 余额 ${balance()} 枚`, `You’ve already been paid for this destination today. Beat your best to earn more · Balance ${balance()}`);
+    return `<section class="content-card tw-earned" aria-label="${t('本局奇境币', 'Coins this round')}"><div class="tw-earned-head">${coin('big')}<div><small>${t('本局获得', 'This round')}</small><b>+<span data-coin-count="${result.total}">${result.total}</span> ${t('奇境币', 'coins')}</b></div><button data-go="mall">${t('积分商城', 'Points mall')}</button></div>${items ? `<div class="tw-earned-items">${items}</div>` : ''}<p>${note}</p></section>`;
   }
   // Count the coins up once the card scrolls into view (the result details sit below the reveal).
   function animateEarned(root) {
