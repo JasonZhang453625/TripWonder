@@ -830,7 +830,34 @@ function hongkong(m,{at,dur,hum,rand,beat}){
   fill.forEach(([bar,b,n,len,o={}],k)=>zh.add(pluck(n,{body:'zheng',decay:2.2,bright:.62,seed:700+k,vib:o.vib?VIB.zheng:null,slide:o.up?[[0,-2],[.12,-2],[.3,0]]:null}),hum(at(bar,sw(b)),8),{gain:.85,pan:-.2}));
 }
 
+// PK · 同频竞逐: restrained 120 BPM minor-key pulse; no vocals, alarms or sudden drops.
+// Sixteen bars loop from the suspended dominant back to D minor; circular mixing keeps tails intact.
+function pk(m,{at,dur,hum}){
+  const harmony=[['D3','F3','A3','E4'],['Bb2','D3','F3','A3'],['G2','Bb2','D3','A3'],['A2','D3','E3','G3']];
+  const roots=['D2','Bb1','G1','A1'];
+  const motifs=[['D4','A4','E4','F4','D4','A4','F4','E4'],['D4','A4','F4','D4','Bb3','F4','A4','F4'],['D4','A4','Bb4','A4','G4','D4','A4','D4'],['E4','A4','G4','E4','D4','E4','G4','A4']];
+  const kicks=[];for(let bar=1;bar<=16;bar++)for(const beat of [0,2])kicks.push(at(bar,beat));
+  const bed=m.bus('suspended pad',{gain:.16,send:.34,fx:[highpass(170),duck(m,kicks,.16)]});
+  const arp=m.bus('soft pulse motif',{gain:.50,send:.18,fx:[lowpass(3800),duck(m,kicks,.12)]});
+  const bass=m.bus('rounded bass',{gain:.16,send:.025,fx:[sat(1.25)]});
+  const drums=m.bus('restrained percussion',{gain:.65,send:.08,fx:[lowpass(6500)]});
+  const glint=m.bus('answer spark',{gain:.09,send:.32});
+  for(let bar=1;bar<=16;bar++){
+    const chord=Math.floor((bar-1)/4),lift=bar>8?1.08:1;
+    bed.add(pad(harmony[chord],dur(4),{atk:.15,rel:.5,cutoff:1150,voices:2,detune:5,seed:70+bar}),at(bar));
+    for(let k=0;k<8;k++){
+      arp.add(synthPluck(motifs[chord][k],{cut:540,env:1350,decay:.1,len:.32,q:.85,vel:(k%2?.40:.58)*lift}),at(bar,k*.5),{pan:k%2?.2:-.2});
+      drums.add(hat({vel:k%2?.13:.18,decay:.025,seed:600+bar*8+k}),hum(at(bar,k*.5),2),{pan:.16});
+    }
+    for(const beat of [0,1.5,2,3.5])bass.add(sub(roots[chord],dur(.32),{atk:.009,rel:.09,h2:.22,vel:beat%1?.46:.67}),at(bar,beat));
+    for(const beat of [0,2])drums.add(kick({f0:100,f1:53,decay:.22,click:.06,vel:.55,seed:100+bar}),at(bar,beat));
+    for(const beat of [1,3])drums.add(tok({f:560,decay:.045,vel:.12,seed:200+bar}),at(bar,beat),{pan:-.12});
+    if(bar%4===0){drums.add(shaker({vel:.10,len:.08,seed:bar}),at(bar,3.75),{pan:.25});glint.add(fmBell(chord===3?'C#5':'A4',dur(.7),{ratio:2,index:.55,decay:.5,vel:.28}),at(bar,3),{pan:-.18});}
+  }
+}
+
 const TRACKS={
+  pk:{title:'同频竞逐',titleEn:'Friendly Rivalry',bpm:120,bars:16,seed:29,render:pk,reverb:{room:.72,damp:.58,predelay:.018,wet:.22,hp:230,lp:4300}},
   datong:{title:'云冈晨钟',titleEn:'Morning Bell at Yungang',bpm:60,bars:16,seed:11,render:datong,reverb:{room:.93,damp:.45,predelay:.035,wet:.3,hp:150,lp:6000}},
   beijing:{title:'红墙金瓦',titleEn:'Red Walls, Golden Tiles',bpm:72,bars:18,seed:12,render:beijing,reverb:{room:.88,damp:.4,predelay:.03,wet:.42}},
   suzhou:{title:'姑苏塔影',titleEn:'Pagoda over Gusu',bpm:64,bars:16,seed:13,render:suzhou,reverb:{room:.86,damp:.45,predelay:.025,wet:.4}},
