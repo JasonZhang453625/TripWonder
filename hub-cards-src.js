@@ -199,6 +199,12 @@ class HubCards {
   }
   async refresh(source){
     const incoming=[...source.querySelectorAll('.cm-entry')];
+    this.buttons.forEach((button,index)=>{
+      const next=incoming[index];if(!next)return;
+      for(const name of ['aria-label','data-done']){
+        if(next.hasAttribute(name))button.setAttribute(name,next.getAttribute(name));else button.removeAttribute(name);
+      }
+    });
     const updates=this.buttons.map((button,index)=>({button,next:incoming[index],model:this.models[index]})).filter(({button,next})=>next&&button.innerHTML!==next.innerHTML);
     if(!updates.length)return;
     await Promise.all(updates.flatMap(({next})=>[...next.querySelectorAll('img')].map(image=>image.decode().catch(()=>{}))));
