@@ -72,7 +72,7 @@
 .result-page .demo-note{font-size:10px;line-height:1.8;color:#858b95;margin:22px 0 0}
 /* The experiment is scoped here so shared controls on other pages stay intact. */
 #app .result-page :is(.primary,.secondary,.glass-light),#app .result-page .benefit button{border:1px solid #d6dae1;border-radius:6px;background:#fff;box-shadow:none;text-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none;color:#171e2b;font-weight:600;letter-spacing:0}
-#app>.page.result-page .result-actions :is(.primary,.secondary,.glass-light){font-weight:400}
+#app>.page.result-page .result-actions :is(.primary,.secondary,.glass-light){font-weight:700}
 #app>.page.result-page .result-actions .primary{min-height:46px}
 #app .result-page .primary{min-height:46px;border-color:#3264ff;background:#3264ff;color:#fff}
 #app .result-page .primary[aria-busy=true]{background:#3264ff;color:#fff}
