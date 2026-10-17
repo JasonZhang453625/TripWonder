@@ -35,8 +35,10 @@ html.mobile-device {
   padding:35px calc(20px + var(--safe-right)) calc(18px + var(--safe-bottom)) calc(20px + var(--safe-left));
 }
 .mobile-device .zoom-controls {right:calc(18px + var(--safe-right));bottom:calc(159px + var(--safe-bottom))}
-.mobile-device .glass,.mobile-device .glass.round,.mobile-device .zoom-controls button,.mobile-device .icon-btn,.mobile-device .cover-links button{min-height:44px;min-width:44px}
-
+.mobile-device .glass,.mobile-device .glass.round,.mobile-device .zoom-controls button,
+.mobile-device .icon-btn,.mobile-device .cover-links button,.mobile-device .clue-footer button,
+.mobile-device .clue-footer a {min-height:44px;min-width:44px}
+.mobile-device .photo-plane .hotspot {min-height:44px}
 .mobile-device .bottom-nav {
   height:calc(64px + var(--safe-bottom));
   padding:10px var(--safe-right) calc(10px + var(--safe-bottom)) var(--safe-left);

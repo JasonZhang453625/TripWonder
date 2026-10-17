@@ -1,11 +1,11 @@
 .photo-viewport.immersive-active .immersive-canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;z-index:0}
 .photo-viewport.immersive-active .photo-plane{left:0;top:0;z-index:1;pointer-events:none;will-change:auto}
 .photo-viewport.immersive-active .photo-plane>img{display:none}
-
-
+.photo-viewport.immersive-active .photo-plane .hotspot{pointer-events:auto}
+.photo-viewport.immersive-active .photo-plane .hotspot[hidden]{display:none}
 .phone>.scene-staging{position:absolute!important;inset:0!important;width:100%;height:100%;padding:0!important;visibility:hidden;pointer-events:none;z-index:-1}
 .scene-transition{position:absolute;inset:0;z-index:24;border-radius:inherit;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;pointer-events:none;color:#fff;background:radial-gradient(ellipse at 50% 42%,#5a8baa30,transparent 65%),#081b3299;-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);font-size:13px;letter-spacing:.12em;text-shadow:0 1px 8px #0005}
 .scene-transition-orbit{width:44px;height:44px;border:1px solid #ffffff38;border-top-color:#fff;border-right-color:#ffffffbb;border-radius:50%;box-shadow:0 0 22px #98ceff22;animation:scene-orbit 1.2s linear infinite}
-
+.scene-loading .hotspot{pointer-events:none!important}
 @keyframes scene-orbit{to{transform:rotate(360deg)}}
 @media(prefers-reduced-motion:reduce){.scene-transition-orbit{animation:none}}

@@ -1,6 +1,6 @@
 /* Floating notes over the explore scene: what earlier travellers left here, tagged "been" or "not yet".
-   Each note is anchored to a photo position and follows the view as it is dragged:
-   the flat viewer scales the plane, and the immersive viewer projects them as photo-anchored markers.
+   Each note is anchored to a photo position (like a hotspot) and follows the view as it is dragged:
+   the flat viewer scales the plane, and the immersive viewer projects them with its own hotspot markers.
    A few notes float at a time and take turns. New notes go where the user taps the view.
    Notes live on this device (TWStore); samples come from content/bubble-seed.js. */
 (() => {
@@ -143,7 +143,9 @@
     }
     function confirmPlace() {
       if (!picked) return;
-      const {u, v} = picked;
+      let {u, v} = picked;
+      // Keep clear of the clue hotspots so a note never covers one.
+      if (scene.hotspots.some(h => Math.hypot(h.x / 100 - u, (h.y / 100 - v) * .7) < .07)) v = clamp(v + .1, .1, .9);
       stopPlacing();
       onCompose?.({u, v});
     }

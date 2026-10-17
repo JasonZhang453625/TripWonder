@@ -38,7 +38,36 @@ window.CITY_SUZHOU = {
         "height": 1602,
         "bytes": 1577580
       }
-    }
+    },
+    "hotspots": [
+      {
+        "x": 50,
+        "y": 63,
+        "title": "一池水串起园景",
+        "tag": "自然",
+        "text": "池水占据画面中央，树木和岸边建筑在水中形成倒影。以水、石、植物与建筑组合出缩小的自然山水，是这类古典园林的造景方式。",
+        "en": "The central pond reflects trees and buildings. Water, rocks, plants and architecture combine to evoke a miniature natural landscape.",
+        "source": "https://whc.unesco.org/en/list/813/"
+      },
+      {
+        "x": 78,
+        "y": 32,
+        "title": "树叶给季节上色",
+        "tag": "自然",
+        "text": "画面中有常绿的深色树冠，也有转黄、转红的叶子。沿池岸看颜色与疏密的变化，同一处园景会随季节出现不同层次。",
+        "en": "Dark evergreen crowns mix with yellow and red leaves. Follow the changing colours and density around the pond: the same garden changes with the seasons.",
+        "source": "https://commons.wikimedia.org/wiki/File:Humble_Administrator%27s_Garden_Suzhou_November_2017_005.jpg"
+      },
+      {
+        "x": 18,
+        "y": 42,
+        "title": "沿岸而行的视线",
+        "tag": "建筑",
+        "text": "左岸的步道贴着水边延伸，树木将远处建筑时隐时现地遮住。沿步道前行，眼前的水面、树冠和屋檐会不断改变组合。",
+        "en": "A path follows the left bank while trees partly screen the distant buildings. As you walk, the pond, foliage and rooflines combine into changing views.",
+        "source": "https://whc.unesco.org/en/list/813/"
+      }
+    ]
   },
   {
     "id": "suzhou-huqiu",
@@ -71,7 +100,36 @@ window.CITY_SUZHOU = {
         "height": 1800,
         "bytes": 839316
       }
-    }
+    },
+    "hotspots": [
+      {
+        "x": 47,
+        "y": 17,
+        "title": "树梢后面的古塔",
+        "tag": "历史",
+        "text": "顺着中间的道路向远处看，古塔从树梢后露出来。这座七层八角砖塔建于959至961年；照片表现的是从山门远望塔身的角度，并非塔基近景。",
+        "en": "Follow the central path towards the pagoda rising behind the trees. This seven-storey octagonal brick tower was built in 959–961. The photograph looks towards it from the entrance, rather than showing its base close up.",
+        "source": "https://ylj.suzhou.gov.cn/szsylj/ylwh/201604/f3f52d3ee502486b8a4873c36b0d24e0.shtml"
+      },
+      {
+        "x": 42,
+        "y": 40,
+        "title": "白墙与深色瓦檐",
+        "tag": "建筑",
+        "text": "近处两侧是白墙和深色瓦顶，门洞沿中轴前后相连。低矮的院落与远处高塔形成高低对比，把视线引向山上的塔。",
+        "en": "White walls and dark tiled roofs flank a sequence of gateways on the central axis. The low courtyard contrasts with the distant pagoda and directs the eye uphill.",
+        "source": "https://commons.wikimedia.org/wiki/File:Tiger_Hill,_Suzhou,_December_2015_-_10.JPG"
+      },
+      {
+        "x": 64,
+        "y": 36,
+        "title": "院中的树与石板路",
+        "tag": "体验",
+        "text": "石板路两侧留着成排树木，树干和屋檐一起形成通往山门的框景。照片摄于冬季，枝叶较疏，不能把它当成夏日树冠浓密的景象。",
+        "en": "Rows of trees frame the paved approach alongside the rooflines. This winter photograph has sparse foliage, rather than the dense canopy of summer.",
+        "source": "https://commons.wikimedia.org/wiki/File:Tiger_Hill,_Suzhou,_December_2015_-_10.JPG"
+      }
+    ]
   },
   {
     "id": "suzhou-shantang",
@@ -104,7 +162,36 @@ window.CITY_SUZHOU = {
         "height": 1800,
         "bytes": 483978
       }
-    }
+    },
+    "hotspots": [
+      {
+        "x": 50,
+        "y": 57,
+        "title": "房屋贴着水道排开",
+        "tag": "城市",
+        "text": "水道在画面中间延伸，两侧房屋沿岸紧密排列。临水而建的街屋让日常生活与河道相邻，沿着水面可以读出街区的方向。",
+        "en": "A canal runs through the middle with houses packed along both banks. Waterside buildings put daily life beside the water and make the canal the organising line of the neighbourhood.",
+        "source": "https://commons.wikimedia.org/wiki/File:Shantang_Street,_Suzhou_(December_2015)_-_03.JPG"
+      },
+      {
+        "x": 80,
+        "y": 34,
+        "title": "白墙上的深色窗框",
+        "tag": "建筑",
+        "text": "右岸连续的白墙上排列着深色窗框，屋顶覆盖深色瓦片。墙、窗和屋檐的明暗对比，比鲜艳的大面积涂色更突出建筑的轮廓。",
+        "en": "Dark window frames punctuate the continuous white walls on the right bank, beneath dark tiled roofs. The contrast makes the building outlines legible without large fields of bright colour.",
+        "source": "https://commons.wikimedia.org/wiki/File:Shantang_Street,_Suzhou_(December_2015)_-_03.JPG"
+      },
+      {
+        "x": 39,
+        "y": 80,
+        "title": "水里的另一排房子",
+        "tag": "摄影",
+        "text": "低头看水面，房屋的白墙与窗洞形成倒影。倒影随着轻微水纹变形，使狭长水巷在画面里产生向下延伸的空间感。",
+        "en": "White walls and windows are reflected in the canal. Small ripples distort the reflections, giving the narrow waterside scene an added sense of depth.",
+        "source": "https://commons.wikimedia.org/wiki/File:Shantang_Street,_Suzhou_(December_2015)_-_03.JPG"
+      }
+    ]
   }
 ],
   questions: [

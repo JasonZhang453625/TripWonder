@@ -78,6 +78,13 @@ async function enter(page){
     const during=await state(page);
     assert.equal(during.playing,'shenzhen');assert.ok(during.gain>.9,'music continues between scenes');assert.ok(during.copies>=before-1);
 
+    // The challenge has no clue hotspots (clues are read in the community); ducking for a clue still lowers and restores the music.
+    assert.equal(await page.locator('#app [data-clue]').count(),0);
+    await page.evaluate(()=>SceneBGM.duck('clue'));
+    await until(page,()=>SceneBGM.state().ducked==='clue'&&SceneBGM.state().level<.3);
+    await page.evaluate(()=>SceneBGM.duck(null));
+    await until(page,()=>!SceneBGM.state().ducked&&SceneBGM.state().level>.55);
+
     // The toggle fades out, suspends the context, remembers the choice, and fades back in.
     await toggle.click();
     assert.equal(await toggle.getAttribute('aria-pressed'),'false');

@@ -3,9 +3,9 @@
    and neighbouring copies overlap back into continuous music. Web Audio does the fades because iOS ignores
    media-element volume. Music only plays after a tap or key press (browser autoplay rules). */
 (()=>{
-  const TRACKS=window.BGM_TRACKS||{},KEY='tripwonder-bgm-muted',LEVEL=.6;
+  const TRACKS=window.BGM_TRACKS||{},KEY='tripwonder-bgm-muted',LEVEL=.6,DUCK={clue:.45,speech:.22};
   const FADE_IN=1.4,FADE_OUT=.7,SWITCH=1,LEAD_IN=1.5,AC=window.AudioContext||window.webkitAudioContext;
-  let ctx=null,master=null,track=null,want=null,muted=false,idleTimer=0,unlocked=false;
+  let ctx=null,master=null,track=null,want=null,ducked=null,muted=false,idleTimer=0,unlocked=false;
   const raw=new Map(),decoded=new Map();
   try{muted=localStorage.getItem(KEY)==='1';}catch{}
 
@@ -113,6 +113,10 @@
     if(!muted)unlock();
     apply();
   }
+  function duck(kind){
+    ducked=DUCK[kind]?kind:null;
+    if(master)glide(master.gain,LEVEL*(DUCK[ducked]||1),.35);
+  }
   function prefetch(id){if(TRACKS[id])fetchRaw(id).catch(()=>{});}
   // Leaves the track silent so it fades back in when the page returns.
   function pause(){
@@ -123,8 +127,8 @@
   document.addEventListener('visibilitychange',()=>{if(document.hidden)pause();else apply();});
   window.addEventListener('pageshow',event=>{if(event.persisted)apply();});
 
-  window.SceneBGM={sync,prefetch,setMuted,pause,
+  window.SceneBGM={sync,prefetch,duck,setMuted,pause,
     isMuted:()=>muted,
     title:id=>TRACKS[id]?{zh:TRACKS[id].title,en:TRACKS[id].titleEn}:null,
-    state:()=>({context:ctx?.state||'none',want,playing:track?.id||null,copies:track?.sources.size||0,gain:track?track.gain.gain.value:0,level:master?master.gain.value:0,muted,unlocked})};
+    state:()=>({context:ctx?.state||'none',want,playing:track?.id||null,copies:track?.sources.size||0,gain:track?track.gain.gain.value:0,level:master?master.gain.value:0,ducked,muted,unlocked})};
 })();

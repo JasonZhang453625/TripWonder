@@ -15,11 +15,11 @@
 .steps{list-style:none;margin:6px 0 0;padding:0;font-size:13px;line-height:2.2}.steps li{display:flex;gap:10px;align-items:baseline}.steps .mark{width:18px;text-align:center;color:#95a2b5}.steps .running{color:#3264ff}.steps .done .mark{color:#1c8a4c}.steps .failed{color:#c53030}.steps .skipped{color:#a86a00}.steps small{color:#95a2b5;font-size:11px}
 .notice{font-size:12px;color:#a86a00;background:#fff8e8;border:1px solid #f5e2b8;border-radius:12px;padding:10px 14px;margin:14px 0}
 </style></head>
-<body class="photo-body"><main class="library"><header class="library-head"><a class="brand" href="index.html">Trip<span>.</span>com</a><a href="photos.html">返回旅程库 ↗</a></header><span class="pill">TRIPWONDER · 后台</span><h1 style="margin-top:18px">添加 Journey</h1><p class="library-intro">填写目的地信息、上传 3–9 张场景照片并设定游戏规则。提交后系统会依次完成图片转换、看图出题（3 道由易到难的常识题）、地图位置确定，并把它作为一个新目的地存入数据库，之后即可在游戏里挑战。</p>
+<body class="photo-body"><main class="library"><header class="library-head"><a class="brand" href="index.html">Trip<span>.</span>com</a><a href="photos.html">返回旅程库 ↗</a></header><span class="pill">TRIPWONDER · 后台</span><h1 style="margin-top:18px">添加 Journey</h1><p class="library-intro">填写目的地信息、上传 3–9 张场景照片并设定游戏规则。提交后系统会依次完成图片转换、讲解点生成（社区浏览时显示）、看图出题（3 道由易到难的常识题）、地图位置确定，并把它作为一个新目的地存入数据库，之后即可在游戏里挑战。</p>
 <div id="offline" class="notice" hidden>后台服务未连接。请运行 <code>node admin/server.mjs</code>，并通过 http://127.0.0.1:8787/journey-new.html 打开本页。</div>
-<div id="keywarn" class="notice" hidden>未找到 MiMo API Key：无法生成题目。请设置环境变量 MIMO_API_KEY，或将 key 放入 mimo api key.txt 后重启服务。</div>
+<div id="keywarn" class="notice" hidden>未找到 MiMo API Key：无法生成讲解点与题目。请设置环境变量 MIMO_API_KEY，或将 key 放入 mimo api key.txt 后重启服务。</div>
 <form id="form" novalidate>
-<section class="panel"><h2>目的地信息</h2><p class="sub">玩家在探索阶段看不到这些名称，只会在揭晓结果时看到；AI 也被禁止在题目里出现它们。</p>
+<section class="panel"><h2>目的地信息</h2><p class="sub">玩家在探索阶段看不到这些名称，只会在揭晓结果时看到；AI 也被禁止在线索和题目里出现它们。</p>
 <div class="fields">
 <div class="field"><label for="f-name">目的地名称 <i>*</i></label><input id="f-name" name="name" maxlength="20" placeholder="如：成都" required></div>
 <div class="field"><label for="f-id">英文标识 <i>*</i></label><input id="f-id" name="id" maxlength="40" pattern="[a-z][a-z0-9-]{1,39}" placeholder="如：chengdu" required><small>小写字母、数字、短横线，创建后不可修改</small></div>
@@ -31,9 +31,9 @@
 <div class="field ugc-only" hidden><label for="f-title">挑战标题 <i>*</i></label><input id="f-title" name="title" maxlength="20" placeholder="如：十年前后的渔港老街"><small>挑战前玩家只看到这个标题，不能包含地名</small></div>
 <div class="field ugc-only" hidden><label for="f-author">发布者昵称</label><input id="f-author" name="author" maxlength="16" placeholder="默认：玩家"></div>
 <div class="field ugc-only" hidden><label><input id="f-board" type="checkbox" checked> 开启留言板</label><small>玩家完成挑战后可以留言</small></div>
-<div class="field wide"><label for="f-intro">目的地简介</label><textarea id="f-intro" name="intro" maxlength="400" placeholder="可选。用于结果页与后台展示，不会写进题目。"></textarea></div>
+<div class="field wide"><label for="f-intro">目的地简介</label><textarea id="f-intro" name="intro" maxlength="400" placeholder="可选。用于结果页与后台展示，不会写进线索。"></textarea></div>
 </div></section>
-<section class="panel"><h2>场景图片 <span id="count" style="font-weight:400;font-size:12px;color:#7c8ba1"></span></h2><p class="sub">每张图片是一个场景，玩家依次环看探索；AI 会看这些照片出 3 道常识题，难度由易到难。支持 JPG / PNG / WebP / AVIF，短边不小于 600 px，单张不超过 60 MB。请使用你有权使用的照片。</p>
+<section class="panel"><h2>场景图片 <span id="count" style="font-weight:400;font-size:12px;color:#7c8ba1"></span></h2><p class="sub">每张图片是一个场景，玩家依次探索。每个场景 AI 会生成 3 个可点击的讲解点（只在社区浏览时显示）；题目由 AI 另看这些照片生成，难度由易到难。支持 JPG / PNG / WebP / AVIF，短边不小于 600 px，单张不超过 60 MB。请使用你有权使用的照片。</p>
 <label class="drop" id="drop" for="files"><b>点击选择</b>或把图片拖到这里（3–9 张）</label><input id="files" type="file" accept="image/jpeg,image/png,image/webp,image/avif" multiple hidden>
 <div class="scene-list" id="scenes"></div></section>
 <section class="panel"><h2>游戏规则</h2><p class="sub">已填入当前游戏的默认值，可按目的地调整。结果页按 100 分制展示，因此三题分值之和加定位满分必须等于 100。</p>
@@ -136,7 +136,7 @@ async function poll(){
   let job;try{job=await call('/api/jobs/'+jobId);}catch(error){$('#p-sub').textContent='无法读取进度：'+error.message;pollTimer=setTimeout(poll,3000);return;}
   $('#p-steps').innerHTML=job.steps.map(s=>`<li class="${s.status}"><span class="mark">${{done:'✓',running:'…',failed:'✕',skipped:'–',pending:'·'}[s.status]}</span><span>${esc(s.label)} <small>${esc(s.detail)}</small></span></li>`).join('');
   const actions=$('#p-actions');
-  if(job.status==='done'){$('#p-title').textContent='生成完成';$('#p-sub').textContent='新目的地已存入数据库并加入游戏。AI 生成的内容默认为“待审核”，请在旅程库里核对题目和坐标。';actions.innerHTML=`<a class="btn solid" href="photos.html#dest=${encodeURIComponent(job.destinationId)}">查看目的地</a><a class="btn" href="index.html" target="_blank">在游戏中试玩 ↗</a><a class="btn" href="journey-new.html">再添加一个</a>`;return;}
+  if(job.status==='done'){$('#p-title').textContent='生成完成';$('#p-sub').textContent='新目的地已存入数据库并加入游戏。AI 生成的内容默认为“待审核”，请在旅程库里核对讲解点、题目和坐标。';actions.innerHTML=`<a class="btn solid" href="photos.html#dest=${encodeURIComponent(job.destinationId)}">查看目的地</a><a class="btn" href="index.html" target="_blank">在游戏中试玩 ↗</a><a class="btn" href="journey-new.html">再添加一个</a>`;return;}
   if(job.status==='failed'){$('#p-title').textContent='生成失败';$('#p-sub').textContent=job.error||'';actions.innerHTML='<button class="btn solid" id="retry">重试（从失败的步骤继续）</button><a class="btn" href="photos.html">返回旅程库</a>';$('#retry').onclick=async()=>{try{await call(`/api/jobs/${jobId}/retry`,{method:'POST'});$('#p-title').textContent='正在生成…';$('#p-sub').textContent='';actions.innerHTML='';poll();}catch(error){$('#p-sub').textContent=error.message;}};return;}
   $('#p-title').textContent='正在生成…';pollTimer=setTimeout(poll,1500);
 }

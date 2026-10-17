@@ -1,4 +1,4 @@
-/* Photo coordinates and note anchors share one plane. No source-image edits. */
+/* Photo coordinates and clue anchors share one plane. No source-image edits. */
 window.PhotoViewer = class {
   constructor(root, photo) {
     this.root=root;this.plane=root.querySelector('.photo-plane');this.photo=photo;

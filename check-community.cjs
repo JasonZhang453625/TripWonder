@@ -1,5 +1,5 @@
 // TripWonder entry split: hub → 今日挑战 / 社区; official journeys only after being challenged (with the city badge);
-// sample UGC journeys playable with no rewards; browse mode with notes and no clue hotspots; no notes in the challenge.
+// sample UGC journeys playable with no rewards; browse mode with clues and notes; no notes or clues in the challenge.
 // TRIPWONDER_BASE (default http://127.0.0.1:8765/) and TRIPWONDER_BROWSER (default: local Chrome) can be overridden.
 const {chromium,devices}=require(process.env.PLAYWRIGHT_PATH||'C:/Users/Administrator/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
 const assert=require('node:assert/strict');
@@ -54,7 +54,7 @@ async function reveal(page){await idle(page);await page.locator('.guess-map').cl
     const ugcTitle=await page.locator('[data-journey="ugc-shapowei"] strong').textContent();
     assert.ok(!ugcTitle.includes('沙坡尾'),'an unplayed UGC card hides the place name');
 
-    // Today's challenge: no notes, one clock across exploring and answering.
+    // Today's challenge: no clue hotspots, no notes, one clock across exploring and answering.
     await page.locator('.cm-feed [data-action="journey-back"],.cm-feed .page-head [data-go="hub"]').first().click();await page.locator('.cm-hub').waitFor();await idle(page);
     await page.locator('.cm-entry[data-go="today"]').click();await page.locator('.cover-page').waitFor();await idle(page);await closeRules(page);
     const cityId=await page.locator('.cover-page').getAttribute('data-cover-city');
@@ -86,9 +86,9 @@ async function reveal(page){await idle(page);await page.locator('.guess-map').cl
     await page.locator('[data-board-filter="been"]').click();
     assert.ok(await page.locator('.cm-board .cm-kind.kind-want').count()===0,'filter keeps only "been" notes');
     await shot(page,'official-journey');
-    // Browse mode: notes but no clue hotspots, no clock and no quiz.
+    // Browse mode: clue hotspots and notes, no clock and no quiz.
     await page.locator('[data-action="browse"]').click();await page.locator('.explore-page').waitFor();await idle(page);
-    assert.equal(await page.locator('.hotspot,[data-clue]').count(),0,'browse shows no clue hotspots');
+    assert.ok(await page.locator('.hotspot').count()>0,'browse shows clue hotspots');
     assert.equal(await page.locator('#timer,.explore-go-quiz').count(),0,'browse has no clock or quiz');
     await page.locator('.tw-bubble-bar').waitFor();await shot(page,'browse');
     await page.locator('[data-action="leave"]').click();await page.locator('.cm-journey').waitFor();await idle(page);
@@ -148,6 +148,6 @@ async function reveal(page){await idle(page);await page.locator('.guess-map').cl
     assert.equal(official,pools.official.length);
 
     assert.deepEqual(errors,[]);
-    console.log('PASS: hub entries; UGC outside the official pool; feed lists only challenged cities with their badge; challenge without notes on one 1-minute clock (runs on the cover, shared with answering, time-out to the map); result → community page; browse with notes and no clue hotspots, no clock; player journey without rewards, played stamp and board unlock; board switched off; publish form validation.');
+    console.log('PASS: hub entries; UGC outside the official pool; feed lists only challenged cities with their badge; challenge without clues or notes on one 1-minute clock (runs on the cover, shared with answering, time-out to the map); result → community page; browse with clues and notes, no clock; player journey without rewards, played stamp and board unlock; board switched off; publish form validation.');
   }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});

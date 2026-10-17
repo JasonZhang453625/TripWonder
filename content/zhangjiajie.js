@@ -1,4 +1,4 @@
-// 张家界四场景。探索阶段不直接公布城市名。
+// 张家界四场景。线索点采用完整原片百分比；探索阶段不直接公布城市名。
 // 素材与事实来源见 photo-library/zhangjiajie/ATTRIBUTION.md。
 (() => {
   // BEGIN GENERATED PHOTO METADATA
@@ -124,16 +124,96 @@
     id:'zhangjiajie', name:'张家界', region:'湖南', lat:29.127401, lng:110.479921,
     scenes:[
       {
-        id:'zjj-tianzishan', name:'天子山·砂岩峰林', type:'峰林远眺', photo:photos['zjj-tianzishan']
+        id:'zjj-tianzishan', name:'天子山·砂岩峰林', type:'峰林远眺', photo:photos['zjj-tianzishan'],
+        hotspots:[
+          {
+            x:48, y:48, title:'像石柱一样站立的山峰', tag:'自然',
+            text:'眼前许多山峰细长而陡直，像一根根石柱从谷地里竖起来。这片风景以石英砂岩峰林著称，和常见的圆缓山丘很不一样。留意石峰之间深深的空隙。',
+            en:'Many peaks rise like slender stone pillars, separated by deep gaps. Quartz sandstone towers define this landscape, unlike gently rounded hills.',
+            source:heritage
+          },
+          {
+            x:59, y:27, title:'越远越淡的山影', tag:'摄影',
+            text:'近处能分辨岩壁与树丛，远处的山峰逐渐变成浅蓝灰色轮廓。把前后的峰林放在一起看，云雾便把山谷的纵深显现出来。',
+            en:'Nearby cliffs show rock and trees, while distant peaks fade into pale blue-grey silhouettes. The mist makes the depth of the valley visible.',
+            source:'photo-library/zhangjiajie/tianzishan/original.jpg'
+          },
+          {
+            x:43, y:75, title:'石峰脚下的绿色谷地', tag:'自然',
+            text:'峰脚和谷地铺满绿色，许多峰顶也长着树。这里的风景不仅有裸露的石柱，还有与峰林相伴的森林和沟谷，共同组成层次丰富的自然景观。',
+            en:'Green forest covers the valleys and even many summit tops. The woodland and ravines are as much a part of the landscape as the stone pillars.',
+            source:heritage
+          }
+        ]
       },
       {
-        id:'zjj-misty-peaks', name:'云雾峰林·山间光影', type:'山间光影', photo:photos['zjj-misty-peaks']
+        id:'zjj-misty-peaks', name:'云雾峰林·山间光影', type:'山间光影', photo:photos['zjj-misty-peaks'],
+        hotspots:[
+          {
+            x:63, y:30, title:'光照到的那一面', tag:'摄影',
+            text:'山峰的一侧泛着暖色，另一侧藏在阴影里。沿着明暗交界看，原本叠在一起的山峰就有了清楚的前后层次；一张照片也能让人感到山谷很深。',
+            en:'Warm light touches one face of the peaks while the other stays in shadow. Follow that boundary to separate the overlapping layers of the valley.',
+            source:'photo-library/zhangjiajie/misty-peaks/original.avif'
+          },
+          {
+            x:50, y:66, title:'一排排岩壁向远处延伸', tag:'自然',
+            text:'近处山体像一面陡直的石墙，后面还有好几排峰壁。试着左右拖动画面，对照上一处的一根根石柱，看看同一片山地还有哪些不同轮廓。',
+            en:'A steep wall of rock fills the foreground, followed by more rows of peaks. Pan sideways and compare these walls with the separate pillars in the previous scene.',
+            source:'photo-library/zhangjiajie/misty-peaks/original.avif'
+          },
+          {
+            x:76, y:79, title:'近在眼前的枝叶', tag:'摄影',
+            text:'右下方的枝叶离镜头最近，远山则被薄雾包围。前景、岩峰、远山形成三层画面；把照片缩小一些，这种远近关系会更容易观察。',
+            en:'Leaves in the lower right sit closest to the camera, followed by cliffs and distant misty peaks. Zoom out a little to compare these three layers.',
+            source:'photo-library/zhangjiajie/misty-peaks/original.avif'
+          }
+        ]
       },
       {
-        id:'zjj-tianmen-cave', name:'天门山·天门洞', type:'穿山洞门', photo:photos['zjj-tianmen-cave']
+        id:'zjj-tianmen-cave', name:'天门山·天门洞', type:'穿山洞门', photo:photos['zjj-tianmen-cave'],
+        hotspots:[
+          {
+            x:50, y:42, title:'山体中间透出一片天空', tag:'自然',
+            text:'抬头看，岩壁中央出现了一道天然穿山洞口，里面透出明亮的天空。它属于这座喀斯特山体的自然景观，洞口周围仍是连成一体的陡峭岩壁。',
+            en:'A natural opening passes through the mountain, revealing the sky beyond. The cave belongs to a karst landscape and is framed by continuous steep cliffs.',
+            source:reserve
+          },
+          {
+            x:50, y:71, title:'通往洞口的九百九十九级', tag:'文化',
+            text:'这条直通洞口的长台阶叫“上天梯”，共 999 级。台阶中间设置了休息平台，也寄托了登高祈福的寓意。画面里密密的小人，让这段高度有了直观的参照。',
+            en:'The stairway leading to the cave has 999 steps and rest platforms along the ascent. It is also associated with prayers for good fortune; the visitors reveal its scale.',
+            source:mountain
+          },
+          {
+            x:73, y:26, title:'从砂岩峰林走到岩溶绝壁', tag:'自然',
+            text:'这里的岩壁与前面细长的峰林并不相同：前面是石英砂岩峰林，这一带则是喀斯特岩溶地貌。观察连续的崖面与天然洞口，是区分两类山景的一个线索。',
+            en:'This continuous cliff and its natural opening differ from the quartz sandstone pillars seen earlier. Here the landscape is karst, offering another clue to its geology.',
+            source:reserve
+          }
+        ]
       },
       {
-        id:'zjj-winding-road', name:'天门山·通天大道', type:'盘山公路', photo:photos['zjj-winding-road']
+        id:'zjj-winding-road', name:'天门山·通天大道', type:'盘山公路', photo:photos['zjj-winding-road'],
+        hotspots:[
+          {
+            x:53, y:57, title:'一圈又一圈的折返', tag:'推理',
+            text:'公路没有直冲山顶，而是绕着山体反复折返。对同样的爬升高度来说，路线拉长后，爬升可以分摊到更长的路段上。顺着弯道找一找：哪一段在上，哪一段在下？',
+            en:'Instead of heading straight uphill, the road doubles back around the mountain. A longer route spreads the same elevation gain over more distance. Trace which section runs above the next.',
+            source:'photo-library/zhangjiajie/winding-road/original.jpg'
+          },
+          {
+            x:72, y:44, title:'路面下面藏着一个拱洞', tag:'建筑',
+            text:'右侧上层公路下方有一个明显的拱洞，下层路段从它附近绕过。石砌挡墙把不同高度的路面托起来，让道路在狭窄的山坡上继续延伸。',
+            en:'A visible arch sits beneath the upper road on the right. Stone retaining walls support the stacked road sections as they wind around the steep slope.',
+            source:'photo-library/zhangjiajie/winding-road/original.jpg'
+          },
+          {
+            x:29, y:55, title:'九十九道弯通向哪里', tag:'文化',
+            text:'这条山路因通往前一处的天然洞门而得名，全长约 10.77 公里，有 99 道弯。照片只截取了其中一段，远处还能看见公路继续钻进绿色山谷。',
+            en:'This road leads toward the natural gate from the previous scene. It is about 10.77 kilometres long with 99 bends; the photograph shows only part of its route.',
+            source:mountain
+          }
+        ]
       }
     ],
     questions:[

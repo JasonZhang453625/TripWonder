@@ -35,7 +35,7 @@ window.I18N = (() => {
 
   const isEn = () => lang === 'en';
   const t = (zh, en) => lang === 'en' ? en : zh;
-  // Data objects carry English beside Chinese as <key>En.
+  // Data objects carry English beside Chinese as <key>En (hotspot text is the older `en`).
   const f = (item, key) => {
     if (!item) return '';
     if (lang !== 'en') return item[key];

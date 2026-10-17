@@ -72,19 +72,35 @@
 .glass-light:hover{background:linear-gradient(160deg,#ffffffeb,#ffffff8c 55%,#eaf0ffb8)}
 .glass-light:disabled{opacity:.45}
 
-/* Clue sheet: translucent neutral glass{background:#1018201a;backdrop-filter:none;-webkit-backdrop-filter:none}
-
-
-
-
-
-
-
-
-
-
-
-
+/* Clue sheet: translucent neutral glass, with a light floor for dark text. */
+#modal-root .clue-dialog-overlay{background:#1018201a;backdrop-filter:none;-webkit-backdrop-filter:none}
+#modal-root .sheet.clue-dialog{
+  background:linear-gradient(145deg,#ffffffc2 0%,#ffffff99 48%,#ffffffb0 100%);
+  border:1px solid #ffffff9e;border-bottom:0;border-radius:28px 28px 0 0;
+  -webkit-backdrop-filter:blur(20px) saturate(130%) brightness(1.08);
+  backdrop-filter:blur(20px) saturate(130%) brightness(1.08);
+  box-shadow:inset 0 1px 0 #ffffffeb,inset 1px 0 0 #ffffff38,inset -1px 0 0 #ffffff38,0 -8px 32px #0000001f;
+  color:#192629;scrollbar-width:none;overscroll-behavior-y:contain;animation:none;
+}
+#modal-root .clue-dialog::-webkit-scrollbar{display:none}
+#modal-root .clue-dialog .sheet-handle{background:#27363738;box-shadow:0 1px 0 #ffffff70}
+#modal-root .clue-dialog .sheet-heading h2{color:#162327;text-shadow:0 1px 0 #ffffff38}
+#modal-root .clue-dialog #clue-text{color:#263638;font-weight:450;line-height:1.9;text-shadow:0 1px 0 #ffffff26}
+#modal-root .clue-dialog .clue-footer{border-top-color:#26363824}
+#modal-root .clue-dialog .clue-footer a{color:#344547}
+#modal-root .sheet.clue-dialog .clue-footer button{
+  color:#203437;background:#ffffff38;border:1px solid #ffffff94;
+  box-shadow:inset 0 1px 0 #ffffffa6,0 2px 8px #00000008;text-shadow:none;
+  -webkit-backdrop-filter:none;backdrop-filter:none;
+}
+#modal-root .sheet.clue-dialog .clue-footer button{min-height:40px}
+@media(hover:hover){
+  #modal-root .sheet.clue-dialog .clue-footer button:hover{background:#ffffff66}
+}
+#modal-root .sheet.clue-dialog .clue-footer button:active{background:#ffffff80}
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
+  #modal-root .sheet.clue-dialog{background:#ffffffeb}
+}
 
 /* Rules popover: Liquid Glass sheet over the destination photo. */
 .rules-overlay{background:#07120c33}

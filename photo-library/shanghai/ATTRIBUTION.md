@@ -19,7 +19,7 @@ Pexels 许可允许免费使用与修改，不强制署名；这里仍保留摄�
 - https://www.shanghai.gov.cn/nw4411/20240418/89f962f1b54743df8ff3c916f9fd7769.html
 - https://www.shanghai.gov.cn/nw9822/20200906/0001-9822_361953.html
 
-各场景的题目与行程站点另在 `content/shanghai.js` 的 source 字段逐条标注。行程中的游览时长、坐标是原型规划参数，开放时间与预约以官方当日公告为准。
+各场景的讲解点、题目与行程站点另在 `content/shanghai.js` 的 source 字段逐条标注。行程中的游览时长、坐标是原型规划参数，开放时间与预约以官方当日公告为准。
 
 ## 补充说明
 
