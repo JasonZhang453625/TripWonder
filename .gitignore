@@ -9,3 +9,4 @@ node_modules/
 # Admin server: local SQLite database, uploads and API key
 /admin/data/
 /admin/mimo.key
+/immersive-*-s[0-9]*-assets.js
