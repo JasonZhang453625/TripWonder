@@ -49,6 +49,7 @@ async function assertResult(page, before) {
   const report = [], errors = [];
   try {
     const page = await browser.newPage({viewport:{width:Number(process.env.TRIPWONDER_TEST_WIDTH)||390,height:Number(process.env.TRIPWONDER_TEST_HEIGHT)||844},hasTouch:true});
+    if(process.env.TRIPWONDER_APP_SOURCE)await page.route('**/app.js?*',route=>route.fulfill({path:process.env.TRIPWONDER_APP_SOURCE,contentType:'text/javascript'}));
     page.on('pageerror',e => errors.push(e.message));
     await page.clock.setFixedTime(new Date());
     await page.addInitScript(() => {
