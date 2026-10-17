@@ -94,7 +94,7 @@
   }
 
   const feedIcon = name => `<svg class="cm-feed-icon" viewBox="0 0 28 28" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${name === 'like'
-    ? '<path d="M9 12c3-2 4-5 4-9 0-1 3-1 4 2 1 2 0 5-1 7h7c2 0 3 1 2 3l-2 9c0 1-1 2-3 2H9V12ZM3 12h6v14H3z"/>'
+    ? '<path d="M14 24S3 17 3 9.5a6 6 0 0 1 11-3 6 6 0 0 1 11 3C25 17 14 24 14 24Z"/>'
     : '<path d="M24 20c2-2 3-5 2-8C25 6 21 3 15 3 8 3 3 7 3 13s5 10 11 10c2 0 4 0 5-1l6 3-1-5Z"/><path d="M9 11h10M9 16h8"/>'}</svg>`;
   const commentAvatar = () => `<span class="cm-comment-avatar" aria-hidden="true"><img src="${commentUsers[0].avatar}" alt="" width="36" height="36"></span>`;
   function postAge(value) {
@@ -129,17 +129,20 @@
   }
   function feed(ctx) {
     const officials = ctx.cities.filter(c => ctx.challenged[c.id]);
-    const tab = ['ugc', 'official'].includes(ctx.tab) ? ctx.tab : 'all';
-    const tabs = [['all', t('广场', 'Square'), officials.length + ugc.length], ['official', t('已挑战', 'Played'), officials.length], ['ugc', t('玩家 Journey', 'Player journeys'), ugc.length]]
-      .map(([id, name, count]) => `<button role="tab" aria-selected="${tab === id}" class="${tab === id ? 'active' : ''}" data-feed-tab="${id}">${name}<small>${count}</small></button>`).join('');
+    const tab = ['ugc', 'official', 'mine'].includes(ctx.tab) ? ctx.tab : 'all';
+    const tabs = [['all', t('广场', 'Square'), officials.length + ugc.length], ['official', t('已挑战', 'Played'), officials.length], ['ugc', t('玩家 Journey', 'Player journeys'), ugc.length], ['mine', t('我的', 'Mine')]]
+      .map(([id, name, count]) => `<button role="tab" aria-selected="${tab === id}" class="${tab === id ? 'active' : ''}" data-feed-tab="${id}">${name}${count === undefined ? '' : `<small>${count}</small>`}</button>`).join('');
+    const mineTab = ctx.mineTab === 'liked' ? 'liked' : 'uploads';
+    const liked = [...officials, ...ugc].filter(c => window.TWStore.get().likes[`feed:${c.id}`]);
+    const mine = tab === 'mine' ? `<div class="cm-mine-tabs" role="tablist" aria-label="${t('我的 Journey', 'My journeys')}">${[['uploads',t('我上传的','My uploads')],['liked',t('我点赞的','Liked journeys')]].map(([id,name]) => `<button role="tab" aria-selected="${mineTab === id}" data-feed-mine-tab="${id}">${name}</button>`).join('')}</div>${mineTab === 'uploads' ? window.UGCService.management(ctx, false, true) : `<div class="cm-list">${liked.map(c => postCard(ctx,c)).join('') || `<div class="cm-empty">${t('还没有点赞的 Journey。点亮喜欢的旅程下方的爱心，就能在这里找到。','No liked journeys yet. Tap the heart on a journey to find it here.')}</div>`}</div>`}` : '';
     const list = tab === 'official'
       ? (officials.length ? officials.map(c => postCard(ctx, c)).join('') : `<div class="cm-empty"><p>${t('完成今日挑战后，你去过的目的地会出现在这里，可以看看大家的留言。', 'Finish today’s challenge and the destinations you’ve been to will appear here, with everyone’s notes.')}</p><button class="primary" data-go="today">${t('去今日挑战', 'Go to today’s challenge')}</button></div>`)
       : [...(tab === 'all' ? officials : []), ...ugc].map(c => postCard(ctx, c)).join('');
-    return `<div class="page cm-page cm-feed">${ctx.head(t('社区', 'Community'), 'hub')}<div class="cm-tabs" role="tablist" aria-label="${t('社区分类', 'Community categories')}">${tabs}</div><div class="cm-feed-scroll"><div class="cm-list">${list || `<div class="cm-empty">${t('还没有新的分享，来发布第一篇吧。', 'No stories yet. Share the first one.')}</div>`}</div></div><button class="cm-publish-fab" data-go="publish" aria-label="${t('发布 Journey', 'Post a journey')}"><span aria-hidden="true">+</span></button></div>`;
+    return `<div class="page cm-page cm-feed">${ctx.head(t('社区', 'Community'), 'hub')}<div class="cm-tabs" role="tablist" aria-label="${t('社区分类', 'Community categories')}">${tabs}</div><div class="cm-feed-scroll">${tab === 'mine' ? mine : `<div class="cm-list">${list || `<div class="cm-empty">${t('还没有新的分享，来发布第一篇吧。', 'No stories yet. Share the first one.')}</div>`}</div>`}</div><button class="cm-publish-fab" data-go="publish" aria-label="${t('发布 Journey', 'Post a journey')}"><span aria-hidden="true">+</span></button></div>`;
   }
 
   function board(ctx, c, played) {
-    if (!commentsOpen(c, played)) return `<section class="cm-board is-locked"><h3>${t('评论区', 'Comments')}</h3><p>${t('完成挑战后就能看到大家的评论，防止剧透。', 'Finish the challenge to read the comments without spoilers.')}</p></section>`;
+    if (!commentsOpen(c, played)) return `<section class="cm-board is-locked"><h3>${t('评论区', 'Comments')}</h3><p>${t('完成挑战后就能看到大家的评论，防止剧透。', 'Finish the challenge to read the comments without spoilers.')}</p><button class="primary" data-action="ugc-start">${t('开始挑战', 'Start challenge')}</button></section>`;
     const notes = boardNotes(c);
     const shown = notes.slice().sort((a,b)=>(b.mine-a.mine)||(b.at||0)-(a.at||0)||b.likes-a.likes);
     return `<section class="cm-board" data-comment-journey="${esc(c.id)}" data-filter="all"><div class="cm-board-head"><h3>${t(`共 ${noteCount(c)} 条评论`,`${noteCount(c)} comments`)}</h3></div><div class="cm-comments">${shown.length?shown.map(note=>noteMarkup(note)).join(''):`<p class="cm-board-empty">${t('还没有评论，说点什么吧','No comments yet. Start the conversation.')}</p>`}</div>${shown.length?`<p class="cm-comments-end">- THE END -</p>`:''}</section>`;
@@ -241,6 +244,7 @@
       });
       button.setAttribute('aria-pressed', String(on));
       button.querySelector('[data-feed-like-count]').textContent = on ? '1' : '';
+      window.dispatchEvent(new CustomEvent('tw-community-likes-updated'));
     }
   });
 

@@ -20,6 +20,20 @@ async function submit(p){await p.locator('.cm-submit').click();await p.locator('
  const context=await browser.newContext({viewport:{width:390,height:844},reducedMotion:'reduce',acceptDownloads:true}),p=await context.newPage();
  const failures=[];p.on('pageerror',e=>failures.push(e.message));
  await p.goto(base);await p.locator('#app .trip-home').waitFor();await feed(p);
+ const sample='ugc-shapowei';
+ await p.locator(`[data-feed-like="${sample}"]`).click();
+ assert.equal(await p.locator(`[data-feed-like="${sample}"]`).getAttribute('aria-pressed'),'true');
+ assert.equal(await p.locator(`[data-feed-like="${sample}"] svg`).evaluate(e=>getComputedStyle(e).fill),'rgb(255, 36, 66)');
+ await p.locator('[data-feed-tab="mine"]').click();await p.locator('[data-feed-mine-tab="liked"]').click();
+ assert.equal(await p.locator('.cm-post').count(),1);assert.equal(await p.locator(`[data-journey="${sample}"]`).count(),1);
+ await p.screenshot({path:path.join(output,'my-liked-journeys.png')});
+ await p.reload();await feed(p);await p.locator('[data-feed-tab="mine"]').click();
+ assert.equal(await p.locator('[data-feed-mine-tab="liked"]').getAttribute('aria-selected'),'true');
+ assert.equal(await p.locator(`[data-feed-like="${sample}"]`).getAttribute('aria-pressed'),'true');
+ await p.locator(`[data-feed-like="${sample}"]`).click();assert.equal(await p.locator('.cm-post').count(),0);
+ await p.locator('[data-feed-mine-tab="uploads"]').click();assert.equal(await p.locator('.cm-mine-management').count(),1);
+ for(const width of [320,390,480]){await p.setViewportSize({width,height:844});assert.equal(await p.locator('.cm-tabs').evaluate(el=>el.scrollWidth>el.clientWidth),false);}
+ await p.setViewportSize({width:390,height:844});
  await p.locator('#app .cm-publish-fab').click();await p.locator('.cm-form').waitFor();
  const files=['shapowei-harbor-2015','shapowei-harbor-now','shapowei-harbor-wide'].map(d=>path.join(__dirname,'photo-library/ugc',d,'original.jpg'));
  await p.locator('.cm-form [name="photos"]').setInputFiles(files);await fill(p);
@@ -50,6 +64,8 @@ async function submit(p){await p.locator('.cm-submit').click();await p.locator('
    await p.waitForFunction(id=>UGCService.records.find(r=>r.id===id).state==='approved',id);
  }else{await p.locator('#app [data-ugc-review]').click();await p.locator(`[data-ugc-approve="${id}"]`).click();await p.waitForFunction(id=>UGCService.records.find(r=>r.id===id).state==='approved',id);}
  await p.locator('#app .page-head [data-go="feed"]').click();await p.locator('.cm-feed').waitFor();await idle(p);
+ await p.locator('[data-feed-tab="mine"]').click();assert.equal(await p.locator(`[data-ugc-edit="${id}"]`).count(),1);assert.equal(await p.locator(`[data-ugc-withdraw="${id}"]`).count(),1);
+ await p.screenshot({path:path.join(output,'my-uploaded-journeys.png')});await p.locator('[data-feed-tab="ugc"]').click();
  await p.locator(`[data-journey="${id}"] .cm-post-copy`).click();await p.locator('#app .explore-page').waitFor();await idle(p);
  assert.equal(await p.locator('#app .tw-bubble-bar').count(),0);
  await p.locator('#app [data-action="next-scene"]').click();await p.waitForFunction(()=>document.querySelector('#app .scene-counter')?.textContent.trim()==='2 / 3'&&!document.querySelector('#app.scene-loading'));
@@ -69,10 +85,14 @@ async function submit(p){await p.locator('.cm-submit').click();await p.locator('
  assert.equal(await p.locator('.cm-board.is-locked,.cm-scene-write').count(),0);await p.locator('[data-comment-compose]').click();await p.locator('.cm-comment-form textarea').fill('完整挑战后的独立评论');await p.locator('.cm-comment-send').click();assert.ok((await p.locator('.cm-comments').innerText()).includes('完整挑战后的独立评论'));
  await p.reload();await feed(p);await p.locator(`[data-journey="${id}"] [data-feed-discuss]`).last().click();await p.locator('.cm-comment-dock').waitFor();assert.ok((await p.locator('.cm-comments').innerText()).includes('完整挑战后的独立评论'));
  const friendContext=await browser.newContext({viewport:{width:390,height:844},reducedMotion:'reduce'}),friend=await friendContext.newPage();
- if(exported){await friend.goto(base);await feed(friend);const chooser=friend.waitForEvent('filechooser');await friend.locator('[data-ugc-import]').click();await (await chooser).setFiles(exported);await friend.locator(`[data-journey="${id}"]`).waitFor();}
+ if(exported){await friend.goto(base);await feed(friend);await friend.locator('[data-feed-tab="mine"]').click();const chooser=friend.waitForEvent('filechooser');await friend.locator('[data-ugc-import]').click();await (await chooser).setFiles(exported);await friend.locator(`[data-journey="${id}"]`).waitFor();await friend.locator('[data-feed-tab="mine"]').click();assert.equal(await friend.locator(`[data-ugc-edit="${id}"]`).count(),0);}
  await friend.goto(link);await friend.locator('#app .explore-page').waitFor();await idle(friend);assert.equal((await friend.locator('#app .scene-counter').textContent()).trim(),'1 / 3');
+ await p.goto(base);await feed(p);await p.locator('[data-feed-tab="mine"]').click();await p.locator(`[data-ugc-withdraw="${id}"]`).click();
+ await p.waitForFunction(id=>UGCService.records.find(r=>r.id===id).state==='disabled'&&!TRIPWONDER_CATALOG.ugc.some(j=>j.id===id),id);
+ await p.reload();await feed(p);await p.locator('[data-feed-tab="mine"]').click();assert.ok((await p.locator('.cm-mine-management').innerText()).includes('已下架'));
+ await p.locator(`[data-ugc-edit="${id}"]`).click();await p.locator('.cm-form').waitFor();assert.equal(await p.locator('[name="title"]').inputValue(),'沿水慢行的周末');assert.equal(await p.locator('[name="photos"]').evaluate(e=>e.files.length),3);
  assert.deepEqual(failures,[]);
- console.log(JSON.stringify({pass:true,backend,id,draftReload:true,rejectResubmit:true,originalQuestions:true,exploreReload:true,quizReload:true,mapReload:true,commentReload:true,share:true,exportImport:!!exported}));
+ console.log(JSON.stringify({pass:true,backend,id,myTab:true,redHeart:true,likesReload:true,unlikeRemoval:true,importOwnership:true,ownerUnpublish:true,editFromMine:true,draftReload:true,rejectResubmit:true,originalQuestions:true,exploreReload:true,quizReload:true,mapReload:true,commentReload:true,share:true,exportImport:!!exported}));
  await context.close();await friendContext.close();
  }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});
