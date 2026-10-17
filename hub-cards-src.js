@@ -33,15 +33,13 @@ function faceTexture(button,w,h,index,font=getComputedStyle(button).fontFamily){
   const canvas=document.createElement('canvas'),ratio=2;
   canvas.width=Math.ceil(w*ratio);canvas.height=Math.ceil(h*ratio);
   const ctx=canvas.getContext('2d');ctx.scale(ratio,ratio);
-  const radius=28,compact=w<320;
-  // Full-bleed photograph cropped to the card, with the same shading as the DOM fallback.
-  ctx.save();rounded(ctx,0,0,w,h,radius);ctx.clip();
+  const compact=w<320;
+  // Full-bleed artwork: the card mesh trims the corners, so the texture must not clip with its own arc.
   ctx.fillStyle='#26404a';ctx.fillRect(0,0,w,h);
   crop(ctx,button.querySelector('.cm-entry-art img'),0,0,w,h);
   const shade=ctx.createLinearGradient(0,h,0,0);
   shade.addColorStop(0,'#0a1e1ccc');shade.addColorStop(.34,'#0a1e1c66');shade.addColorStop(.66,'#0a1e1c00');ctx.fillStyle=shade;ctx.fillRect(0,0,w,h);
   const side=ctx.createLinearGradient(0,0,w*.6,0);side.addColorStop(0,'#0a1e1c4d');side.addColorStop(1,'#0a1e1c00');ctx.fillStyle=side;ctx.fillRect(0,0,w,h);
-  ctx.restore();
   const kicker=button.querySelector('.cm-entry-kicker').textContent,title=button.querySelector('strong').textContent,subtitle=button.querySelector('small').textContent;
   const x=compact?20:24,titleSize=compact?26:30,subY=h-(compact?18:22)-3,titleY=subY-24,kickerY=titleY-titleSize+2,textW=w-x*2;
   ctx.textBaseline='alphabetic';
@@ -49,8 +47,6 @@ function faceTexture(button,w,h,index,font=getComputedStyle(button).fontFamily){
   ctx.fillStyle='#fff';ctx.font=`400 ${titleSize}px ${font}`;ctx.letterSpacing='1px';ctx.fillText(title,x,titleY);
   ctx.fillStyle='#ffffffa6';ctx.font=`400 11px ${font}`;ctx.letterSpacing='.3px';lines(ctx,subtitle,x,subY,textW,15,1);
   ctx.letterSpacing='0px';
-  // Soft glass rim hugging the edge.
-  ctx.strokeStyle='#8fb9b2a6';ctx.lineWidth=1.5;rounded(ctx,.75,.75,w-1.5,h-1.5,radius-.75);ctx.stroke();
   // Pages opened from file:// taint the canvas; WebGL would then sample black, so let the DOM cards stay visible.
   try{ctx.getImageData(0,0,1,1);}catch{throw new Error('Card artwork is cross-origin; WebGL cannot read it.');}
   const texture=new THREE.CanvasTexture(canvas);texture.colorSpace=THREE.SRGBColorSpace;texture.anisotropy=4;
