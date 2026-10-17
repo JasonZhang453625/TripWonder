@@ -10,15 +10,36 @@ window.CONTENT_EN = {
       xuankong: { name: 'Hanging Temple', type: 'Cliffside architecture', hotspots: ['How the beams carry the load', 'Why this cliff face?', 'Three teachings in one'] }
     },
     questions: [
-      { q: 'Why is the Buddha in the first scene exposed to the open air?',
-        options: ['The front wall of the original cave later collapsed', 'It was designed as an open-air plaza from the start', 'The front wall was removed to give visitors a view', 'It was moved here from somewhere else'],
-        explain: 'Cave 20 was originally an enclosed cave. When its front wall collapsed, the main Buddha was exposed; the western standing Buddha has also been lost, which is why the scene today is asymmetrical.' },
-      { q: 'What is the square pagoda in the photo mainly built from?',
-        options: ['Rammed earth', 'Glass and steel', 'Timber joined with mortise and tenon', 'Reinforced concrete'],
-        explain: 'It is a square timber pagoda: beams and columns lock together with mortise-and-tenon joints, a tenon slotting into the next piece’s mortise.' },
-      { q: 'How do the halls on the cliff mainly transfer their weight to the mountain?',
-        options: ['Slender wooden posts underneath hold them up on their own', 'Beams set into the rock work together with brackets and the timber frame', 'Iron chains hang the whole building from the summit', 'The outer walls are glued to the rock face'],
-        explain: 'Beams set into the mountain are key load-bearing members, working with rock supports and the post-and-beam frame. The slender posts you can see are not the whole structure.' }
+      {
+        "q": "The timber pagoda gets smaller with every storey. What is that mainly for?",
+        "options": [
+          "A lower centre of gravity keeps it stable",
+          "More daylight on each floor",
+          "Room to hang bells from the eaves",
+          "Looks only, no structural role"
+        ],
+        "explain": "With a broad base and a narrow top, the weight sits low and less of the tower catches the wind; tall timber and brick pagodas taper like this."
+      },
+      {
+        "q": "These halls cling to a cliff. What mainly carries their weight into the rock?",
+        "options": [
+          "The thin wooden posts below",
+          "Beams set into the cliff face",
+          "Iron chains hung from the clifftop",
+          "Outer walls pressed against the rock"
+        ],
+        "explain": "The thin posts catch the eye, but the key members are beams driven into the rock at one end and carrying the halls at the other, working with rock brackets."
+      },
+      {
+        "q": "The cliff around the great Buddha shows horizontal layers. What kind of rock is it?",
+        "options": [
+          "Granite",
+          "Basalt",
+          "Marble",
+          "Sandstone"
+        ],
+        "explain": "Horizontal bedding marks a sedimentary rock laid down layer by layer. This cliff is sandstone: even and moderately soft, ideal for carving on a vast scale."
+      }
     ],
     stops: {
       云冈石窟: { name: 'Yungang Grottoes', note: 'Allow half a day for the caves. Check reservations and opening information before you go.' },
@@ -37,37 +58,37 @@ window.CONTENT_EN = {
       'sz-qianhai': { name: 'Qianhai · Joy Harbour', type: 'Waterfront new district', hotspots: ['The glowing Ferris wheel', 'Cabins and one full turn', 'Two characters on the light sign'] }
     },
     questions: [
-  {
-    "q": "What distinguishes the tallest building in the first scene from its neighbours?",
-    "options": [
-      "It has one floor and spreads sideways",
-      "It is slender and tapers towards the top",
-      "It has a huge circular dome",
-      "It is a bridge spanning two banks"
+      {
+        "q": "The tallest tower narrows towards a pointed top. What is that mainly for?",
+        "options": [
+          "Saving building materials",
+          "Reducing the force of high winds",
+          "Making room for roof antennas",
+          "Making the tower look shorter"
+        ],
+        "explain": "Winds are strong high up; a tapering body and pointed crown break up the airflow and cut wind loads, which is why most supertall towers take this shape."
+      },
+      {
+        "q": "This brand-new district hugs the bay. How was it most likely built?",
+        "options": [
+          "By rebuilding an old town",
+          "On land reclaimed from the sea",
+          "By terracing a hillside",
+          "On a former airport"
+        ],
+        "explain": "New towers spread flat right along the bay are the mark of reclaimed land, and this district was indeed built on land reclaimed from the sea."
+      },
+      {
+        "q": "What is the average age of this city's residents, roughly?",
+        "options": [
+          "About 32",
+          "About 38",
+          "About 43",
+          "About 48"
+        ],
+        "explain": "A city of newcomers that grew up only after the reform era, it draws young workers: its residents average about 32.5 years old, some six years younger than the national average."
+      }
     ],
-    "explain": "The tallest tower rises well above its neighbours, with a slender facade and a tapering crown."
-  },
-  {
-    "q": "In the second night view, what is the rolling dark outline between the front and back clusters of buildings?",
-    "options": [
-      "A tree-covered ridge",
-      "A flat, open stretch of sea",
-      "A row of piers along the shore",
-      "A rectangular sports ground"
-    ],
-    "explain": "The dark outline in the middle of the picture has rolling slopes and trees, with lit buildings in front of and behind it and a curving road on the left. The clue “The ridge between the towers” points to exactly this terrain."
-  },
-  {
-    "q": "What mainly makes the Ferris wheel in the third scene change colour at night?",
-    "options": [
-      "Full-colour LEDs on its rims and spokes",
-      "Moonlight reflected off the water",
-      "Neon signs inside the cabins",
-      "Searchlights on nearby towers"
-    ],
-    "explain": "Both rims and all 112 spokes carry a full-colour LED lighting array, so the whole wheel can change colour."
-  }
-],
     stops: {
       平安金融中心云际观光层: { name: 'Ping An Finance Centre Observation Deck', note: 'Level 116, about 541 metres up. Tickets required; opening times follow the official notice for the day.' },
       莲花山公园山顶广场: { name: 'Lianhuashan Park Summit Plaza', hours: '06:00–23:00; last entry 22:30', note: 'A city park at the north end of the central district; the summit looks back over the skyline. Involves an uphill walk.' },
@@ -109,37 +130,37 @@ window.CONTENT_EN = {
   }
 },
     questions: [
-  {
-    "q": "What is the broad area of water at the centre of the first garden scene?",
-    "options": [
-      "A garden pond",
-      "An outdoor swimming pool",
-      "A harbour channel",
-      "An alpine glacial lake"
+      {
+        "q": "The houses along the canal stand on stone blocks that reach into the water. Why?",
+        "options": [
+          "To keep water from soaking and eroding the walls",
+          "To draw washing water from the windows",
+          "To serve as landing stages for boats",
+          "To make the houses look grander"
+        ],
+        "explain": "Walls that stand in water rot quickly if they are brick or timber; water-resistant stone blocks take the soaking and the wash from passing boats."
+      },
+      {
+        "q": "Judging by the trees and what people are wearing, when was this photo most likely taken?",
+        "options": [
+          "High summer",
+          "Early spring, in blossom",
+          "Late autumn, early winter",
+          "Just after heavy snow"
+        ],
+        "explain": "Most trees are bare with a few yellow leaves left, people wear jackets and there is no snow: late autumn turning to winter."
+      },
+      {
+        "q": "Roughly where does this city's economy rank among all Chinese cities?",
+        "options": [
+          "Top 10",
+          "Around 30th",
+          "Around 60th",
+          "Around 100th"
+        ],
+        "explain": "Though not a provincial capital, it is a manufacturing and export powerhouse: in 2024 its GDP of about 2.67 trillion yuan ranked 6th among Chinese cities."
+      }
     ],
-    "explain": "A garden pond occupies the centre, reflecting the trees and buildings along its banks."
-  },
-  {
-    "q": "Looking along the path in the second scene, what rises behind the trees?",
-    "options": [
-      "A windmill",
-      "An ancient pagoda",
-      "A modern TV tower",
-      "A Ferris wheel"
-    ],
-    "explain": "A pagoda with stacked eaves rises above the trees and the low courtyard roofs."
-  },
-  {
-    "q": "In the third scene, what do the houses mainly line?",
-    "options": [
-      "Sand dunes",
-      "An airport runway",
-      "Both banks of a canal",
-      "An elevated highway"
-    ],
-    "explain": "The canal runs through the middle, with houses closely lining both banks and their windows reflected in the water."
-  }
-],
     stops: {
       苏州博物馆本馆: { name: 'Suzhou Museum (Main Building)', note: 'Next to the Humble Administrator’s Garden. Entry is by timed reservation; your slot follows your booking.' },
       拙政园: { name: 'Humble Administrator’s Garden', note: 'Mar–Oct 07:30–17:30; Nov–Feb 07:30–17:00. Hours may change on public holidays.' },
@@ -157,15 +178,36 @@ window.CONTENT_EN = {
       'gl-longji': { name: 'Longji Rice Terraces', type: 'Mountain rice farming', hotspots: ['The curving lines aren’t roads', 'A wooden hut in the fields', 'The gold doesn’t last all year'] }
     },
     questions: [
-      { q: 'Seen from above, what does the river do beside the town at the foot of the hills?',
-        options: ['It splits into three branches', 'It flows into a lake', 'It makes a big bend', 'It runs dead straight'],
-        explain: 'The river turns through a bend of about 90 degrees below the hills, wrapping round the old town like a ribbon.' },
-      { q: 'What carries the visitors under colourful parasols on the river?',
-        options: ['Speedboats', 'Sailing boats', 'Dragon boats', 'Bamboo rafts'],
-        explain: 'They are bamboo rafts. Villagers once used them to cross the river and carry goods; later they became rafts for visitors.' },
-      { q: 'What problem do the curving ridges stepping up the hillside mainly solve?',
-        options: ['Marking channels for tour boats', 'Turning steep slopes into fields that can be farmed and irrigated', 'Marking the location of underground caves', 'Stopping winter snow from sliding down'],
-        explain: 'The terraces are cut into the slope level by level and kept farmable with ridges and channelled water. Above all, they are a mountain rice-farming system that is still in use.' }
+      {
+        "q": "These bamboo rafts carry visitors under sunshades. What mainly moves them along?",
+        "options": [
+          "A raftsman poling with bamboo",
+          "A sail catching the wind",
+          "A propeller",
+          "Trackers hauling from the bank"
+        ],
+        "explain": "The river is shallow and slow and the rafts sit low; a raftsman pushes a long pole against the riverbed to move them."
+      },
+      {
+        "q": "The terraces are golden and the rice heads droop. What time of year is it most likely?",
+        "options": [
+          "Spring planting",
+          "Summer, with green seedlings",
+          "Around the autumn harvest",
+          "Winter fallow"
+        ],
+        "explain": "Drooping, golden heads mean ripe rice. Mountain farms here grow one crop a year and harvest it in autumn; this photo was taken in October."
+      },
+      {
+        "q": "These steep, free-standing peaks rise straight from the plain. What landform are they?",
+        "options": [
+          "Danxia landform",
+          "Karst peak forest",
+          "Yardang landform",
+          "Glacial horns"
+        ],
+        "explain": "Limestone dissolved by water over ages in a warm, wet climate leaves isolated, steep peaks: a karst peak forest."
+      }
     ],
     stops: {
       象鼻山: { name: 'Elephant Trunk Hill', note: 'In the city centre. Entry rules and times follow the scenic area’s notice for the day.' },
@@ -184,15 +226,36 @@ window.CONTENT_EN = {
       'hk-sham-shui-po': { name: 'Sham Shui Po', type: 'Everyday street life', hotspots: ['The bakery building at the end of the street', 'The place name on the sign', 'A street of tightly packed buildings'] }
     },
     questions: [
-      { q: 'Judging from the picture, where is the photographer standing?',
-        options: ['On a boat in the harbour', 'On the peak above the city', 'On a pier by the sea', 'At the foot of a tower'],
-        explain: 'The nearby rooftops are below you: the photo was taken from a hill about 552 m up, the highest point on the island.' },
-      { q: 'What colours is this ferry painted?',
-        options: ['A white upper deck over a dark green hull', 'Bright red all over', 'Black and white stripes', 'A gold hull'],
-        explain: 'A white upper deck over a dark green hull is this fleet’s signature, running across the harbour since the late 19th century.' },
-      { q: 'The district in the third scene has a name ending in the character “埗” (po). What does it mean?',
-        options: ['Pier', 'City gate', 'Well', 'Market'],
-        explain: '“埗” is interchangeable with “埠” and means a pier. The name comes from a deep-water pier that once stood nearby and disappeared after land reclamation.' }
+      {
+        "q": "To look down on the towers and the harbour like this, where is the photographer standing?",
+        "options": [
+          "On a boat in the harbour",
+          "On the peak behind the city",
+          "On a waterfront pier",
+          "At the foot of a tower"
+        ],
+        "explain": "The nearest rooftops are below the camera and the harbour and far shore are all in view; only the mountain behind the city gives a panorama like this."
+      },
+      {
+        "q": "Tall buildings line the street and a green hill rises right behind them. What does that say about land here?",
+        "options": [
+          "Hills everywhere and little flat land, so it builds upwards",
+          "Flat land with room to spread out",
+          "Cheap land on the outskirts",
+          "Freshly reclaimed land in neat blocks"
+        ],
+        "explain": "Buildings packed up to the foot of the hill, narrow streets and tall blocks all point to scarce flat land: the city can only grow upwards."
+      },
+      {
+        "q": "What is this city's GDP per person, converted to renminbi, roughly?",
+        "options": [
+          "About 90,000 yuan",
+          "About 150,000 yuan",
+          "About 240,000 yuan",
+          "About 360,000 yuan"
+        ],
+        "explain": "A global finance and trade hub: in 2023 its GDP per person was about 397,000 in local currency, roughly 360,000 yuan."
+      }
     ],
     stops: {
       山顶缆车中环总站: { name: 'Peak Tram Garden Road Terminus', note: '33 Garden Road. Budget time for the queue and the ride; operating hours follow the official notice for the day.' },
@@ -211,15 +274,36 @@ window.CONTENT_EN = {
       'bj-beihai': { name: 'Glazed Archway of Xiaoxitian, Beihai Park', type: 'Imperial garden', hotspots: ['A panel read from right to left', 'Built for a mother’s longevity', 'The hall beyond the archway'] }
     },
     questions: [
-      { q: 'What were the rows of small square windows on the gate tower originally for?',
-        options: ['Shop windows', 'Ventilating the tower', 'Hanging lanterns', 'Shooting arrows when defending the city'],
-        explain: 'They are arrow windows for defending the gate; the north side faces the city and has none.' },
-      { q: 'What colours is the plaque in the middle of the pavilion?',
-        options: ['Blue characters on white', 'Gold characters on black', 'Gold characters on blue', 'Black characters on red'],
-        explain: 'The gold-on-blue plaque carries the pavilion’s present name; it was renamed twice after being called the Martial Tower in the early Ming.' },
-      { q: 'How should the four characters on the central panel of the archway be read?',
-        options: ['From the middle outwards', 'Right to left', 'Left to right', 'Bottom to top'],
-        explain: 'The panel reads right to left. Traditional gate panels and plaques are usually written this way.' }
+      {
+        "q": "Of the three arches, the middle one is clearly taller and wider. Why?",
+        "options": [
+          "The centre ranks highest",
+          "Room for carts to turn",
+          "Saving masonry",
+          "Making the wall stronger"
+        ],
+        "explain": "Traditional architecture honours the centre: the middle arch is the tallest and widest and the side arches step down, expressing rank through size."
+      },
+      {
+        "q": "Large open vats stand in front of the hall's terrace. What were they mainly for?",
+        "options": [
+          "Storing drinking water",
+          "Burning incense",
+          "Holding water to fight fires",
+          "Catching rain for the gardens"
+        ],
+        "explain": "These palaces are built of timber and fire was the greatest danger; the vats were kept full, even kept from freezing in winter, so water was always at hand."
+      },
+      {
+        "q": "How long is this city's urban rail network in operation, roughly?",
+        "options": [
+          "About 120 km",
+          "About 250 km",
+          "About 500 km",
+          "About 880 km"
+        ],
+        "explain": "A megacity of over 20 million, it runs the longest urban rail network in the country: about 879 km at the end of 2024."
+      }
     ],
     stops: {
       正阳门箭楼: { name: 'Zhengyangmen Arrow Tower', hours: 'Tue–Sun 09:00–17:00, last entry 16:30; closed Mondays', note: 'Visits by real-name reservation. Floors 1–3 house an exhibition on the city’s central axis.' },
@@ -238,15 +322,36 @@ window.CONTENT_EN = {
       'sh-bund-night': { name: 'The Bund at night, from across the river', type: 'Riverside night view', hotspots: ['A row of old buildings', 'The slender white tower by the river', 'Ribbons of light on the river'] }
     },
     questions: [
-      { q: 'What is mounted on the tower at the top of the building on the right?',
-        options: ['A big clock', 'A windmill', 'A radar dish', 'A neon billboard'],
-        explain: 'The building on the right with the clock tower is the Custom House, completed in 1927; its clock still chimes the hours.' },
-      { q: 'Which line of poetry inspired the design of the TV tower strung with spheres in the second scene?',
-        options: ['“Pearls large and small fall on a jade plate”', '“The torrent plunges three thousand feet”', '“Over the sea rises a bright moon”', '“To see a thousand li further”'],
-        explain: 'The design team drew on the line “pearls large and small fall on a jade plate” from Bai Juyi’s “Song of the Pipa”, building the tower from 11 spheres of different sizes.' },
-      { q: 'What is the row of Western-style old buildings along the river in the third scene often called?',
-        options: ['An exhibition of world architecture', 'The Venice of the East', 'The lighthouse of the foreign concessions', 'The finest of the Jiangnan gardens'],
-        explain: 'This riverside ensemble of varied early modern buildings is known as the “exhibition of world architecture” and records the city’s development.' }
+      {
+        "q": "The building on the right has a large clock on its tower. What was it originally for?",
+        "options": [
+          "Telling the time to the river and street",
+          "Guiding ships like a lighthouse",
+          "Watching the weather",
+          "Carrying a broadcast antenna"
+        ],
+        "explain": "Set at the top of the tower and facing outwards, the clock let people on the river and in the streets see the time and hear the chimes."
+      },
+      {
+        "q": "Compared with the stone buildings in the first scene, how much later were these glass towers built?",
+        "options": [
+          "At about the same time",
+          "About 10 years later",
+          "More than 70 years later",
+          "50 years earlier"
+        ],
+        "explain": "The stone-faced buildings mostly date from the early 20th century; the glass supertalls across the river went up from the 1990s on, some 70 to 80 years later."
+      },
+      {
+        "q": "What is this city's resident population, roughly?",
+        "options": [
+          "About 4 million",
+          "About 8 million",
+          "About 14 million",
+          "About 25 million"
+        ],
+        "explain": "Lights spreading across both banks signal a megacity: about 24.8 million residents at the end of 2024, among the most populous cities in China."
+      }
     ],
     stops: {
       外滩万国建筑群: { name: 'The Bund heritage buildings', note: 'Walk along East Zhongshan No. 1 Road to see the façades; whether interiors are open depends on each building.' },
@@ -265,15 +370,36 @@ window.CONTENT_EN = {
       'zjj-winding-road': { name: 'Tianmen Mountain · Heaven-Linking Avenue', type: 'Mountain switchbacks', hotspots: ['Switchback after switchback', 'An arch hidden beneath the road', 'Where do the 99 bends lead?'] }
     },
     questions: [
-      { q: 'Which landform appears again and again in the first two scenes?',
-        options: ['Clusters of slender stone pillars and sheer rock walls', 'Gentle sand dunes merging into one', 'Rounded, glacier-covered summits', 'Isolated volcanoes around a round lake'],
-        explain: 'The first scene shows dense stone pillars and the second shows layer upon layer of rock walls; a steep, dense peak forest is the clue the two mountain views share.' },
-      { q: 'How did the great hole showing sky in the middle of the cliff form?',
-        options: ['A gap blasted in a war', 'An opening made for a cable car', 'It is a natural arch through the mountain', 'A tunnel cut by people'],
-        explain: 'It is a natural arch through the karst mountain; the steep cliff around it is still one continuous face.' },
-      { q: 'How does doubling back again and again help vehicles climb the road in the fourth scene?',
-        options: ['It makes the way up a short straight line', 'It spreads the climb over a longer stretch of road', 'It keeps every section at the same altitude', 'It lets vehicles avoid bends altogether'],
-        explain: 'Doubling back lengthens the route, spreading the same height gain over a longer distance instead of going straight up the steep slope. The stacked road sections in the photo show exactly this.' }
+      {
+        "q": "Why does this road zigzag back and forth instead of climbing straight up?",
+        "options": [
+          "To ease the gradient for vehicles",
+          "To avoid villages on the way",
+          "To protect the trees on top",
+          "To avoid an underground river"
+        ],
+        "explain": "The slope is too steep to drive straight up; switchbacks spread the same climb over a longer road, so the gradient is gentler."
+      },
+      {
+        "q": "How was the huge opening through the mountain at the top of the stairs most likely formed?",
+        "options": [
+          "A channel left by a volcanic eruption",
+          "Water dissolving limestone until it collapsed",
+          "A pass carved by a glacier",
+          "A man-made tunnel"
+        ],
+        "explain": "The mountain is limestone; water dissolved it along cracks over ages until the rock fell away, leaving a natural arch right through."
+      },
+      {
+        "q": "What landform are these slender, sheer stone pillars standing in crowds?",
+        "options": [
+          "Karst peak forest",
+          "Danxia landform",
+          "Quartz-sandstone peak forest",
+          "Yardang landform"
+        ],
+        "explain": "The pillars are hard quartz sandstone in flat layers with many vertical cracks; water cut along the cracks and left columns, unlike karst peaks dissolved from limestone."
+      }
     ],
     stops: {
       天子山景区: { name: 'Tianzi Mountain Scenic Area', note: 'Look over the sandstone peak forest from above. The area is large, so allow time for walking and park shuttles. Coordinates are a reference point for the area.' },

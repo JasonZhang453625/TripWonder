@@ -195,49 +195,49 @@ window.CITY_SUZHOU = {
   }
 ],
   questions: [
-  {
-    "sceneId": "suzhou-zhuozheng",
-    "q": "第一处园景中央，大面积的水面是什么？",
-    "options": [
-      "园林池塘",
-      "露天游泳池",
-      "港口航道",
-      "高山冰湖"
-    ],
-    "answer": 0,
-    "points": 20,
-    "explain": "画面中央是园林池塘，岸边的树木与建筑倒映在水中。",
-    "source": "https://whc.unesco.org/en/list/813/"
-  },
-  {
-    "sceneId": "suzhou-huqiu",
-    "q": "第二处场景中，沿着道路望向远处，树梢后露出的高建筑是什么？",
-    "options": [
-      "风车",
-      "古塔",
-      "现代电视塔",
-      "摩天轮"
-    ],
-    "answer": 1,
-    "points": 20,
-    "explain": "沿中间道路远望，能看到层层塔檐的古塔，高于近处的院落屋顶。",
-    "source": "https://ylj.suzhou.gov.cn/szsylj/ylwh/201604/f3f52d3ee502486b8a4873c36b0d24e0.shtml"
-  },
-  {
-    "sceneId": "suzhou-shantang",
-    "q": "第三处场景里，房屋主要沿着什么排列？",
-    "options": [
-      "沙丘",
-      "机场跑道",
-      "河道两岸",
-      "高架公路"
-    ],
-    "answer": 2,
-    "points": 20,
-    "explain": "水道从画面中间延伸，房屋沿两岸紧密排列，白墙和窗洞倒映在水中。",
-    "source": "https://commons.wikimedia.org/wiki/File:Shantang_Street,_Suzhou_(December_2015)_-_03.JPG"
-  }
-],
+    {
+      "q": "临河房屋的墙脚都用条石一直砌到水里，主要是为了什么？",
+      "options": [
+        "防止河水浸泡、冲刷墙脚",
+        "方便从窗口打水洗衣",
+        "给船只当靠岸码头",
+        "让房子看起来更气派"
+      ],
+      "answer": 0,
+      "points": 20,
+      "level": 1,
+      "sceneId": "suzhou-shantang",
+      "explain": "墙脚常年泡在水里，砖木容易受潮腐坏；耐水的条石能挡住河水浸泡和船行波浪的冲刷。"
+    },
+    {
+      "q": "看树叶和行人的穿着，这张照片最可能拍于什么时候？",
+      "options": [
+        "盛夏",
+        "早春花开时",
+        "秋末冬初",
+        "大雪过后"
+      ],
+      "answer": 2,
+      "points": 20,
+      "level": 2,
+      "sceneId": "suzhou-huqiu",
+      "explain": "大部分树叶已经落光、只剩零星黄叶，行人穿着外套，地上没有积雪，是秋末冬初的景象。"
+    },
+    {
+      "q": "这座城市的经济总量在全国城市中大约排第几？",
+      "options": [
+        "前 10 名",
+        "第 30 名左右",
+        "第 60 名左右",
+        "第 100 名左右"
+      ],
+      "answer": 0,
+      "points": 20,
+      "level": 3,
+      "sceneId": "suzhou-zhuozheng",
+      "explain": "它虽然不是省会，却是制造业和外贸重镇；2024 年 GDP 约 2.67 万亿元，在全国城市中排第 6 位。"
+    }
+  ],
   stops: [
     {
       id: 'suzhou-stop-museum', name: '苏州博物馆本馆', lat: 31.3251, lng: 120.6235,

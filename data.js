@@ -90,9 +90,52 @@ window.SCENES = [
   {x:56,y:34,title:'三教合一',tag:'历史',source:'https://www.dt.gov.cn/english/placestovisit/202501/462779d3cdef476785e094810e2b8b54.shtml',text:'这座寺院除了佛教，也容纳道教与儒家文化，因此有“三教合一”的特点。全寺以木构为主，大小殿阁40余间，供奉佛像、神像80余尊。外观看似狭窄，内部却用楼阁和栈道组织出多层空间，承载了不同信仰与思想传统。',en:'The temple brings Buddhist, Taoist, and Confucian traditions together. Its mainly timber complex contains over forty halls and more than eighty religious sculptures. Although narrow from outside, linked halls and walkways create a layered space for these different traditions.'}]}
 ];
 window.QUESTION_BANK = [
- [{q:'第一处大佛为什么呈现露天状态？',options:['原洞窟的前壁后来坍塌','最初就设计成露天广场','为游客观景拆去了前壁','它从别处迁到这里'],answer:0,points:30,source:'第 1 处 · 为什么露天',explain:'第20窟原本是洞窟。前壁坍塌后，主佛露出；西立佛也已毁损，因此今天的画面并不对称。'},
- {q:'最早的五座洞窟由昙曜主持开凿，属于哪个朝代？',options:['唐代','北魏','辽代','金代'],answer:1,points:30,source:'第 1 处 · 北魏的皇家石窟',explain:'公元460年，北魏文成帝时期，昙曜主持开凿了今天的第16至20窟。'},
- {q:'主佛头后火焰状的雕刻主要表示什么？',options:['天然岩层的裂隙','建筑曾遭火灾','佛的背光与光明','袈裟外侧的衣纹'],answer:2,points:40,source:'第 1 处 · 袈裟与背光',explain:'头后的火焰纹属于背光，用来表现佛的光明；它是人为雕刻的宗教艺术元素。'}],
- [{q:'照片中这座方形宝塔，主要是用什么建造的？',options:['夯土墙','玻璃与钢架','木构件，用榫卯咬合','钢筋混凝土'],answer:2,points:30,source:'第 2 处 · 榫卯木塔',explain:'这是一座方形木塔，梁柱等木构件靠榫卯互相咬合：凸出的榫头嵌进另一构件的卯口。'}],
- [{q:'悬崖上的楼阁，主要怎样把荷载传给山体？',options:['只靠下方细木柱独立承托','嵌入岩壁的横梁与支托、梁柱共同受力','用铁链从山顶悬吊整座建筑','用外墙贴在岩壁上粘住'],answer:1,points:40,source:'第 3 处 · 横梁如何承重',explain:'嵌入山体的横梁是重要承重构件，配合岩石支托及梁柱体系。可见的细木柱并不是全部承重结构。'}]
+  [
+    {
+      "q": "这座木塔越往上越小、一层比一层收窄，主要是为了什么？",
+      "options": [
+        "降低重心，让塔身更稳",
+        "让每一层采光更好",
+        "方便在檐角挂风铃",
+        "只为好看，没有结构作用"
+      ],
+      "answer": 0,
+      "points": 20,
+      "level": 1,
+      "sceneId": "huayan",
+      "explain": "塔身下大上小，重量集中在下部，重心低、受风面小；高层木塔和砖塔普遍这样逐层收分。"
+    }
+  ],
+  [
+    {
+      "q": "这些楼阁贴着悬崖而建，真正把重量传给山体的主要是什么？",
+      "options": [
+        "下方那些细长木柱",
+        "嵌入岩壁的横梁",
+        "从崖顶垂下的铁索",
+        "贴着崖面的外墙"
+      ],
+      "answer": 1,
+      "points": 20,
+      "level": 2,
+      "sceneId": "xuankong",
+      "explain": "细木柱最显眼，但关键是一端插进岩体、一端伸出托住楼阁的横梁，再配合岩石支托共同受力。"
+    }
+  ],
+  [
+    {
+      "q": "大佛所在的崖壁能看到一层层水平纹理，这是哪类岩石？",
+      "options": [
+        "花岗岩",
+        "玄武岩",
+        "大理岩",
+        "砂岩"
+      ],
+      "answer": 3,
+      "points": 20,
+      "level": 3,
+      "sceneId": "yungang",
+      "explain": "水平层理是沉积岩一层层堆积的痕迹；这片崖壁是砂岩，质地均匀、软硬适中，适合大面积开凿造像。"
+    }
+  ]
 ];
